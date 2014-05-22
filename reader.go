@@ -12,7 +12,6 @@ type Reader map[string]interface{}
 func (b *Reader) Read(p []byte) (size int, err error) {
 	if buf, err := json.Marshal(&b); err == nil {
 		copy(p, buf)
-		return len(p), io.EOF
 	}
-	return len(p), nil
+	return len(p), io.EOF
 }

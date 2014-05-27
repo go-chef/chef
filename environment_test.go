@@ -2,13 +2,12 @@ package chef
 
 import (
 	"encoding/json"
-	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	"io"
-	// "io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
-	// "path"
+	"path"
 	"testing"
 )
 
@@ -16,8 +15,7 @@ var (
 	testEnvironmentJSON = "test/environment.json"
 	// FML
 	testEnvironmentMapStringInterfaceLol, _ = NewEnvironment(&Reader{
-		"name": "testenvironment",
-		// "run_list":   []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		"name":       "testenvironment",
 		"chef_type":  "environment",
 		"json_class": "Chef::Environment",
 		"default_attributes": map[string]interface{}{
@@ -67,36 +65,37 @@ func TestEnvironmentCookbookVersions(t *testing.T) {
 	e := testEnvironmentMapStringInterfaceLol
 	cv := e.CookbookVersion
 
-	var
-	for key
+	// Need to generate an array of all the map keys ( cookbooks )
+	var cookbook_list []string
+	for key, _ := range cv {
+		cookbook_list = append(cookbook_list, key)
+	}
 	Convey("Environment.Cookbook() should be a Cookbook", t, func() {
 		So(cv, ShouldHaveSameTypeAs, Cookbook{})
 	})
 
-	fmt.Println(cv)
-	// Convey("Environment.Cookbook() should be populated", t, func() {
-	// 	So(cv, ShouldContain, "openssh")
-	// 	So(cv, ShouldContain, "couchdb")
-	// })
-	//
-	// rl = RunList{}
-	// Convey("Empty RunList should be valid", t, func() {
-	// 	So(rl, ShouldBeEmpty)
-	// })
+	Convey("Environment.Cookbook() should be populated", t, func() {
+		So(cookbook_list, ShouldContain, "openssh")
+		So(cookbook_list, ShouldContain, "couchdb")
+	})
+
+	cv = Cookbook{}
+	Convey("Empty CookbookVersion should be valid", t, func() {
+		So(cv, ShouldBeEmpty)
+	})
 
 }
 
-// func TestNodeAttribute(t *testing.T) {
-// 	n := testEnvironmentMapStringInterfaceLol
-// 	attr := n.Normal
-// 	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
-// 	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-// 	Convey("Node.Normal should map", t, func() {
-// 		So(ugh, ShouldEqual, "no")
-// 	})
-// }
+func TestEnvironmentAttribute(t *testing.T) {
+	n := testEnvironmentMapStringInterfaceLol
+	attr := n.Default
+	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
+	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
+	Convey("Node.Default should map", t, func() {
+		So(ugh, ShouldEqual, "no")
+	})
+}
 
-//
 // BUG(fujin): re-do with goconvey
 func TestEnvironmentFromJSONDecoder(t *testing.T) {
 	if file, err := os.Open(testEnvironmentJSON); err != nil {
@@ -112,36 +111,35 @@ func TestEnvironmentFromJSONDecoder(t *testing.T) {
 	}
 }
 
-//
-// // TestNewNode checks the NewNode Reader chain for Type
-// func TestNewNode(t *testing.T) {
-// 	var v interface{}
-// 	v = testEnvironmentMapStringInterfaceLol
-// 	Convey("NewNode should create a Node", t, func() {
-// 		So(v, ShouldHaveSameTypeAs, &Node{})
-// 	})
-//
-// 	Convey("NewNode should error if decode fails", t, func() {
-//
-// 		failNode, err := NewNode(&Reader{
-// 			"name": struct{}{},
-// 		})
-//
-// 		So(err, ShouldNotBeNil)
-// 		So(failNode, ShouldBeNil)
-// 	})
-// }
-//
-// // TestNodeReadIntoFile tests that Read() can be used to read by io.Readers
-// // BUG(fujin): re-do with goconvey
-// func TestNodeReadIntoFile(t *testing.T) {
-// 	e1 := testEnvironmentMapStringInterfaceLol // (*Node)
-// 	tf, _ := ioutil.TempFile("test", "node-to-file")
-// 	// Copy to tempfile (I use Read() internally)
-// 	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
-// 	io.Copy(tf, e1)
-//
-// 	// Close and remove tempfile
-// 	tf.Close()
-// 	os.Remove(path.Clean(tf.Name()))
-// }
+// TestNewEnvironment checks the NewNode Reader chain for Type
+func TestNewEnvironment(t *testing.T) {
+	var v interface{}
+	v = testEnvironmentMapStringInterfaceLol
+	Convey("NewEnvironment should create a Environment", t, func() {
+		So(v, ShouldHaveSameTypeAs, &Environment{})
+	})
+
+	Convey("NewEnvironment should error if decode fails", t, func() {
+
+		failEnvironment, err := NewEnvironment(&Reader{
+			"name": struct{}{},
+		})
+
+		So(err, ShouldNotBeNil)
+		So(failEnvironment, ShouldBeNil)
+	})
+}
+
+// TestNodeReadIntoFile tests that Read() can be used to read by io.Readers
+// BUG(fujin): re-do with goconvey
+func TestEnvironmentReadIntoFile(t *testing.T) {
+	e1 := testEnvironmentMapStringInterfaceLol // (*Node)
+	tf, _ := ioutil.TempFile("test", "environment-to-file")
+	// Copy to tempfile (I use Read() internally)
+	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
+	io.Copy(tf, e1)
+
+	// Close and remove tempfile
+	tf.Close()
+	os.Remove(path.Clean(tf.Name()))
+}

@@ -48,20 +48,7 @@ func createServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(checkHeader))
 }
 
-// privateKeyFromString parses an RSA private key from a string
-func privateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode(key)
-	if block == nil {
-		return nil, fmt.Errorf("block size invalid for '%s'", string(key))
-	}
-	rsaKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	return rsaKey, nil
-}
-
-// publicKeyFromString parses an RSA private key from a string
+// publicKeyFromString parses an RSA public key from a string
 func publicKeyFromString(key []byte) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
@@ -420,4 +407,42 @@ func TestRequestError(t *testing.T) {
 	if err == nil {
 		t.Error("Successfully signed a request when we shouldn't have")
 	}
+}
+
+func TestNewClient(t *testing.T) {
+	c, err := NewClient("testclient", privateKey)
+	if err != nil {
+		t.Error("Couldn't make a valid client...\n", err)
+	}
+	// simple validation on the created client
+	if c.Auth.clientName != "testclient" {
+		t.Error("unexpected client name: ", c.Auth.clientName)
+	}
+
+	// Bad PEM should be an error
+	c, err = NewClient("blah", "not a key")
+	if err == nil {
+		t.Error("Built a client from a bad key string")
+	}
+}
+
+func TestMakeRequest(t *testing.T) {
+	server := createServer()
+	defer server.Close()
+	c, _ := NewClient("testclient", privateKey)
+
+	resp, err := c.MakeRequest("GET", server.URL, nil)
+	if err != nil {
+		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
+	}
+	if resp.StatusCode != 200 {
+		t.Error("Non 200 return code: ", resp.Status)
+	}
+
+	// This should fail
+	resp, err = c.MakeRequest("whee", "this will break", nil)
+	if err == nil {
+		t.Error("This terrible request thing should fail and it didn't")
+	}
+
 }

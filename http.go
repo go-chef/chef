@@ -112,22 +112,10 @@ func (ac AuthConfig) SignRequest(request *http.Request, cryptoHash crypto.Hash) 
 	request.Header.Set("X-Ops-Content-Hash", calcBodyHash(request, cryptoHash))
 
 	// To validate the signature it seems to be very particular
-	// Would like to use this loop to generate the content
-	// But it causes validation to fail.. so we do it explicitly
-
-	// var content string
-	// for key, value := range request.Header {
-	// 	content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
-	// }
 	var content string
-	content += fmt.Sprintf("%s:%s\n", "Method", request.Header.Get("Method"))
-	content += fmt.Sprintf("%s:%s\n", "Hashed Path", request.Header.Get("Hashed Path"))
-	content += fmt.Sprintf("%s:%s\n", "Accept", request.Header.Get("Accept"))
-	content += fmt.Sprintf("%s:%s\n", "X-Chef-Version", request.Header.Get("X-Chef-Version"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Timestamp", request.Header.Get("X-Ops-Timestamp"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Userid", request.Header.Get("X-Ops-Userid"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Sign", request.Header.Get("X-Ops-Sign"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Content-Hash", request.Header.Get("X-Ops-Content-Hash"))
+	for _, key := range []string{"Method", "Hashed Path", "Accept", "X-Chef-Version", "X-Ops-Timestamp", "X-Ops-Userid", "X-Ops-Sign", "X-Ops-Content-Hash"} {
+		content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
+	}
 
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,

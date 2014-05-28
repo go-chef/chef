@@ -456,13 +456,14 @@ func TestMakeRequest(t *testing.T) {
 		t.Error("Non 200 return code: ", resp.Status)
 	}
 
-	// This should fail
-	resp, err = c.MakeRequest("TOODLES!", "%gh&%ij", nil)
+	// This should fail because we've got an invalid URI
+	resp, err = c.MakeRequest("GET", "%gh&%ij", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
-	resp, err = c.MakeRequest("whee", "", nil)
+	// This should fail because there is no TOODLES! method :D
+	resp, err = c.MakeRequest("TOODLES!", "", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}

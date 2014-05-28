@@ -10,8 +10,6 @@ type Node struct {
 	*nativeNode
 }
 
-type RunList []string
-
 // NativeNode represents the native Go version of the deserialized Node type
 type nativeNode struct {
 	Name        string                 `mapstructure:"name"`

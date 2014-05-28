@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 	"time"
@@ -19,6 +22,49 @@ type AuthConfig struct {
 	privateKey *rsa.PrivateKey
 	clientName string
 	cryptoHash crypto.Hash
+}
+
+// Client is vessel for public methods used against the chef-server
+type Client struct {
+	Auth   *AuthConfig
+	client *http.Client
+}
+
+// NewClient is the client generator used to instantiate a client for talking to a chef-server
+// It is a simple constructor for the Client struct intended as a easy interface for issuing
+// signed requests
+func NewClient(name string, key string) (*Client, error) {
+	pk, err := privateKeyFromString([]byte(key))
+	if err != nil {
+		return nil, err
+	}
+
+	c := &Client{
+		Auth: &AuthConfig{
+			privateKey: pk,
+			clientName: name,
+			cryptoHash: crypto.SHA1,
+		},
+		client: &http.Client{},
+	}
+	return c, nil
+}
+
+// MakeRequest performs a signed request for the chef client
+func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
+	c.Auth.SignRequest(req, c.Auth.cryptoHash)
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // SignRequest modifies headers of an http.Request
@@ -116,4 +162,17 @@ func calcBodyHash(r *http.Request, cryptoHash crypto.Hash) string {
 	// we can safely call out [0]
 	chkHash := base64BlockEncode(generateHash(bodyStr, cryptoHash), 0)
 	return chkHash[0]
+}
+
+// privateKeyFromString parses an RSA private key from a string
+func privateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(key)
+	if block == nil {
+		return nil, fmt.Errorf("block size invalid for '%s'", string(key))
+	}
+	rsaKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return rsaKey, nil
 }

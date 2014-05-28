@@ -30,8 +30,19 @@ var testRequiredHeaders = []string{
 const (
 	userid     = "tester"
 	requestUrl = "http://localhost:80"
+	// Generated from
+	// openssl genrsa -out privkey.pem 2048
+	// perl -pe 's/\n/\\n/g' privkey.pem
 	privateKey = "-----BEGIN RSA PRIVATE KEY-----\nMIICXwIBAAKBgQDAoFRfamHVOqmJkmKyufLqvpPwLGN49a/Ze+RQ3pcwdFdb8sex\nEvr/TYAKEcxs057i8Wuaf5pFt8DFXyYL3iJlFwO30WHmeTv7WsGng2GmlxYKkYMg\nWCt5x3twLahPGzP11KSel7cPy4rzKRvkZP7aLiPIfskJ8kKQ2czCsXYibQIDAQAB\nAoGBALwSzs5qnCMJJ8c+ukcu71LryJ3TeTv9Bjkekgmzi4Kv1Svdm8P0eEUVclJi\nlmobJSMH/LvYotQ3WWxcPlWQCZtgNVWbFfAlsIc39zMOk3lsR9MF5EQIcWZZp3i2\n2h2sR1K/2cx0H+/iU7oeuPtkpGVAihb2iDEd7BK+r7jrfbcBAkEA5kAzqtblhEc4\nUPqrgVOZHiScACT8tHC/r4xUC3VqLmnfcOJKOH1E2XhLjb76IHnLD04yOXvmhS++\n58yzQY0jUQJBANYq+/7PMhJRo8AW/MDI1vOBTToKzcvwcBVZqhY/znqrA3Yg26tu\nM9oqezyc3uIN3HOCQuiZbRRVBZeKmY/r7l0CQQDF1IHQFoXrSpoLkeUL4D0eFgxn\nX2A01O8NsP+BPOf3awYNYpCsyoz+YQphhqY4gwzCYMhsdZVR9/0KAuo9tzuRAkEA\n1JzFoHfHKKJ9osPvVd/MbN8PcLCrD2v5iWiDTyU28VZ20D3cdfqoZUxJHapKJjZG\nhTFrBQjTXhztuTyyKEu7TQJBAIzBLyFcBQdLxor2bH2P2ijU/iAsCxWc5I7VE6zi\n34tYrujX4pAsT+v+06/dMsEtojLIMzffzp11l2zddH66j5g=\n-----END RSA PRIVATE KEY-----"
-	publicKey  = "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAoFRfamHVOqmJkmKyufLqvpPw\nLGN49a/Ze+RQ3pcwdFdb8sexEvr/TYAKEcxs057i8Wuaf5pFt8DFXyYL3iJlFwO3\n0WHmeTv7WsGng2GmlxYKkYMgWCt5x3twLahPGzP11KSel7cPy4rzKRvkZP7aLiPI\nfskJ8kKQ2czCsXYibQIDAQAB\n-----END PUBLIC KEY-----"
+	// Generated from
+	// openssl rsa -in privkey.pem -pubout -out pubkey.pem
+	// perl -pe 's/\n/\\n/g' pubkey.pem
+	publicKey = "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAoFRfamHVOqmJkmKyufLqvpPw\nLGN49a/Ze+RQ3pcwdFdb8sexEvr/TYAKEcxs057i8Wuaf5pFt8DFXyYL3iJlFwO3\n0WHmeTv7WsGng2GmlxYKkYMgWCt5x3twLahPGzP11KSel7cPy4rzKRvkZP7aLiPI\nfskJ8kKQ2czCsXYibQIDAQAB\n-----END PUBLIC KEY-----"
+	// Generated from
+	// openssl dsaparam -out dsaparam.pem 2048
+	// openssl gendsa  -out privkey.pem dsaparam.pem
+	// perl -pe 's/\n/\\n/g' privkey.pem
+	badPrivateKey = "-----BEGIN DSA PRIVATE KEY-----\nMIIDVwIBAAKCAQEAxjWFrCnoPs1TTgA29DsltITlkDSJM7cMSdyoC4Ty2G+9/GgF\nHqnEtNwioNXQEORRShCM7NTB2TurOHNRR7Jlj+FssiGoXAdqAGyH3+5VQJ7B1h/V\nd0GUUOOKi6QQJPSn1Sw/QpGJAIr73A4FFlParzQ63o0kjeR1i2y37VVkfSXSbX/K\nFJ7I7M+DlBFwjx3wA7CYT6Kh5nGavU8xH296tO3HYqm/6vJw1uJJIQ92MKkND0su\niND3pgCBOMBVopD+cgUmq1g0NvhmzWbmy0J9m75Ko7Jgfhv4fRAThg8NDfQ3dgJ8\nE6BDTwwDtT2lvI0AVeN6L2pHFhiwZQZCTT2TSQIhAPkiWU5wt2zl/OdroEEvJLxX\n8GcEWt5ZpTKNIjmtfjkVAoIBAQCKKDw100UvH12/aGBvMc0CFgEJe7jgrAWVdz71\ndajp6wK+tVtaRWKe2SBTuMV98TH9Bm5b+YsEt/shFVaVPOrV4heVktfYg0Wtpbjl\nEz3ahAaKyTMc12t7YJuFbm2jLNSqZSVR039yVYmDAZ/QgAPu8EAVzBqXrr+7/9rW\nDAzB9Q1/TxjKKwhbDa/iCjXnac4jscYihSyRHTcQK3zRLm+jLO5H2O9ue5LEtE7j\nf9uDCg+p4gGDlCbbELdsPniQ1CaD0uL5/CDB+tDFuVdzNwzIijzX5DO+zlLN4d1U\nHDzKrgBNa1kYkgwxOaMZ2p2Wm8+aA6Gc/89RqNOOgcszA3njAoIBAQDBPixXu+BV\n4QqRN+uJj0afEvqVDAEiDA0b9reNw5fH+c9ruPtxutNiVyrnig7Fa+tjqc5jhw/S\nOEndlPE/aFdJJy4tlNLqKbxCqHuvSBJlg9t2HCd61gudXz8ka+OQHgylFlFRkFVn\nFLGYlFrsdufJDUh4ECpdxdBrCo2r6dr89bFTQFJCb+Rhq85sSlAOYqk25GDD+0bq\nPSpPwiVTAESMI5XNCzKHW4KH8uK3KXe3/71x8k4sngjYhUIVyZW5Q6ktqvTXGhSA\nf5C0PrWE7Jpgla376Xrq0n1sn1QfJY3RHYwieBGOgZ/rzl9+XnWGQ7kRuFr0P9EF\nxuIozl9/jP86AiBt8YyodfEGTSHNVYrtKd6EeVWaohG7ZdkbykhBs8wnlg==\n-----END DSA PRIVATE KEY-----"
 )
 
 // Gave up trying to implement this myself
@@ -424,12 +435,18 @@ func TestNewClient(t *testing.T) {
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
+
+	// Not a proper key should be an error
+	c, err = NewClient("blah", badPrivateKey)
+	if err == nil {
+		t.Error("Built a client from a bad key string")
+	}
 }
 
 func TestMakeRequest(t *testing.T) {
 	server := createServer()
-	defer server.Close()
 	c, _ := NewClient("testclient", privateKey)
+	defer server.Close()
 
 	resp, err := c.MakeRequest("GET", server.URL, nil)
 	if err != nil {
@@ -440,9 +457,13 @@ func TestMakeRequest(t *testing.T) {
 	}
 
 	// This should fail
-	resp, err = c.MakeRequest("whee", "this will break", nil)
+	resp, err = c.MakeRequest("TOODLES!", "%gh&%ij", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
+	resp, err = c.MakeRequest("whee", "", nil)
+	if err == nil {
+		t.Error("This terrible request thing should fail and it didn't")
+	}
 }

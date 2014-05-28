@@ -59,27 +59,6 @@ func TestRoleName(t *testing.T) {
 	})
 }
 
-func TestRoleRunList(t *testing.T) {
-	n := testRoleMapStringInterfaceLol
-	rl := n.RunList
-
-	Convey("Role.RunList() should be a RunList", t, func() {
-		So(rl, ShouldHaveSameTypeAs, RunList{})
-	})
-
-	Convey("Role.RunList() should be populated", t, func() {
-		So(rl, ShouldContain, "recipe[foo]")
-		So(rl, ShouldContain, "recipe[baz]")
-		So(rl, ShouldContain, "role[banana]")
-	})
-
-	rl = RunList{}
-	Convey("Empty RunList should be valid", t, func() {
-		So(rl, ShouldBeEmpty)
-	})
-
-}
-
 func TestRoleAttribute(t *testing.T) {
 	n := testRoleMapStringInterfaceLol
 	attr := n.Default

@@ -59,27 +59,6 @@ func TestNodeName(t *testing.T) {
 	})
 }
 
-func TestNodeRunList(t *testing.T) {
-	n := testNodeMapStringInterfaceLol
-	rl := n.RunList
-
-	Convey("Node.RunList() should be a RunList", t, func() {
-		So(rl, ShouldHaveSameTypeAs, RunList{})
-	})
-
-	Convey("Node.RunList() should be populated", t, func() {
-		So(rl, ShouldContain, "recipe[foo]")
-		So(rl, ShouldContain, "recipe[baz]")
-		So(rl, ShouldContain, "role[banana]")
-	})
-
-	rl = RunList{}
-	Convey("Empty RunList should be valid", t, func() {
-		So(rl, ShouldBeEmpty)
-	})
-
-}
-
 func TestNodeAttribute(t *testing.T) {
 	n := testNodeMapStringInterfaceLol
 	attr := n.Normal

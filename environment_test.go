@@ -91,7 +91,7 @@ func TestEnvironmentAttribute(t *testing.T) {
 	attr := n.Default
 	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
 	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-	Convey("Node.Default should map", t, func() {
+	Convey("Environment.Default should map", t, func() {
 		So(ugh, ShouldEqual, "no")
 	})
 }
@@ -111,7 +111,7 @@ func TestEnvironmentFromJSONDecoder(t *testing.T) {
 	}
 }
 
-// TestNewEnvironment checks the NewNode Reader chain for Type
+// TestNewEnvironment checks the NewEnvironment Reader chain for Type
 func TestNewEnvironment(t *testing.T) {
 	var v interface{}
 	v = testEnvironmentMapStringInterfaceLol
@@ -130,10 +130,10 @@ func TestNewEnvironment(t *testing.T) {
 	})
 }
 
-// TestNodeReadIntoFile tests that Read() can be used to read by io.Readers
+// TestEnvironmentReadIntoFile tests that Read() can be used to read by io.Readers
 // BUG(fujin): re-do with goconvey
 func TestEnvironmentReadIntoFile(t *testing.T) {
-	e1 := testEnvironmentMapStringInterfaceLol // (*Node)
+	e1 := testEnvironmentMapStringInterfaceLol // (*Environment)
 	tf, _ := ioutil.TempFile("test", "environment-to-file")
 	// Copy to tempfile (I use Read() internally)
 	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.

@@ -12,14 +12,14 @@ import (
 )
 
 var (
-	testNodeJSON = "test/node.json"
+	testRoleJSON = "test/role.json"
 	// FML
-	testNodeMapStringInterfaceLol, _ = NewNode(&Reader{
+	testRoleMapStringInterfaceLol, _ = NewRole(&Reader{
 		"name":       "test",
 		"run_list":   []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
-		"chef_type":  "node",
-		"json_class": "Chef::Node",
-		"normal": map[string]interface{}{
+		"chef_type":  "role",
+		"json_class": "Chef::Role",
+		"default_attributes": map[string]interface{}{
 			"tags": map[string]interface{}{},
 			"openssh": map[string]interface{}{
 				"server": map[string]string{
@@ -28,7 +28,7 @@ var (
 				},
 			},
 		},
-		"override": map[string]interface{}{
+		"override_attributes": map[string]interface{}{
 			"openssh": map[string]interface{}{
 				"server": map[string]string{
 					"permit_root_login": "yes",
@@ -39,43 +39,43 @@ var (
 	})
 )
 
-func TestNodeName(t *testing.T) {
+func TestRoleName(t *testing.T) {
 	// BUG(spheromak): Pull these constructors out into a Convey Decorator
-	n1 := testNodeMapStringInterfaceLol // (*Node)
+	n1 := testRoleMapStringInterfaceLol // (*Role)
 	name := n1.Name
 
-	Convey("Node name is 'test'", t, func() {
+	Convey("Role name is 'test'", t, func() {
 		So(name, ShouldEqual, "test")
 	})
 
-	swordWithoutASheathe, err := NewNode(&Reader{
+	swordWithoutASheathe, err := NewRole(&Reader{
 		"foobar": "baz",
 	})
 
 	name = swordWithoutASheathe.Name
-	Convey("Node without a name", t, func() {
+	Convey("Role without a name", t, func() {
 		So(name, ShouldBeEmpty)
 		So(err, ShouldBeNil)
 	})
 }
 
-func TestNodeAttribute(t *testing.T) {
-	n := testNodeMapStringInterfaceLol
-	attr := n.Normal
+func TestRoleAttribute(t *testing.T) {
+	n := testRoleMapStringInterfaceLol
+	attr := n.Default
 	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
 	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-	Convey("Node.Normal should map", t, func() {
+	Convey("Role.Default should map", t, func() {
 		So(ugh, ShouldEqual, "no")
 	})
 }
 
 // BUG(fujin): re-do with goconvey
-func TestNodeFromJSONDecoder(t *testing.T) {
-	if file, err := os.Open(testNodeJSON); err != nil {
-		t.Error("unexpected error", err, "during os.Open on", testNodeJSON)
+func TestRoleFromJSONDecoder(t *testing.T) {
+	if file, err := os.Open(testRoleJSON); err != nil {
+		t.Error("unexpected error", err, "during os.Open on", testRoleJSON)
 	} else {
 		dec := json.NewDecoder(file)
-		var n Node
+		var n Role
 		if err := dec.Decode(&n); err == io.EOF {
 			log.Println(n)
 		} else if err != nil {
@@ -84,30 +84,30 @@ func TestNodeFromJSONDecoder(t *testing.T) {
 	}
 }
 
-// TestNewNode checks the NewNode Reader chain for Type
-func TestNewNode(t *testing.T) {
+// TestNewRole checks the NewRole Reader chain for Type
+func TestNewRole(t *testing.T) {
 	var v interface{}
-	v = testNodeMapStringInterfaceLol
-	Convey("NewNode should create a Node", t, func() {
-		So(v, ShouldHaveSameTypeAs, &Node{})
+	v = testRoleMapStringInterfaceLol
+	Convey("NewRole should create a Role", t, func() {
+		So(v, ShouldHaveSameTypeAs, &Role{})
 	})
 
-	Convey("NewNode should error if decode fails", t, func() {
+	Convey("NewRole should error if decode fails", t, func() {
 
-		failNode, err := NewNode(&Reader{
+		failRole, err := NewRole(&Reader{
 			"name": struct{}{},
 		})
 
 		So(err, ShouldNotBeNil)
-		So(failNode, ShouldBeNil)
+		So(failRole, ShouldBeNil)
 	})
 }
 
-// TestNodeReadIntoFile tests that Read() can be used to read by io.Readers
+// TestRoleReadIntoFile tests that Read() can be used to read by io.Readers
 // BUG(fujin): re-do with goconvey
-func TestNodeReadIntoFile(t *testing.T) {
-	n1 := testNodeMapStringInterfaceLol // (*Node)
-	tf, _ := ioutil.TempFile("test", "node-to-file")
+func TestRoleReadIntoFile(t *testing.T) {
+	n1 := testRoleMapStringInterfaceLol // (*Role)
+	tf, _ := ioutil.TempFile("test", "role-to-file")
 	// Copy to tempfile (I use Read() internally)
 	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
 	io.Copy(tf, n1)

@@ -35,8 +35,14 @@ var (
 			},
 		},
 		"cookbook_versions": map[string]interface{}{
-			"openssh": "= 11.0.0",
-			"couchdb": "~> 1.2.0",
+			"openssh": map[string]interface{}{
+				"name":    "openssh",
+				"version": "= 1.0.0",
+			},
+			"couchdb": map[string]interface{}{
+				"name":    "couchdb",
+				"version": "~> 1.2.0",
+			},
 		},
 	})
 )
@@ -62,26 +68,9 @@ func TestEnvironmentName(t *testing.T) {
 }
 
 func TestEnvironmentCookbookVersions(t *testing.T) {
-	e := testEnvironmentMapStringInterfaceLol
-	cv := e.CookbookVersion
-
-	// Need to generate an array of all the map keys ( cookbooks )
-	var cookbook_list []string
-	for key, _ := range cv {
-		cookbook_list = append(cookbook_list, key)
-	}
-	Convey("Environment.Cookbook() should be a Cookbook", t, func() {
-		So(cv, ShouldHaveSameTypeAs, Cookbook{})
-	})
-
-	Convey("Environment.Cookbook() should be populated", t, func() {
-		So(cookbook_list, ShouldContain, "openssh")
-		So(cookbook_list, ShouldContain, "couchdb")
-	})
-
-	cv = Cookbook{}
-	Convey("Empty CookbookVersion should be valid", t, func() {
-		So(cv, ShouldBeEmpty)
+	envCooks := testEnvironmentMapStringInterfaceLol
+	Convey("CookbookVersion should have cooks", t, func() {
+		So(envCooks.CookbookVersions["openssh"], ShouldHaveSameTypeAs, nativeCookbook{})
 	})
 
 }
@@ -131,14 +120,13 @@ func TestNewEnvironment(t *testing.T) {
 }
 
 // TestEnvironmentReadIntoFile tests that Read() can be used to read by io.Readers
-// BUG(fujin): re-do with goconvey
 func TestEnvironmentReadIntoFile(t *testing.T) {
 	e1 := testEnvironmentMapStringInterfaceLol // (*Environment)
 	tf, _ := ioutil.TempFile("test", "environment-to-file")
-	// Copy to tempfile (I use Read() internally)
-	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
-	io.Copy(tf, e1)
-
+	Convey("Environment To File", t, func() {
+		_, err := io.Copy(tf, e1)
+		So(err, ShouldBeNil)
+	})
 	// Close and remove tempfile
 	tf.Close()
 	os.Remove(path.Clean(tf.Name()))

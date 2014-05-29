@@ -5,13 +5,13 @@ import (
 )
 
 // Cookbook is the chef-cookbook container
-type CookBook struct {
+type Cookbook struct {
 	*Reader
-	*nativeCookBook
+	*nativeCookbook
 }
 
 // Each Cookbook lists it's files as a cookbookItem. This structure captures those and makes it easier to work with cook data
-type CookBookItem struct {
+type CookbookItem struct {
 	Url         string `mapstructure:"url"`
 	Path        string `mapstructure:"path"`
 	Name        string `mapstructure:"name"`
@@ -19,8 +19,8 @@ type CookBookItem struct {
 	Specificity string `mapstructure:"specificity"`
 }
 
-// CookBookMeta represents a Golang version of cookbook metadata
-type CookBookMeta struct {
+// CookbookMeta represents a Golang version of cookbook metadata
+type CookbookMeta struct {
 	Name            string                 `mapstructure:"cookbook_name"`
 	Version         string                 `mapstructure:"version"`
 	Description     string                 `mapstructure:"description"`
@@ -41,29 +41,29 @@ type CookBookMeta struct {
 }
 
 // NativeNode represents the native Go version of the deserialized cookbook
-type nativeCookBook struct {
+type nativeCookbook struct {
 	Name         string         `mapstructure:"name"`
 	Version      string         `mapstructure:"version"`
 	ChefType     string         `mapstructure:"chef_type"`
 	Frozen       bool           `mapstructure:"frozen?"`
 	JsonClass    string         `mapstructure:"json_class"`
 	CookbookName string         `mapstructure:"cookbook_name"` // yes the json can have this :\
-	Files        []CookBookItem `mapstructure:"files"`
-	Templates    []CookBookItem `mapstructure:"Templates"`
-	Attributes   []CookBookItem `mapstructure:"attributes"`
-	Recipes      []CookBookItem `mapstructure:"recipes"`
-	Definitions  []CookBookItem `mapstructure:"definitions"`
-	Libraries    []CookBookItem `mapstructure:"libraries"`
-	Providers    []CookBookItem `mapstructure:"Providers"`
-	Resources    []CookBookItem `mapstructure:"Resources"`
-	RootFiles    []CookBookItem `mapstructure:"Templates"`
-	Metadata     CookBookMeta   `mapstructure:"Metadata"`
+	Files        []CookbookItem `mapstructure:"files"`
+	Templates    []CookbookItem `mapstructure:"Templates"`
+	Attributes   []CookbookItem `mapstructure:"attributes"`
+	Recipes      []CookbookItem `mapstructure:"recipes"`
+	Definitions  []CookbookItem `mapstructure:"definitions"`
+	Libraries    []CookbookItem `mapstructure:"libraries"`
+	Providers    []CookbookItem `mapstructure:"Providers"`
+	Resources    []CookbookItem `mapstructure:"Resources"`
+	RootFiles    []CookbookItem `mapstructure:"Templates"`
+	Metadata     CookbookMeta   `mapstructure:"Metadata"`
 }
 
-// NewCookBook is used to create a cookbook from a Reader
-func NewCookBook(reader *Reader) (*CookBook, error) {
-	cook := CookBook{reader, &nativeCookBook{}}
-	if err := mapstructure.Decode(reader, cook.nativeCookBook); err != nil {
+// NewCookbook is used to create a cookbook from a Reader
+func NewCookbook(reader *Reader) (*Cookbook, error) {
+	cook := Cookbook{reader, &nativeCookbook{}}
+	if err := mapstructure.Decode(reader, cook.nativeCookbook); err != nil {
 		return nil, err
 	}
 	return &cook, nil

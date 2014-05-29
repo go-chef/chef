@@ -10,16 +10,13 @@ type Environment struct {
 	*nativeEnvironment
 }
 
-type Cookbook map[string]interface{}
-
 // NativeEnvironment represents the native Go version of the deserialized Environment type
 type nativeEnvironment struct {
-	Name            string                 `mapstructure:"name"`
-	Environment     string                 `mapstructure:"chef_environment"`
-	Default         map[string]interface{} `mapstructure:"default_attributes"`
-	Override        map[string]interface{} `mapstructure:"override_attributes"`
-	Cookbook        Cookbook               `mapstructure:"cookbook"`
-	CookbookVersion Cookbook               `mapstructure:"cookbook_versions"`
+	Name             string                    `mapstructure:"name"`
+	Environment      string                    `mapstructure:"chef_environment"`
+	Default          map[string]interface{}    `mapstructure:"default_attributes"`
+	Override         map[string]interface{}    `mapstructure:"override_attributes"`
+	CookbookVersions map[string]nativeCookbook `mapstructure:"cookbook_versions"`
 }
 
 // NewEnvironment wraps a Environment around a pointer to a Reader

@@ -2,15 +2,14 @@ package chef
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -21,7 +20,6 @@ const ChefVersion = "11.12.0"
 type AuthConfig struct {
 	privateKey *rsa.PrivateKey
 	clientName string
-	cryptoHash crypto.Hash
 }
 
 // Client is vessel for public methods used against the chef-server
@@ -43,7 +41,6 @@ func NewClient(name string, key string) (*Client, error) {
 		Auth: &AuthConfig{
 			privateKey: pk,
 			clientName: name,
-			cryptoHash: crypto.SHA1,
 		},
 		client: &http.Client{},
 	}
@@ -57,7 +54,7 @@ func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.R
 		return nil, err
 	}
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
-	c.Auth.SignRequest(req, c.Auth.cryptoHash)
+	c.Auth.SignRequest(req)
 
 	res, err := c.client.Do(req)
 	if err != nil {
@@ -68,7 +65,7 @@ func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.R
 }
 
 // SignRequest modifies headers of an http.Request
-func (ac AuthConfig) SignRequest(request *http.Request, cryptoHash crypto.Hash) error {
+func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// sanitize the path for the chef-server
 	// chef-server doesn't support '//' in the Hash Path.
 	var endpoint string
@@ -80,47 +77,25 @@ func (ac AuthConfig) SignRequest(request *http.Request, cryptoHash crypto.Hash) 
 	}
 
 	request.Header.Set("Method", request.Method)
-	// Since we're not setting the encoded slice limit
-	// we can safely call out [0]
-	generatedHash := generateHash(endpoint, cryptoHash)
-	if generatedHash == nil {
-		return errors.New("Unsupported crypto hashing algorithm")
-	}
-	request.Header.Set("Hashed Path", base64BlockEncode(generatedHash, 0)[0])
+	request.Header.Set("Hashed Path", hashStr(endpoint))
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("X-Chef-Version", ChefVersion)
 	request.Header.Set("X-Ops-Timestamp", time.Now().UTC().Format(time.RFC3339))
-	request.Header.Set("X-Ops-Userid", ac.clientName)
-
-	var xOpsSignCrypto string
-	switch cryptoHash {
-	case crypto.MD5:
-		xOpsSignCrypto = "algorithm=md5;"
-	case crypto.SHA1:
-		xOpsSignCrypto = "algorithm=sha1;"
-	case crypto.SHA224:
-		xOpsSignCrypto = "algorithm=sha224;"
-	case crypto.SHA256:
-		xOpsSignCrypto = "algorithm=sha256;"
-	case crypto.SHA384:
-		xOpsSignCrypto = "algorithm=sha384;"
-	case crypto.SHA512:
-		xOpsSignCrypto = "algorithm=sha512;"
-	}
-
-	request.Header.Set("X-Ops-Sign", xOpsSignCrypto+"version=1.0")
-	request.Header.Set("X-Ops-Content-Hash", calcBodyHash(request, cryptoHash))
+	request.Header.Set("X-Ops-UserId", ac.clientName)
+	request.Header.Set("X-Ops-Sign", "algorithm=sha1;version=1.0")
+	request.Header.Set("X-Ops-Content-Hash", calcBodyHash(request))
 
 	// To validate the signature it seems to be very particular
 	var content string
-	for _, key := range []string{"Method", "Hashed Path", "Accept", "X-Chef-Version", "X-Ops-Timestamp", "X-Ops-Userid", "X-Ops-Sign", "X-Ops-Content-Hash"} {
+	for _, key := range []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"} {
 		content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
 	}
+	content = strings.TrimSuffix(content, "\n")
 
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
-	signature, _ := generateSignature(ac.privateKey, content, cryptoHash)
+	signature, _ := generateSignature(ac.privateKey, content)
 
 	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks
@@ -135,7 +110,7 @@ func (ac AuthConfig) SignRequest(request *http.Request, cryptoHash crypto.Hash) 
 }
 
 // modified from goiardi calcBodyHash
-func calcBodyHash(r *http.Request, cryptoHash crypto.Hash) string {
+func calcBodyHash(r *http.Request) string {
 	var bodyStr string
 
 	if r.Body == nil {
@@ -148,8 +123,8 @@ func calcBodyHash(r *http.Request, cryptoHash crypto.Hash) string {
 
 	// Since we're not setting the encoded slice limit
 	// we can safely call out [0]
-	chkHash := base64BlockEncode(generateHash(bodyStr, cryptoHash), 0)
-	return chkHash[0]
+	chkHash := hashStr(bodyStr)
+	return chkHash
 }
 
 // privateKeyFromString parses an RSA private key from a string

@@ -1,29 +1,18 @@
 package chef
 
 import (
-	"crypto"
-	// Need to include md5 to allow new()
-	// on md5
-	_ "crypto/md5"
-	"crypto/rand"
 	"crypto/rsa"
-	// Need to include sha1 to allow new()
-	// on sha1
-	_ "crypto/sha1"
-	// Need to include sha256 to allow new()
-	// on sha224 and sha256
-	_ "crypto/sha256"
-	// Need to include sha512 to allow new()
-	// On sha384 and sha512
-	_ "crypto/sha512"
+	"crypto/sha1"
 	"encoding/base64"
-	"hash"
+	"errors"
+	"io"
+	"math/big"
 )
 
 // Don't export me bro
-// generateSignature will generate a signature ( sign ) the given data with the specified crypto.Hash
-func generateSignature(priv *rsa.PrivateKey, data string, hash crypto.Hash) (enc []byte, err error) {
-	sig, err := rsa.SignPKCS1v15(rand.Reader, priv, hash, generateHash(data, hash))
+// generateSignature will generate a signature ( sign ) the given data
+func generateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
+	sig, err := privateEncrypt(priv, []byte(data))
 	if err != nil {
 		return nil, err
 	}
@@ -31,30 +20,73 @@ func generateSignature(priv *rsa.PrivateKey, data string, hash crypto.Hash) (enc
 	return sig, nil
 }
 
-// generateHash will generate a hash of the specified crypto.Hash of a given string
-// and return a []byte
-func generateHash(toHash string, hasher crypto.Hash) []byte {
-	var hashfunc hash.Hash
+// privateEncrypt implements OpenSSL's RSA_private_encrypt function
+func privateEncrypt(key *rsa.PrivateKey, data []byte) (enc []byte, err error) {
+	k := (key.N.BitLen() + 7) / 8
+	tLen := len(data)
 
-	switch hasher {
-	case crypto.MD5:
-		hashfunc = crypto.MD5.New()
-	case crypto.SHA1:
-		hashfunc = crypto.SHA1.New()
-	case crypto.SHA224:
-		hashfunc = crypto.SHA224.New()
-	case crypto.SHA256:
-		hashfunc = crypto.SHA256.New()
-	case crypto.SHA384:
-		hashfunc = crypto.SHA384.New()
-	case crypto.SHA512:
-		hashfunc = crypto.SHA512.New()
-	default:
-		return nil
+	// rfc2313, section 8:
+	// The length of the data D shall not be more than k-11 octets
+	if tLen > k-11 {
+		err = errors.New("Data too long")
+		return
+	}
+	em := make([]byte, k)
+	em[1] = 1
+	for i := 2; i < k-tLen-1; i++ {
+		em[i] = 0xff
+	}
+	copy(em[k-tLen:k], data)
+	c := new(big.Int).SetBytes(em)
+	if c.Cmp(key.N) > 0 {
+		err = nil
+		return
+	}
+	var m *big.Int
+	var ir *big.Int
+	if key.Precomputed.Dp == nil {
+		m = new(big.Int).Exp(c, key.D, key.N)
+	} else {
+		// We have the precalculated values needed for the CRT.
+		m = new(big.Int).Exp(c, key.Precomputed.Dp, key.Primes[0])
+		m2 := new(big.Int).Exp(c, key.Precomputed.Dq, key.Primes[1])
+		m.Sub(m, m2)
+		if m.Sign() < 0 {
+			m.Add(m, key.Primes[0])
+		}
+		m.Mul(m, key.Precomputed.Qinv)
+		m.Mod(m, key.Primes[0])
+		m.Mul(m, key.Primes[1])
+		m.Add(m, m2)
+
+		for i, values := range key.Precomputed.CRTValues {
+			prime := key.Primes[2+i]
+			m2.Exp(c, values.Exp, prime)
+			m2.Sub(m2, m)
+			m2.Mul(m2, values.Coeff)
+			m2.Mod(m2, prime)
+			if m2.Sign() < 0 {
+				m2.Add(m2, prime)
+			}
+			m2.Mul(m2, values.R)
+			m.Add(m, m2)
+		}
 	}
 
-	hashfunc.Write([]byte(toHash))
-	return hashfunc.Sum(nil)
+	if ir != nil {
+		// Unblind.
+		m.Mul(m, ir)
+		m.Mod(m, key.N)
+	}
+	enc = m.Bytes()
+	return
+}
+
+func hashStr(toHash string) string {
+	h := sha1.New()
+	io.WriteString(h, toHash)
+	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return hashed
 }
 
 // base64BlockEncode takes a byte slice and breaks it up into a

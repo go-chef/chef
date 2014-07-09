@@ -120,14 +120,3 @@ func base64BlockEncode(content []byte, limit int) []string {
 
 	return resultSlice
 }
-
-func publicDecrypt(pubKey *rsa.PublicKey, data []byte) ([]byte, error) {
-	c := new(big.Int)
-	m := new(big.Int)
-	m.SetBytes(data)
-	e := big.NewInt(int64(pubKey.E))
-	c.Exp(m, e, pubKey.N)
-	out := c.Bytes()
-
-	return out, nil
-}

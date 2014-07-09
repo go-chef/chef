@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	. "github.com/ctdk/goiardi/chefcrypto"
 	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"net/http"
@@ -276,19 +276,9 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(rw, sherr.Error())
 	}
 
-	// signedHeaders are base64 encoded still, we'll need to
-	// Decode them
-	_, err := base64.StdEncoding.DecodeString(signedHeaders)
+	_, err := HeaderDecrypt(publicKey, signedHeaders)
 	if err != nil {
-		fmt.Fprintf(rw, "Unable to decode signed headers "+err.Error())
-	}
-
-	headToCheck := assembleHeaderToCheck(req)
-	pubKey, err := publicKeyFromString([]byte(publicKey))
-
-	_, err = publicDecrypt(pubKey, []byte(headToCheck))
-	if err != nil {
-		fmt.Fprintf(rw, "Unable to publicDecrypt headers")
+		fmt.Fprintf(rw, "unexpected header decryption error '%s'", err)
 	}
 }
 

@@ -475,7 +475,8 @@ func TestRequestError(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	c, err := NewClient("testclient", privateKey)
+	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
+	c, err := NewClient(cfg)
 	if err != nil {
 		t.Error("Couldn't make a valid client...\n", err)
 	}
@@ -485,13 +486,15 @@ func TestNewClient(t *testing.T) {
 	}
 
 	// Bad PEM should be an error
-	c, err = NewClient("blah", "not a key")
+	cfg = &Config{Name: "blah", Key: "not a key", SkipSSL: false}
+	c, err = NewClient(cfg)
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
 
 	// Not a proper key should be an error
-	c, err = NewClient("blah", badPrivateKey)
+	cfg = &Config{Name: "blah", Key: badPrivateKey, SkipSSL: false}
+	c, err = NewClient(cfg)
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
@@ -499,7 +502,8 @@ func TestNewClient(t *testing.T) {
 
 func TestMakeRequest(t *testing.T) {
 	server := createServer()
-	c, _ := NewClient("testclient", privateKey)
+	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
+	c, _ := NewClient(cfg)
 	defer server.Close()
 
 	resp, err := c.MakeRequest("GET", server.URL, nil)

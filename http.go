@@ -3,6 +3,7 @@ package chef
 import (
 	"bytes"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -28,21 +29,32 @@ type Client struct {
 	client *http.Client
 }
 
+// Config contains the configuration options for a chef client
+type Config struct {
+	Name    string
+	Key     string
+	SkipSSL bool
+}
+
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
-func NewClient(name string, key string) (*Client, error) {
-	pk, err := privateKeyFromString([]byte(key))
+func NewClient(cfg *Config) (*Client, error) {
+	pk, err := privateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.SkipSSL},
 	}
 
 	c := &Client{
 		Auth: &AuthConfig{
 			privateKey: pk,
-			clientName: name,
+			clientName: cfg.Name,
 		},
-		client: &http.Client{},
+		client: &http.Client{Transport: tr},
 	}
 	return c, nil
 }

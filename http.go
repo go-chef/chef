@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path"
 	"strings"
@@ -91,11 +92,14 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
 	}
 	content = strings.TrimSuffix(content, "\n")
-
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
-	signature, _ := generateSignature(ac.privateKey, content)
+	signature, err := generateSignature(ac.privateKey, content)
+	if err != nil {
+		log.Println("unexpected signature generation error:", err)
+		return err
+	}
 
 	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks

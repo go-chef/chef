@@ -2,13 +2,13 @@ package chef
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -28,20 +28,79 @@ var testRequiredHeaders = []string{
 
 const (
 	userid     = "tester"
-	requestUrl = "http://localhost:80"
+	requestURL = "http://localhost:80"
 	// Generated from
 	// openssl genrsa -out privkey.pem 2048
 	// perl -pe 's/\n/\\n/g' privkey.pem
-	privateKey = "-----BEGIN RSA PRIVATE KEY-----\nMIICXwIBAAKBgQDAoFRfamHVOqmJkmKyufLqvpPwLGN49a/Ze+RQ3pcwdFdb8sex\nEvr/TYAKEcxs057i8Wuaf5pFt8DFXyYL3iJlFwO30WHmeTv7WsGng2GmlxYKkYMg\nWCt5x3twLahPGzP11KSel7cPy4rzKRvkZP7aLiPIfskJ8kKQ2czCsXYibQIDAQAB\nAoGBALwSzs5qnCMJJ8c+ukcu71LryJ3TeTv9Bjkekgmzi4Kv1Svdm8P0eEUVclJi\nlmobJSMH/LvYotQ3WWxcPlWQCZtgNVWbFfAlsIc39zMOk3lsR9MF5EQIcWZZp3i2\n2h2sR1K/2cx0H+/iU7oeuPtkpGVAihb2iDEd7BK+r7jrfbcBAkEA5kAzqtblhEc4\nUPqrgVOZHiScACT8tHC/r4xUC3VqLmnfcOJKOH1E2XhLjb76IHnLD04yOXvmhS++\n58yzQY0jUQJBANYq+/7PMhJRo8AW/MDI1vOBTToKzcvwcBVZqhY/znqrA3Yg26tu\nM9oqezyc3uIN3HOCQuiZbRRVBZeKmY/r7l0CQQDF1IHQFoXrSpoLkeUL4D0eFgxn\nX2A01O8NsP+BPOf3awYNYpCsyoz+YQphhqY4gwzCYMhsdZVR9/0KAuo9tzuRAkEA\n1JzFoHfHKKJ9osPvVd/MbN8PcLCrD2v5iWiDTyU28VZ20D3cdfqoZUxJHapKJjZG\nhTFrBQjTXhztuTyyKEu7TQJBAIzBLyFcBQdLxor2bH2P2ijU/iAsCxWc5I7VE6zi\n34tYrujX4pAsT+v+06/dMsEtojLIMzffzp11l2zddH66j5g=\n-----END RSA PRIVATE KEY-----"
+	privateKey = `
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAx12nDxxOwSPHRSJEDz67a0folBqElzlu2oGMiUTS+dqtj3FU
+h5lJc1MjcprRVxcDVwhsSSo9948XEkk39IdblUCLohucqNMzOnIcdZn8zblN7Cnp
+W03UwRM0iWX1HuwHnGvm6PKeqKGqplyIXYO0qlDWCzC+VaxFTwOUk31MfOHJQn4y
+fTrfuE7h3FTElLBu065SFp3dPICIEmWCl9DadnxbnZ8ASxYQ9xG7hmZduDgjNW5l
+3x6/EFkpym+//D6AbWDcVJ1ovCsJL3CfH/NZC3ekeJ/aEeLxP/vaCSH1VYC5VsYK
+5Qg7SIa6Nth3+RZz1hYOoBJulEzwljznwoZYRQIDAQABAoIBADPQol+qAsnty5er
+PTcdHcbXLJp5feZz1dzSeL0gdxja/erfEJIhg9aGUBs0I55X69VN6h7l7K8PsHZf
+MzzJhUL4QJJETOYP5iuVhtIF0I+DTr5Hck/5nYcEv83KAvgjbiL4ZE486IF5awnL
+2OE9HtJ5KfhEleNcX7MWgiIHGb8G1jCqu/tH0GI8Z4cNgUrXMbczGwfbN/5Wc0zo
+Dtpe0Tec/Fd0DLFwRiAuheakPjlVWb7AGMDX4TyzCXfMpS1ul2jk6nGFk77uQozF
+PQUawCRp+mVS4qecgq/WqfTZZbBlW2L18/kpafvsxG8kJ7OREtrb0SloZNFHEc2Q
+70GbgKECgYEA6c/eOrI3Uour1gKezEBFmFKFH6YS/NZNpcSG5PcoqF6AVJwXg574
+Qy6RatC47e92be2TT1Oyplntj4vkZ3REv81yfz/tuXmtG0AylH7REbxubxAgYmUT
+18wUAL4s3TST2AlK4R29KwBadwUAJeOLNW+Rc4xht1galsqQRb4pUzkCgYEA2kj2
+vUhKAB7QFCPST45/5q+AATut8WeHnI+t1UaiZoK41Jre8TwlYqUgcJ16Q0H6KIbJ
+jlEZAu0IsJxjQxkD4oJgv8n5PFXdc14HcSQ512FmgCGNwtDY/AT7SQP3kOj0Rydg
+N02uuRb/55NJ07Bh+yTQNGA+M5SSnUyaRPIAMW0CgYBgVU7grDDzB60C/g1jZk/G
+VKmYwposJjfTxsc1a0gLJvSE59MgXc04EOXFNr4a+oC3Bh2dn4SJ2Z9xd1fh8Bur
+UwCLwVE3DBTwl2C/ogiN4C83/1L4d2DXlrPfInvloBYR+rIpUlFweDLNuve2pKvk
+llU9YGeaXOiHnGoY8iKgsQKBgQDZKMOHtZYhHoZlsul0ylCGAEz5bRT0V8n7QJlw
+12+TSjN1F4n6Npr+00Y9ov1SUh38GXQFiLq4RXZitYKu6wEJZCm6Q8YXd1jzgDUp
+IyAEHNsrV7Y/fSSRPKd9kVvGp2r2Kr825aqQasg16zsERbKEdrBHmwPmrsVZhi7n
+rlXw1QKBgQDBOyUJKQOgDE2u9EHybhCIbfowyIE22qn9a3WjQgfxFJ+aAL9Bg124
+fJIEzz43fJ91fe5lTOgyMF5TtU5ClAOPGtlWnXU0e5j3L4LjbcqzEbeyxvP3sn1z
+dYkX7NdNQ5E6tcJZuJCGq0HxIAQeKPf3x9DRKzMnLply6BEzyuAC4g==
+-----END RSA PRIVATE KEY-----
+`
 	// Generated from
 	// openssl rsa -in privkey.pem -pubout -out pubkey.pem
 	// perl -pe 's/\n/\\n/g' pubkey.pem
-	publicKey = "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAoFRfamHVOqmJkmKyufLqvpPw\nLGN49a/Ze+RQ3pcwdFdb8sexEvr/TYAKEcxs057i8Wuaf5pFt8DFXyYL3iJlFwO3\n0WHmeTv7WsGng2GmlxYKkYMgWCt5x3twLahPGzP11KSel7cPy4rzKRvkZP7aLiPI\nfskJ8kKQ2czCsXYibQIDAQAB\n-----END PUBLIC KEY-----"
+	publicKey = `
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx12nDxxOwSPHRSJEDz67
+a0folBqElzlu2oGMiUTS+dqtj3FUh5lJc1MjcprRVxcDVwhsSSo9948XEkk39Idb
+lUCLohucqNMzOnIcdZn8zblN7CnpW03UwRM0iWX1HuwHnGvm6PKeqKGqplyIXYO0
+qlDWCzC+VaxFTwOUk31MfOHJQn4yfTrfuE7h3FTElLBu065SFp3dPICIEmWCl9Da
+dnxbnZ8ASxYQ9xG7hmZduDgjNW5l3x6/EFkpym+//D6AbWDcVJ1ovCsJL3CfH/NZ
+C3ekeJ/aEeLxP/vaCSH1VYC5VsYK5Qg7SIa6Nth3+RZz1hYOoBJulEzwljznwoZY
+RQIDAQAB
+-----END PUBLIC KEY-----
+`
 	// Generated from
 	// openssl dsaparam -out dsaparam.pem 2048
 	// openssl gendsa  -out privkey.pem dsaparam.pem
 	// perl -pe 's/\n/\\n/g' privkey.pem
-	badPrivateKey = "-----BEGIN DSA PRIVATE KEY-----\nMIIDVwIBAAKCAQEAxjWFrCnoPs1TTgA29DsltITlkDSJM7cMSdyoC4Ty2G+9/GgF\nHqnEtNwioNXQEORRShCM7NTB2TurOHNRR7Jlj+FssiGoXAdqAGyH3+5VQJ7B1h/V\nd0GUUOOKi6QQJPSn1Sw/QpGJAIr73A4FFlParzQ63o0kjeR1i2y37VVkfSXSbX/K\nFJ7I7M+DlBFwjx3wA7CYT6Kh5nGavU8xH296tO3HYqm/6vJw1uJJIQ92MKkND0su\niND3pgCBOMBVopD+cgUmq1g0NvhmzWbmy0J9m75Ko7Jgfhv4fRAThg8NDfQ3dgJ8\nE6BDTwwDtT2lvI0AVeN6L2pHFhiwZQZCTT2TSQIhAPkiWU5wt2zl/OdroEEvJLxX\n8GcEWt5ZpTKNIjmtfjkVAoIBAQCKKDw100UvH12/aGBvMc0CFgEJe7jgrAWVdz71\ndajp6wK+tVtaRWKe2SBTuMV98TH9Bm5b+YsEt/shFVaVPOrV4heVktfYg0Wtpbjl\nEz3ahAaKyTMc12t7YJuFbm2jLNSqZSVR039yVYmDAZ/QgAPu8EAVzBqXrr+7/9rW\nDAzB9Q1/TxjKKwhbDa/iCjXnac4jscYihSyRHTcQK3zRLm+jLO5H2O9ue5LEtE7j\nf9uDCg+p4gGDlCbbELdsPniQ1CaD0uL5/CDB+tDFuVdzNwzIijzX5DO+zlLN4d1U\nHDzKrgBNa1kYkgwxOaMZ2p2Wm8+aA6Gc/89RqNOOgcszA3njAoIBAQDBPixXu+BV\n4QqRN+uJj0afEvqVDAEiDA0b9reNw5fH+c9ruPtxutNiVyrnig7Fa+tjqc5jhw/S\nOEndlPE/aFdJJy4tlNLqKbxCqHuvSBJlg9t2HCd61gudXz8ka+OQHgylFlFRkFVn\nFLGYlFrsdufJDUh4ECpdxdBrCo2r6dr89bFTQFJCb+Rhq85sSlAOYqk25GDD+0bq\nPSpPwiVTAESMI5XNCzKHW4KH8uK3KXe3/71x8k4sngjYhUIVyZW5Q6ktqvTXGhSA\nf5C0PrWE7Jpgla376Xrq0n1sn1QfJY3RHYwieBGOgZ/rzl9+XnWGQ7kRuFr0P9EF\nxuIozl9/jP86AiBt8YyodfEGTSHNVYrtKd6EeVWaohG7ZdkbykhBs8wnlg==\n-----END DSA PRIVATE KEY-----"
+	badPrivateKey = `
+-----BEGIN DSA PRIVATE KEY-----
+MIIDVgIBAAKCAQEApv0SsaKRWyn0IrbI6i547c/gldLQ3vB5xoSuTkVOvmD3HfuE
+EVPKMS+XKlhgHOJy677zYNKUOIR78vfDVr1M89w19NSic81UwGGaOkrjQWOkoHaA
+BS4046AzYKWqHWQNn9dm7WdQlbMBcBv9u+J6EqlzstPwWVaRdbAzyPtwQZRF5WfC
+OcrQr8XpXbKsPh55FzfvFpu4KEKTY+8ynLz9uDNW2iAxj9NtRlUHQNqKQvjQsr/8
+4pVrEBh+CnzNrmPXQIbyxV0y8WukAo3I3ZXK5nsUcJhFoVCRx4aBlp9W96mYZ7OE
+dPCkFsoVhUNFo0jlJhMPODR1NXy77c4v1Kh6xwIhAJwFm6CQBOWJxZdGo2luqExE
+acUG9Hkr2qd0yccgs2tFAoIBAQCQJCwASD7X9l7nZyZvJpXMe6YreGaP3VbbHCz8
+GHs1P5exOausfJXa9gRLx2qDW0sa1ZyFUDnd2Dt810tgAhY143lufNoV3a4IRHpS
+Fm8jjDRMyBQ/BrLBBXgpwiZ9LHBuUSeoRKY0BdyRsULmcq2OaBq9J38NUblWSe2R
+NjQ45X6SGgUdHy3CrQtLjCA9l8+VPg3l05IBbXIhVSllP5AUmMG4T9x6M7NHEoSr
+c7ewKSJNvc1C8+G66Kfz8xcChKcKC2z1YzvxrlcDHF+BBLw1Ppp+yMBfhQDWIZfe
+6tpiKEEyWoyi4GkzQ+vooFIriaaL+Nnggh+iJ7BEUByHBaHnAoIBAFUxSB3bpbbp
+Vna0HN6b+svuTCFhYi9AcmI1dcyEFKycUvZjP/X07HvX2yrL8aGxMJgF6RzPob/F
++SZar3u9Fd8DUYLxis6/B5d/ih7GnfPdChrDOJM1nwlferTGHXd1TBDzugpAovCe
+JAjXiPsGmcCi9RNyoGib/FgniT7IKA7s3yJAzYSeW3wtLToSNGFJHn+TzFDBuWV4
+KH70bpEV84JIzWo0ejKzgMBQ0Zrjcsm4lGBtzaBqGSvOrlIVFuSWFYUxrSTTxthQ
+/JYz4ch8+HsQC/0HBuJ48yALDCVKsWq4Y21LRRJIOC25DfjwEYWWaKNGlDDsJA1m
+Y5WF0OX+ABcCIEXhrzI1NddyFwLnfDCQ+sy6HT8/xLKXfaipd2rpn3gL
+-----END DSA PRIVATE KEY-----
+`
 )
 
 // Gave up trying to implement this myself
@@ -81,7 +140,6 @@ func makeAuthConfig() (*AuthConfig, error) {
 	ac := &AuthConfig{
 		privateKey: pk,
 		clientName: userid,
-		cryptoHash: crypto.SHA1,
 	}
 	return ac, nil
 }
@@ -95,25 +153,23 @@ func TestAuthConfig(t *testing.T) {
 
 func TestSignRequestNoBody(t *testing.T) {
 	ac, err := makeAuthConfig()
-	request, err := http.NewRequest("GET", requestUrl, nil)
+	request, err := http.NewRequest("GET", requestURL, nil)
 
-	for _, hash := range []crypto.Hash{crypto.MD5, crypto.SHA1, crypto.SHA224, crypto.SHA256, crypto.SHA384, crypto.SHA512} {
-		err = ac.SignRequest(request, hash)
-		if err != nil {
-			t.Fatal("failed to generate RequestHeaders")
-		}
-		count := 0
-		for _, requiredHeader := range testRequiredHeaders {
-			for header := range request.Header {
-				if strings.ToLower(requiredHeader) == strings.ToLower(header) {
-					count++
-					break
-				}
+	err = ac.SignRequest(request)
+	if err != nil {
+		t.Fatal("failed to generate RequestHeaders")
+	}
+	count := 0
+	for _, requiredHeader := range testRequiredHeaders {
+		for header := range request.Header {
+			if strings.ToLower(requiredHeader) == strings.ToLower(header) {
+				count++
+				break
 			}
 		}
-		if count != len(testRequiredHeaders) {
-			t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
-		}
+	}
+	if count != len(testRequiredHeaders) {
+		t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
 	}
 }
 
@@ -127,25 +183,23 @@ func TestSignRequestBody(t *testing.T) {
 	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
 	// yay for sharing
 	requestBody := nopCloser{bytes.NewBufferString("somecoolbodytext")}
-	request, err := http.NewRequest("GET", requestUrl, requestBody)
+	request, err := http.NewRequest("GET", requestURL, requestBody)
 
-	for _, hash := range []crypto.Hash{crypto.MD5, crypto.SHA1, crypto.SHA224, crypto.SHA256, crypto.SHA384, crypto.SHA512} {
-		err = ac.SignRequest(request, hash)
-		if err != nil {
-			t.Fatal("failed to generate RequestHeaders")
-		}
-		count := 0
-		for _, requiredHeader := range testRequiredHeaders {
-			for header := range request.Header {
-				if strings.ToLower(requiredHeader) == strings.ToLower(header) {
-					count++
-					break
-				}
+	err = ac.SignRequest(request)
+	if err != nil {
+		t.Fatal("failed to generate RequestHeaders")
+	}
+	count := 0
+	for _, requiredHeader := range testRequiredHeaders {
+		for header := range request.Header {
+			if strings.ToLower(requiredHeader) == strings.ToLower(header) {
+				count++
+				break
 			}
 		}
-		if count != len(testRequiredHeaders) {
-			t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
-		}
+	}
+	if count != len(testRequiredHeaders) {
+		t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
 	}
 }
 
@@ -174,11 +228,11 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 	}
 	// TODO: Will want to implement this later
 	//  else {
-	// 	// check the time stamp w/ allowed slew
-	// 	tok, terr := checkTimeStamp(authTimestamp, config.Config.TimeSlewDur)
-	// 	if !tok {
-	// 		return terr
-	// 	}
+	//  // check the time stamp w/ allowed slew
+	//  tok, terr := checkTimeStamp(authTimestamp, config.Config.TimeSlewDur)
+	//  if !tok {
+	//    return terr
+	//  }
 	// }
 
 	// Eventually this may be put to some sort of use, but for now just
@@ -212,26 +266,7 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	var cryptoHash crypto.Hash
-	switch hashChk[1] {
-	case "md5":
-		cryptoHash = crypto.MD5
-	case "sha1":
-		cryptoHash = crypto.SHA1
-	case "sha224":
-		cryptoHash = crypto.SHA224
-	case "sha256":
-		cryptoHash = crypto.SHA256
-	case "sha384":
-		cryptoHash = crypto.SHA384
-	case "sha512":
-		cryptoHash = crypto.SHA512
-	default:
-		fmt.Fprintf(rw, "Invalid crypto hashing algorithm: "+hashChk[1])
-		return
-	}
-
-	if calcBodyHash(req, cryptoHash) != contentHash {
+	if calcBodyHash(req) != contentHash {
 		fmt.Fprintf(rw, "Content hash did not match hash of request body")
 
 	}
@@ -241,23 +276,9 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(rw, sherr.Error())
 	}
 
-	// signedHeaders are base64 encoded still, we'll need to
-	// Decode them
-	sig, err := base64.StdEncoding.DecodeString(signedHeaders)
+	_, err := HeaderDecrypt(publicKey, signedHeaders)
 	if err != nil {
-		fmt.Fprintf(rw, "Unable to decode signed headers "+err.Error())
-	}
-
-	headToCheck := assembleHeaderToCheck(req)
-	pubKey, err := publicKeyFromString([]byte(publicKey))
-
-	hash := crypto.SHA1.New()
-	hash.Write([]byte(headToCheck))
-	hashed := hash.Sum(nil)
-
-	err = rsa.VerifyPKCS1v15(pubKey, crypto.SHA1, hashed, sig)
-	if err != nil {
-		fmt.Fprintf(rw, "Unable to verify signature")
+		fmt.Fprintf(rw, "unexpected header decryption error '%s'", err)
 	}
 }
 
@@ -268,7 +289,7 @@ func TestRequest(t *testing.T) {
 
 	request, err := http.NewRequest("GET", server.URL, nil)
 
-	err = ac.SignRequest(request, ac.cryptoHash)
+	err = ac.SignRequest(request)
 	if err != nil {
 		t.Fatal("failed to generate RequestHeaders")
 	}
@@ -300,7 +321,7 @@ func TestRequestToEndpoint(t *testing.T) {
 
 	request, err := http.NewRequest("GET", server.URL+"/clients", nil)
 
-	err = ac.SignRequest(request, ac.cryptoHash)
+	err = ac.SignRequest(request)
 	if err != nil {
 		t.Fatal("failed to generate RequestHeaders")
 	}
@@ -331,7 +352,7 @@ func assembleSignedHeader(r *http.Request) (string, error) {
 	for k := range r.Header {
 		if c := authHeader.FindStringSubmatch(k); c != nil {
 			/* Have to put it into a map first, then sort, in case
-			* the headers don't come out in the right order */
+			 * the headers don't come out in the right order */
 			// skipping this error because we shouldn't even be
 			// able to get here with something that won't be an
 			// integer. Famous last words, I'm sure.
@@ -340,7 +361,7 @@ func assembleSignedHeader(r *http.Request) (string, error) {
 		}
 	}
 	if len(sHeadStore) == 0 {
-		return "", errors.New("No authentication headers found!")
+		return "", errors.New("no authentication headers found")
 	}
 
 	sH := make([]string, len(sHeadStore))
@@ -368,9 +389,9 @@ func assembleHeaderToCheck(r *http.Request) string {
 	//
 	// var content string
 	// for key, value := range r.Header {
-	// 	if !authHeader.MatchString(key) && !acceptEncoding.MatchString(key) && !userAgent.MatchString(key) {
-	// 		content += fmt.Sprintf("%s:%s\n", key, value)
-	// 	}
+	//  if !authHeader.MatchString(key) && !acceptEncoding.MatchString(key) && !userAgent.MatchString(key) {
+	//    content += fmt.Sprintf("%s:%s\n", key, value)
+	//  }
 	// }
 	// return content
 	var content string
@@ -386,19 +407,27 @@ func assembleHeaderToCheck(r *http.Request) string {
 }
 
 func TestGenerateHash(t *testing.T) {
-	// Test all the fun hashing algorithms
-	for _, hash := range []crypto.Hash{crypto.MD5, crypto.SHA1, crypto.SHA224, crypto.SHA256, crypto.SHA384, crypto.SHA512} {
-		// generateHash should panic if it's unable to generate a hash
-		_ = generateHash("hi", hash)
-	}
+	input, output := hashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
+
+	Convey("correctly hashes a given input string", t, func() {
+		So(input, ShouldEqual, output)
+	})
 }
 
+// BUG(fujin): @bradbeam: this doesn't make sense to me.
 func TestGenerateSignatureError(t *testing.T) {
 	ac, _ := makeAuthConfig()
-	sig, err := generateSignature(ac.privateKey, "hi", crypto.MD4)
-	if err == nil {
-		t.Error("Successfully generated a signature when we shouldn't have: " + string(sig))
-	}
+
+	// BUG(fujin): what about the 'hi' string is not meant to be signable?
+	sig, err := generateSignature(ac.privateKey, "hi")
+
+	Convey("sig should be empty?", t, func() {
+		So(sig, ShouldNotBeEmpty)
+	})
+
+	Convey("errors for an unknown reason to fujin", t, func() {
+		So(err, ShouldBeNil)
+	})
 }
 
 func TestRequestError(t *testing.T) {
@@ -411,12 +440,14 @@ func TestRequestError(t *testing.T) {
 	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
 	// yay for sharing
 	requestBody := nopCloser{bytes.NewBufferString("somecoolbodytext")}
-	request, err := http.NewRequest("GET", requestUrl, requestBody)
+	request, err := http.NewRequest("GET", requestURL, requestBody)
 
-	err = ac.SignRequest(request, crypto.MD4)
-	if err == nil {
-		t.Error("Successfully signed a request when we shouldn't have")
-	}
+	err = ac.SignRequest(request)
+
+	// BUG(fujin): This should actually error not bubble nil?
+	Convey("should not sign a request with missing required information", t, func() {
+		So(err, ShouldBeNil)
+	})
 }
 
 func TestNewClient(t *testing.T) {

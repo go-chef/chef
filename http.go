@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -26,6 +27,8 @@ type AuthConfig struct {
 type Client struct {
 	Auth   *AuthConfig
 	client *http.Client
+
+	Environments *EnvironmentService
 }
 
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
@@ -44,11 +47,12 @@ func NewClient(name string, key string) (*Client, error) {
 		},
 		client: &http.Client{},
 	}
+	c.Environments = &EnvironmentService{client: *c}
 	return c, nil
 }
 
 // MakeRequest performs a signed request for the chef client
-func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Response, error) {
+func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -56,9 +60,21 @@ func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.R
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
 
+	return req, nil
+}
+
+func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if v != nil {
+		if w, ok := v.(io.Writer); ok {
+			io.Copy(w, res.Body)
+		} else {
+			err = json.NewDecoder(res.Body).Decode(v)
+		}
 	}
 
 	return res, nil

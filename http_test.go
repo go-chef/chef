@@ -19,9 +19,8 @@ import (
 )
 
 var testRequiredHeaders = []string{
-	"Accept",
 	"X-Ops-Timestamp",
-	"X-Ops-Userid",
+	"X-Ops-UserId",
 	"X-Ops-Sign",
 	"X-Ops-Content-Hash",
 	"X-Ops-Authorization-1",

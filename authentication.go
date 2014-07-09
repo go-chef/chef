@@ -9,9 +9,8 @@ import (
 	"math/big"
 )
 
-// Don't export me bro
-// generateSignature will generate a signature ( sign ) the given data
-func generateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
+// GenerateSignature will generate a signature ( sign ) the given data
+func GenerateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
 	sig, err := privateEncrypt(priv, []byte(data))
 	if err != nil {
 		return nil, err
@@ -82,16 +81,17 @@ func privateEncrypt(key *rsa.PrivateKey, data []byte) (enc []byte, err error) {
 	return
 }
 
-func hashStr(toHash string) string {
+// HashStr returns the base64 encoded SHA1 sum of the toHash string
+func HashStr(toHash string) string {
 	h := sha1.New()
 	io.WriteString(h, toHash)
 	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return hashed
 }
 
-// base64BlockEncode takes a byte slice and breaks it up into a
+// Base64BlockEncode takes a byte slice and breaks it up into a
 // slice of base64 encoded strings
-func base64BlockEncode(content []byte, limit int) []string {
+func Base64BlockEncode(content []byte, limit int) []string {
 	resultString := base64.StdEncoding.EncodeToString(content)
 	var resultSlice []string
 

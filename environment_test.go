@@ -2,88 +2,19 @@ package chef
 
 import (
 	"encoding/json"
-	. "github.com/smartystreets/goconvey/convey"
+	"fmt"
+	_ "github.com/davecgh/go-spew/spew"
 	"io"
-	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
-	"path"
+	"reflect"
 	"testing"
 )
 
 var (
 	testEnvironmentJSON = "test/environment.json"
-	// FML
-	testEnvironmentMapStringInterfaceLol, _ = NewEnvironment(&Reader{
-		"name":       "testenvironment",
-		"chef_type":  "environment",
-		"json_class": "Chef::Environment",
-		"default_attributes": map[string]interface{}{
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "no",
-					"max_auth_tries":    "3",
-				},
-			},
-		},
-		"override_attributes": map[string]interface{}{
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "yes",
-					"max_auth_tries":    "1",
-				},
-			},
-		},
-		"cookbook_versions": map[string]interface{}{
-			"openssh": map[string]interface{}{
-				"name":    "openssh",
-				"version": "= 1.0.0",
-			},
-			"couchdb": map[string]interface{}{
-				"name":    "couchdb",
-				"version": "~> 1.2.0",
-			},
-		},
-	})
 )
-
-func TestEnvironmentName(t *testing.T) {
-	// BUG(spheromak): Pull these constructors out into a Convey Decorator
-	e1 := testEnvironmentMapStringInterfaceLol // (*Environment)
-	name := e1.Name
-
-	Convey("Environment name is 'testenvironment'", t, func() {
-		So(name, ShouldEqual, "testenvironment")
-	})
-
-	swordWithoutASheathe, err := NewEnvironment(&Reader{
-		"foobar": "baz",
-	})
-
-	name = swordWithoutASheathe.Name
-	Convey("Environment without a name", t, func() {
-		So(name, ShouldBeEmpty)
-		So(err, ShouldBeNil)
-	})
-}
-
-func TestEnvironmentCookbookVersions(t *testing.T) {
-	envCooks := testEnvironmentMapStringInterfaceLol
-	Convey("CookbookVersion should have cooks", t, func() {
-		So(envCooks.CookbookVersions["openssh"], ShouldHaveSameTypeAs, nativeCookbook{})
-	})
-
-}
-
-func TestEnvironmentAttribute(t *testing.T) {
-	n := testEnvironmentMapStringInterfaceLol
-	attr := n.Default
-	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
-	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-	Convey("Environment.Default should map", t, func() {
-		So(ugh, ShouldEqual, "no")
-	})
-}
 
 // BUG(fujin): re-do with goconvey
 func TestEnvironmentFromJSONDecoder(t *testing.T) {
@@ -100,34 +31,130 @@ func TestEnvironmentFromJSONDecoder(t *testing.T) {
 	}
 }
 
-// TestNewEnvironment checks the NewEnvironment Reader chain for Type
-func TestNewEnvironment(t *testing.T) {
-	var v interface{}
-	v = testEnvironmentMapStringInterfaceLol
-	Convey("NewEnvironment should create a Environment", t, func() {
-		So(v, ShouldHaveSameTypeAs, &Environment{})
+func TestEnvironmentsService_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"_default":"blah", "development":"blah"}`)
 	})
 
-	Convey("NewEnvironment should error if decode fails", t, func() {
+	environments, err := client.Environments.List()
+	if err != nil {
+		t.Errorf("Environments.List returned error: %v", err)
+	}
 
-		failEnvironment, err := NewEnvironment(&Reader{
-			"name": struct{}{},
-		})
-
-		So(err, ShouldNotBeNil)
-		So(failEnvironment, ShouldBeNil)
-	})
+	want := &EnvironmentListResult{"_default": "blah", "development": "blah"}
+	if !reflect.DeepEqual(environments, want) {
+		//spew.Dump(environments)
+		//spew.Dump(want)
+		t.Errorf("Environments.List returned %+v, want %+v", environments, want)
+	}
 }
 
-// TestEnvironmentReadIntoFile tests that Read() can be used to read by io.Readers
-func TestEnvironmentReadIntoFile(t *testing.T) {
-	e1 := testEnvironmentMapStringInterfaceLol // (*Environment)
-	tf, _ := ioutil.TempFile("test", "environment-to-file")
-	Convey("Environment To File", t, func() {
-		_, err := io.Copy(tf, e1)
-		So(err, ShouldBeNil)
+func TestEnvironmentsService_Get(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments/testenvironment", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+	    "name": "testenvironment",
+	    "json_class": "Chef::Environment",
+	    "chef_type": "environment"
+		}`)
 	})
-	// Close and remove tempfile
-	tf.Close()
-	os.Remove(path.Clean(tf.Name()))
+
+	environments, err := client.Environments.Get("testenvironment")
+	if err != nil {
+		t.Errorf("Environments.Get returned error: %v", err)
+	}
+
+	want := &Environment{
+		Name:      "testenvironment",
+		JsonClass: "Chef::Environment",
+		ChefType:  "environment",
+	}
+
+	if !reflect.DeepEqual(environments, want) {
+		t.Errorf("Environments.Get returned %+v, want %+v", environments, want)
+	}
+}
+
+func TestEnvironmentsService_Create(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{ "uri": "http://localhost:4000/environments/dev" }`)
+	})
+
+	role := &Environment{
+		Name:             "dev",
+		ChefType:         "environment",
+		JsonClass:        "Chef::Environment",
+		Attributes:       "",
+		Description:      "",
+		CookbookVersions: map[string]string{},
+	}
+
+	uri, err := client.Environments.Create(role)
+	if err != nil {
+		t.Errorf("Environments.Create returned error: %v", err)
+	}
+
+	want := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+
+	if !reflect.DeepEqual(uri, want) {
+		t.Errorf("Environments.Create returned %+v, want %+v", uri, want)
+	}
+}
+
+func TestEnvironmentsService_Put(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments/dev", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "dev",
+		  "json_class": "Chef::Environment",
+		  "description": "The Dev Environment",
+		  "cookbook_versions": {},
+		  "chef_type": "environment"
+		}`)
+	})
+
+	environment := &Environment{
+		Name:             "dev",
+		ChefType:         "environment",
+		JsonClass:        "Chef::Environment",
+		Description:      "The Dev Environment",
+		CookbookVersions: map[string]string{},
+	}
+
+	updatedEnvironment, err := client.Environments.Put(environment)
+	if err != nil {
+		t.Errorf("Environments.Put returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(updatedEnvironment, environment) {
+		t.Errorf("Environments.Put returned %+v, want %+v", updatedEnvironment, environment)
+	}
+}
+
+func TestEnvironmentsService_EnvironmentListResultString(t *testing.T) {
+	e := &EnvironmentListResult{
+		"_default":  "https://api.opscode.com/organizations/org_name/environments/_default",
+		"webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
+	want := "_default => https://api.opscode.com/organizations/org_name/environments/_default\nwebserver => https://api.opscode.com/organizations/org_name/environments/webserver\n"
+	if e.String() != want {
+		t.Errorf("EnvironmentListResult.String returned %+v, want %+v", e.String(), want)
+	}
+}
+
+func TestEnvironmentsService_EnvironmentCreateResultString(t *testing.T) {
+	e := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+	want := "uri => http://localhost:4000/environments/dev\n"
+	if e.String() != want {
+		t.Errorf("EnvironmentCreateResult.String returned %+v, want %+v", e.String(), want)
+	}
 }

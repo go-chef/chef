@@ -7,6 +7,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"math/big"
 	"net/http"
@@ -15,17 +17,21 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
-var testRequiredHeaders = []string{
-	"X-Ops-Timestamp",
-	"X-Ops-UserId",
-	"X-Ops-Sign",
-	"X-Ops-Content-Hash",
-	"X-Ops-Authorization-1",
-}
+var (
+	testRequiredHeaders = []string{
+		"X-Ops-Timestamp",
+		"X-Ops-UserId",
+		"X-Ops-Sign",
+		"X-Ops-Content-Hash",
+		"X-Ops-Authorization-1",
+	}
+
+	mux    *http.ServeMux
+	server *httptest.Server
+	client *Client
+)
 
 const (
 	userid     = "tester"
@@ -114,6 +120,20 @@ type nopCloser struct {
 
 func (nopCloser) Close() error { return nil }
 
+func setup() {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+	client, _ = NewClient(&Config{
+		Name:    userid,
+		Key:     privateKey,
+		BaseURL: server.URL,
+	})
+}
+
+func teardown() {
+	server.Close()
+}
+
 func createServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(checkHeader))
 }
@@ -133,14 +153,14 @@ func publicKeyFromString(key []byte) (*rsa.PublicKey, error) {
 }
 
 func makeAuthConfig() (*AuthConfig, error) {
-	pk, err := privateKeyFromString([]byte(privateKey))
+	pk, err := PrivateKeyFromString([]byte(privateKey))
 	if err != nil {
 		return nil, err
 	}
 
 	ac := &AuthConfig{
-		privateKey: pk,
-		clientName: userid,
+		PrivateKey: pk,
+		ClientName: userid,
 	}
 	return ac, nil
 }
@@ -160,14 +180,14 @@ func TestBase64BlockEncodeNoLimit(t *testing.T) {
 	}
 	content = strings.TrimSuffix(content, "\n")
 
-	signature, _ := generateSignature(ac.privateKey, content)
-	base64BlockEncode(signature, 0)
+	signature, _ := GenerateSignature(ac.PrivateKey, content)
+	Base64BlockEncode(signature, 0)
 }
 
 func TestSignRequestBadSignature(t *testing.T) {
 	ac, err := makeAuthConfig()
 	request, err := http.NewRequest("GET", requestURL, nil)
-	ac.privateKey.PublicKey.N = big.NewInt(23234728432324)
+	ac.PrivateKey.PublicKey.N = big.NewInt(23234728432324)
 
 	err = ac.SignRequest(request)
 	if err == nil {
@@ -290,7 +310,7 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if calcBodyHash(req) != contentHash {
+	if CalcBodyHash(req) != contentHash {
 		fmt.Fprintf(rw, "Content hash did not match hash of request body")
 
 	}
@@ -431,7 +451,7 @@ func assembleHeaderToCheck(r *http.Request) string {
 }
 
 func TestGenerateHash(t *testing.T) {
-	input, output := hashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
+	input, output := HashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
 
 	Convey("correctly hashes a given input string", t, func() {
 		So(input, ShouldEqual, output)
@@ -443,7 +463,7 @@ func TestGenerateSignatureError(t *testing.T) {
 	ac, _ := makeAuthConfig()
 
 	// BUG(fujin): what about the 'hi' string is not meant to be signable?
-	sig, err := generateSignature(ac.privateKey, "hi")
+	sig, err := GenerateSignature(ac.PrivateKey, "hi")
 
 	Convey("sig should be empty?", t, func() {
 		So(sig, ShouldNotBeEmpty)
@@ -481,8 +501,8 @@ func TestNewClient(t *testing.T) {
 		t.Error("Couldn't make a valid client...\n", err)
 	}
 	// simple validation on the created client
-	if c.Auth.clientName != "testclient" {
-		t.Error("unexpected client name: ", c.Auth.clientName)
+	if c.Auth.ClientName != "testclient" {
+		t.Error("unexpected client name: ", c.Auth.ClientName)
 	}
 
 	// Bad PEM should be an error
@@ -501,28 +521,49 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestMakeRequest(t *testing.T) {
+	var err error
 	server := createServer()
 	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
 	c, _ := NewClient(cfg)
 	defer server.Close()
 
-	resp, err := c.MakeRequest("GET", server.URL, nil)
+	request, err := c.MakeRequest("GET", server.URL, nil)
 	if err != nil {
 		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
 	}
+
+	resp, err := c.Do(request, nil)
 	if resp.StatusCode != 200 {
 		t.Error("Non 200 return code: ", resp.Status)
 	}
 
 	// This should fail because we've got an invalid URI
-	resp, err = c.MakeRequest("GET", "%gh&%ij", nil)
+	_, err = c.MakeRequest("GET", "%gh&%ij", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
 	// This should fail because there is no TOODLES! method :D
-	resp, err = c.MakeRequest("TOODLES!", "", nil)
+	request, err = c.MakeRequest("TOODLES!", "", nil)
+	_, err = c.Do(request, nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
+}
+
+func TestDo_badjson(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, " pigthrusters => 100% ")
+	})
+
+	stupidData := struct{}{}
+	request, err := client.MakeRequest("GET", "hashrocket", nil)
+	_, err = client.Do(request, &stupidData)
+	if err == nil {
+		t.Error(err)
+	}
+
 }

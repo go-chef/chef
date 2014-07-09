@@ -6,12 +6,10 @@ import (
 )
 
 var (
-	runList RunList = []string{"recipe[foo]", "recipe[baz]", "role[banana]"}
+	rl = RunList{"recipe[foo]", "recipe[baz]", "role[banana]"}
 )
 
 func TestNodeRunList(t *testing.T) {
-	rl := runList
-
 	Convey("Node.RunList() should be a RunList", t, func() {
 		So(rl, ShouldHaveSameTypeAs, RunList{})
 	})

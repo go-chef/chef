@@ -7,15 +7,16 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var testRequiredHeaders = []string{
@@ -148,6 +149,29 @@ func TestAuthConfig(t *testing.T) {
 	_, err := makeAuthConfig()
 	if err != nil {
 		t.Error("Failed to create AuthConfig struct from privatekeys and stuff", err)
+	}
+}
+
+func TestBase64BlockEncodeNoLimit(t *testing.T) {
+	ac, _ := makeAuthConfig()
+	var content string
+	for _, key := range []string{"header1", "header2", "header3"} {
+		content += fmt.Sprintf("%s:blahblahblah\n", key)
+	}
+	content = strings.TrimSuffix(content, "\n")
+
+	signature, _ := generateSignature(ac.privateKey, content)
+	base64BlockEncode(signature, 0)
+}
+
+func TestSignRequestBadSignature(t *testing.T) {
+	ac, err := makeAuthConfig()
+	request, err := http.NewRequest("GET", requestURL, nil)
+	ac.privateKey.PublicKey.N = big.NewInt(23234728432324)
+
+	err = ac.SignRequest(request)
+	if err == nil {
+		t.Fatal("failed to generate failed signature")
 	}
 }
 

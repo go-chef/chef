@@ -7,7 +7,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"path"
 	"strings"
@@ -97,7 +96,6 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// we shouldn't get an error at this point
 	signature, err := generateSignature(ac.privateKey, content)
 	if err != nil {
-		log.Println("unexpected signature generation error:", err)
 		return err
 	}
 

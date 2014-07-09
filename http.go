@@ -3,12 +3,14 @@ package chef
 import (
 	"bytes"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -25,19 +27,27 @@ type AuthConfig struct {
 
 // Client is vessel for public methods used against the chef-server
 type Client struct {
-	Auth   *AuthConfig
-	client *http.Client
+	Auth    *AuthConfig
+	baseURL *url.URL
+	client  *http.Client
 
 	Environments *EnvironmentService
+	Nodes        *NodeService
 }
 
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
-func NewClient(name string, key string) (*Client, error) {
+func NewClient(name string, key string, apiUrl string) (*Client, error) {
 	pk, err := privateKeyFromString([]byte(key))
 	if err != nil {
 		return nil, err
+	}
+
+	baseURL, _ := url.Parse(apiUrl)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	c := &Client{
@@ -45,15 +55,24 @@ func NewClient(name string, key string) (*Client, error) {
 			privateKey: pk,
 			clientName: name,
 		},
-		client: &http.Client{},
+		client:  &http.Client{Transport: tr},
+		baseURL: baseURL,
 	}
 	c.Environments = &EnvironmentService{client: *c}
+	c.Nodes = &NodeService{client: *c}
 	return c, nil
 }
 
 // MakeRequest performs a signed request for the chef client
-func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, body)
+func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+	relativeUrl, err := url.Parse(requestUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	u := c.baseURL.ResolveReference(relativeUrl)
+
+	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}

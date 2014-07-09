@@ -22,7 +22,7 @@ type Environment struct {
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id14
 func (e *EnvironmentService) List() (data map[string]string, err error) {
-	req, err := e.client.MakeRequest("GET", "https://chefserver/environments", nil)
+	req, err := e.client.MakeRequest("GET", "environments", nil)
 	if err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func (e *EnvironmentService) List() (data map[string]string, err error) {
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id17
 func (e *EnvironmentService) Get(name string) (*Environment, error) {
 	url := fmt.Sprintf("environments/%s", name)
-	req, err := e.client.MakeRequest("GET", "https://chefserver/"+url, nil)
+	req, err := e.client.MakeRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

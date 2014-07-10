@@ -15,7 +15,7 @@ type Node struct {
 	NormalAttributes    map[string]interface{} `json:"normal"`
 	DefaultAttributes   map[string]interface{} `json:"default"`
 	OverrideAttributes  map[string]interface{} `json:"override"`
-	JsonClass           string                 `json:"chef_environment"`
+	JsonClass           string                 `json:"json_class"`
 	RunList             []string               `json:"run_list"`
 }
 

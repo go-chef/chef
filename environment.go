@@ -14,7 +14,7 @@ type Environment struct {
 	ChefType           string      `json:"chef_type"`
 	DefaultAttributes  interface{} `json:"default_attributes"`
 	OverrideAttributes interface{} `json:"override_attributes"`
-	JsonClass          string      `json:"chef_environment"`
+	JsonClass          string      `json:"json_class"`
 	CookbookVersions   interface{} `json:"cookbook_versions"`
 }
 

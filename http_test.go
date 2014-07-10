@@ -19,13 +19,19 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var testRequiredHeaders = []string{
-	"X-Ops-Timestamp",
-	"X-Ops-UserId",
-	"X-Ops-Sign",
-	"X-Ops-Content-Hash",
-	"X-Ops-Authorization-1",
-}
+var (
+	testRequiredHeaders = []string{
+		"X-Ops-Timestamp",
+		"X-Ops-UserId",
+		"X-Ops-Sign",
+		"X-Ops-Content-Hash",
+		"X-Ops-Authorization-1",
+	}
+
+	mux    *http.ServeMux
+	server *httptest.Server
+	client *Client
+)
 
 const (
 	userid     = "tester"
@@ -113,6 +119,20 @@ type nopCloser struct {
 }
 
 func (nopCloser) Close() error { return nil }
+
+func setup() {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+	client, _ = NewClient(&Config{
+		Name:    userid,
+		Key:     privateKey,
+		BaseURL: server.URL,
+	})
+}
+
+func teardown() {
+	server.Close()
+}
 
 func createServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(checkHeader))
@@ -501,27 +521,30 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestMakeRequest(t *testing.T) {
+	var err error
 	server := createServer()
 	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
 	c, _ := NewClient(cfg)
 	defer server.Close()
 
-	resp, err := c.MakeRequest("GET", server.URL, nil)
+	request, err := c.MakeRequest("GET", server.URL, nil)
 	if err != nil {
 		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
 	}
+	resp, err := c.Do(request, nil)
 	if resp.StatusCode != 200 {
 		t.Error("Non 200 return code: ", resp.Status)
 	}
 
 	// This should fail because we've got an invalid URI
-	resp, err = c.MakeRequest("GET", "%gh&%ij", nil)
+	_, err = c.MakeRequest("GET", "%gh&%ij", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
 	// This should fail because there is no TOODLES! method :D
-	resp, err = c.MakeRequest("TOODLES!", "", nil)
+	request, err = c.MakeRequest("TOODLES!", "", nil)
+	_, err = c.Do(request, nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}

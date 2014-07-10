@@ -5,10 +5,12 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -25,14 +27,19 @@ type AuthConfig struct {
 
 // Client is vessel for public methods used against the chef-server
 type Client struct {
-	Auth   *AuthConfig
-	client *http.Client
+	Auth    *AuthConfig
+	BaseURL *url.URL
+	client  *http.Client
+
+	Environments *EnvironmentService
+	Nodes        *NodeService
 }
 
 // Config contains the configuration options for a chef client
 type Config struct {
 	Name    string
 	Key     string
+	BaseURL string
 	SkipSSL bool
 }
 
@@ -45,6 +52,8 @@ func NewClient(cfg *Config) (*Client, error) {
 		return nil, err
 	}
 
+	baseUrl, _ := url.Parse(cfg.BaseURL)
+
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.SkipSSL},
 	}
@@ -54,23 +63,45 @@ func NewClient(cfg *Config) (*Client, error) {
 			privateKey: pk,
 			clientName: cfg.Name,
 		},
-		client: &http.Client{Transport: tr},
+		client:  &http.Client{Transport: tr},
+		BaseURL: baseUrl,
 	}
+	c.Environments = &EnvironmentService{client: *c}
+	c.Nodes = &NodeService{client: *c}
 	return c, nil
 }
 
 // MakeRequest performs a signed request for the chef client
-func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, body)
+func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+	relativeUrl, err := url.Parse(requestUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	u := c.BaseURL.ResolveReference(relativeUrl)
+
+	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
 
+	return req, nil
+}
+
+func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if v != nil {
+		if w, ok := v.(io.Writer); ok {
+			io.Copy(w, res.Body)
+		} else {
+			err = json.NewDecoder(res.Body).Decode(v)
+		}
 	}
 
 	return res, nil

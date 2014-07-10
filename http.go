@@ -28,35 +28,43 @@ type AuthConfig struct {
 // Client is vessel for public methods used against the chef-server
 type Client struct {
 	Auth    *AuthConfig
-	baseURL *url.URL
+	BaseURL *url.URL
 	client  *http.Client
 
 	Environments *EnvironmentService
 	Nodes        *NodeService
 }
 
+// Config contains the configuration options for a chef client
+type Config struct {
+	Name    string
+	Key     string
+	BaseURL string
+	SkipSSL bool
+}
+
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
-func NewClient(name string, key string, apiUrl string) (*Client, error) {
-	pk, err := privateKeyFromString([]byte(key))
+func NewClient(cfg *Config) (*Client, error) {
+	pk, err := privateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
 	}
 
-	baseURL, _ := url.Parse(apiUrl)
+	baseUrl, _ := url.Parse(cfg.BaseURL)
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.SkipSSL},
 	}
 
 	c := &Client{
 		Auth: &AuthConfig{
 			privateKey: pk,
-			clientName: name,
+			clientName: cfg.Name,
 		},
 		client:  &http.Client{Transport: tr},
-		baseURL: baseURL,
+		BaseURL: baseUrl,
 	}
 	c.Environments = &EnvironmentService{client: *c}
 	c.Nodes = &NodeService{client: *c}
@@ -70,7 +78,7 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 		return nil, err
 	}
 
-	u := c.baseURL.ResolveReference(relativeUrl)
+	u := c.BaseURL.ResolveReference(relativeUrl)
 
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
@@ -126,11 +134,13 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
 	}
 	content = strings.TrimSuffix(content, "\n")
-
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
-	signature, _ := generateSignature(ac.privateKey, content)
+	signature, err := generateSignature(ac.privateKey, content)
+	if err != nil {
+		return err
+	}
 
 	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks

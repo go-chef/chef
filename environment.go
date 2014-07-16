@@ -4,7 +4,7 @@ import "fmt"
 
 // Environment has a Reader, hey presto
 type EnvironmentService struct {
-	client Client
+	client *Client
 }
 
 // Environment represents the native Go version of the deserialized Environment type

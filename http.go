@@ -66,8 +66,8 @@ func NewClient(cfg *Config) (*Client, error) {
 		client:  &http.Client{Transport: tr},
 		BaseURL: baseUrl,
 	}
-	c.Environments = &EnvironmentService{client: *c}
-	c.Nodes = &NodeService{client: *c}
+	c.Environments = &EnvironmentService{client: c}
+	c.Nodes = &NodeService{client: c}
 	return c, nil
 }
 

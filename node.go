@@ -3,7 +3,7 @@ package chef
 import "fmt"
 
 type NodeService struct {
-	client Client
+	client *Client
 }
 
 // Node represents the native Go version of the deserialized Node type

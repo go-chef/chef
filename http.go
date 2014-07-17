@@ -88,6 +88,20 @@ func NewClient(cfg *Config) (*Client, error) {
 	return c, nil
 }
 
+// magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
+func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
+	req, err := c.MakeRequest(method, path, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, v)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 // MakeRequest performs a signed request for the chef client
 func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
 	relativeUrl, err := url.Parse(requestUrl)
@@ -135,6 +149,9 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			io.Copy(w, res.Body)
 		} else {
 			err = json.NewDecoder(res.Body).Decode(v)
+			if err != nil {
+				return res, err
+			}
 		}
 	}
 	return res, nil

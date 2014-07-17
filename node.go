@@ -23,34 +23,15 @@ type Node struct {
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id25
 func (e *NodeService) List() (data map[string]string, err error) {
-	req, err := e.client.MakeRequest("GET", "nodes", nil)
-	if err != nil {
-		return
-	}
-
-	_, err = e.client.Do(req, &data)
-	if err != nil {
-		return
-	}
-
+	err = e.client.magicRequestDecoder("GET", "nodes", nil, &data)
 	return
 }
 
 // Get gets a node from the Chef server.
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id28
-func (e *NodeService) Get(name string) (*Node, error) {
+func (e *NodeService) Get(name string) (node Node, err error) {
 	url := fmt.Sprintf("nodes/%s", name)
-	req, err := e.client.MakeRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	node := new(Node)
-	_, err = e.client.Do(req, &node)
-	if err != nil {
-		return nil, err
-	}
-
-	return node, nil
+	err = e.client.magicRequestDecoder("GET", url, nil, &node)
+	return
 }

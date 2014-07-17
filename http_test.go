@@ -550,3 +550,20 @@ func TestMakeRequest(t *testing.T) {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 }
+
+func TestDo_badjson(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, " pigthrusters => 100% ")
+	})
+
+	stupidData := struct{}{}
+	request, err := client.MakeRequest("GET", "hashrocket", nil)
+	_, err = client.Do(request, &stupidData)
+	if err == nil {
+		t.Error(err)
+	}
+
+}

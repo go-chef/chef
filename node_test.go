@@ -69,7 +69,7 @@ func TestNodesService_Get(t *testing.T) {
 		t.Errorf("Nodes.Get returned error: %v", err)
 	}
 
-	want := &Node{
+	want := Node{
 		Name:        "node1",
 		JsonClass:   "Chef::Node",
 		ChefType:    "node",

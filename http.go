@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -42,6 +43,20 @@ type Config struct {
 	Key     string
 	BaseURL string
 	SkipSSL bool
+}
+
+/*
+An ErrorResponse reports one or more errors caused by an API request.
+Thanks to https://github.com/google/go-github
+*/
+type ErrorResponse struct {
+	Response *http.Response // HTTP response that caused this error
+}
+
+func (r *ErrorResponse) Error() string {
+	return fmt.Sprintf("%v %v: %d",
+		r.Response.Request.Method, r.Response.Request.URL,
+		r.Response.StatusCode)
 }
 
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
@@ -92,10 +107,27 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 	return req, nil
 }
 
+func CheckResponse(r *http.Response) error {
+	if c := r.StatusCode; 200 <= c && c <= 299 {
+		return nil
+	}
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := ioutil.ReadAll(r.Body)
+	if err == nil && data != nil {
+		json.Unmarshal(data, errorResponse)
+	}
+	return errorResponse
+}
+
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	err = CheckResponse(res)
+	if err != nil {
+		return res, err
 	}
 
 	if v != nil {
@@ -105,7 +137,6 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			err = json.NewDecoder(res.Body).Decode(v)
 		}
 	}
-
 	return res, nil
 }
 

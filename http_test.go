@@ -7,6 +7,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"math/big"
 	"net/http"
@@ -15,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -531,6 +531,7 @@ func TestMakeRequest(t *testing.T) {
 	if err != nil {
 		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
 	}
+
 	resp, err := c.Do(request, nil)
 	if resp.StatusCode != 200 {
 		t.Error("Non 200 return code: ", resp.Status)

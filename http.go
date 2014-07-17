@@ -31,6 +31,7 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
+	Cookbooks    *CookbookService
 	Environments *EnvironmentService
 	Nodes        *NodeService
 }
@@ -66,6 +67,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		client:  &http.Client{Transport: tr},
 		BaseURL: baseUrl,
 	}
+	c.Cookbooks = &CookbookService{client: c}
 	c.Environments = &EnvironmentService{client: c}
 	c.Nodes = &NodeService{client: c}
 	return c, nil

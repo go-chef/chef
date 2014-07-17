@@ -1,5 +1,7 @@
 package chef
 
+import "fmt"
+
 type CookbookService struct {
 	client *Client
 }
@@ -26,12 +28,10 @@ type CookbookItem struct {
 //    ]
 //  }
 //}
-type CookbookListResult struct {
-	Cookbooks map[string]CookbookVersion
-}
+type CookbookListResult map[string]CookbookVersion
 
 type CookbookVersion struct {
-	Url      string
+	Url      string                     `json:"url"`
 	Versions map[string]CookbookVersion `json:"version"`
 }
 
@@ -84,10 +84,36 @@ func (c *CookbookService) Get(name string, numVersions int) (CookbookVersion, er
 // GetVersion
 // /cookbook/foo/1.2.3
 // /cookbook/foo/_latest
-func (c *CookbookService) GetVersion(name string, version string) {
+// Chef API docs: http://docs.opscode.com/api_chef_server.html#id5
+func (c *CookbookService) GetVersion(name string, version string) (data *Cookbook, err error) {
+	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
+	req, err := c.client.MakeRequest("GET", url, nil)
+	if err != nil {
+		return
+	}
+
+	_, err = c.client.Do(req, &data)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
-// Get - Grabs a cookbook from a chef api and populates the object
-func (c *CookbookService) List() (CookbookListResult, error) {
-	return CookbookListResult{}, nil
+// List lists the cookbooks on the Chef server.
+// TODO: Support num_versions parameter
+// Chef API docs: http://docs.opscode.com/api_chef_server.html#id2
+func (c *CookbookService) List() (data *CookbookListResult, err error) {
+	// num_versions=n
+	req, err := c.client.MakeRequest("GET", "cookbooks", nil)
+	if err != nil {
+		return
+	}
+
+	_, err = c.client.Do(req, &data)
+	if err != nil {
+		return
+	}
+
+	return
 }

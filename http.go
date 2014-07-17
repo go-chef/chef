@@ -89,8 +89,16 @@ func NewClient(cfg *Config) (*Client, error) {
 }
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
-func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
-	req, err := c.MakeRequest(method, path, nil)
+func (c *Client) magicRequestDecoder(method, path string, body interface{}, v interface{}) error {
+	buffer := new(bytes.Buffer)
+	if body != nil {
+		err := json.NewEncoder(buffer).Encode(body)
+		if err != nil {
+			return err
+		}
+	}
+
+	req, err := c.MakeRequest(method, path, buffer)
 	if err != nil {
 		return err
 	}

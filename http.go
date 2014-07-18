@@ -97,6 +97,11 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 		return err
 	}
 
+	// BUG(fujin) this shit sucks
+	// smelly
+	// typ := http.DetectContentBuffer(body)
+	// We have to insert request.content-type <--
+
 	_, err = c.Do(req, v)
 	if err != nil {
 		return err
@@ -113,9 +118,22 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 
 	u := c.BaseURL.ResolveReference(relativeUrl)
 
+	// NewRequest uses a new value object of body
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
+	}
+
+	// lol
+	if body != nil {
+		buf := make([]byte, 512)
+		// Use another "value object" of body, to determine the content type
+		n, err := body.Read(buf)
+
+		if n > 0 && err != nil {
+			buf = buf[:n]
+			req.Header.Set("Content-Type", http.DetectContentType(buf))
+		}
 	}
 
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
@@ -124,6 +142,7 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 	return req, nil
 }
 
+// CheckResponse receives a pointer to a http.Response and generates an Error via unmarshalling
 func CheckResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil
@@ -136,8 +155,14 @@ func CheckResponse(r *http.Response) error {
 	return errorResponse
 }
 
+// Do is used either internally via our magic request shite or a user may use it
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
-	// FIXME: We can't keep this here
+	// if req.Header.Get("Content-Type") == "" {
+	// 	return nil, errors.New("content type missing")
+	// }
+
+	// BUG(fujin): We can't keep this here
+	// we should determine the content type from the buf itself with http.DetectContentType(buf)
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := c.client.Do(req)
@@ -145,7 +170,8 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		return nil, err
 	}
 
-	err = CheckResponse(res)
+	// BUG(fujin) tightly coupled
+	err = CheckResponse(res) // <--
 	if err != nil {
 		return res, err
 	}

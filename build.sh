@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -ex
 
 # Grab dependencies for coveralls.io integration
 go get -u github.com/axw/gocov/gocov
@@ -20,7 +20,7 @@ go test -coverprofile=coverage
 
 # Exclude our junk dirs
 for dir in `find . -not \( -path './.*' -prune \) -not \( -path '*/test' -prune \) -type d`
-do 
+do
   go test -coverprofile=$t $dir
   # Get rid of the mode: set from each coverage run
   grep -v 'mode: set' $t >> coverage

@@ -1,9 +1,7 @@
 package chef
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 )
 
 type RoleService struct {
@@ -20,36 +18,7 @@ type Role struct {
 	RunList            RunList     `json:"run_list"`
 	DefaultAttributes  interface{} `json:"default_attributes,omitempty"`
 	OverrideAttributes interface{} `json:"override_attributes,omitempty"`
-	JsonClass          string      `json:"json_class,omitempty"`
-	i                  int64       // current reading index
-	buf                []byte
-}
-
-func (b *Role) Read(p []byte) (n int, err error) {
-	if b == new(Role) {
-		return 0, nil
-	}
-
-	if len(p) == 0 {
-		return 0, nil
-	}
-
-	if b.buf == nil {
-		b.buf, err = json.Marshal(&b)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if b.i >= int64(len(b.buf)) {
-		b.i = 0
-		b.buf = nil
-		return 0, io.EOF
-	}
-
-	n = copy(p, b.buf[b.i:])
-	b.i += int64(n)
-	return
+	JSONClass          string      `json:"json_class,omitempty"`
 }
 
 // String makes RoleListResult implement the string result
@@ -73,7 +42,21 @@ func (e *RoleService) List() (data *RoleListResult, err error) {
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id32
 func (e *RoleService) Create(role *Role) (err error) {
 	path := fmt.Sprintf("roles")
-	err = e.client.magicRequestDecoder("POST", path, role, nil)
+	//  err = e.client.magicRequestDecoder("POST", path, role, nil)
+	body, err := JSONReader(role)
+	if err != nil {
+		return
+	}
+
+	// BUG(fujiN): This is now both a *response* decoder and handles upload.. gettin smelly
+
+	err = e.client.magicRequestDecoder(
+		"PUT",
+		path,
+		body,
+		nil,
+	)
+
 	return
 }
 
@@ -95,7 +78,18 @@ func (e *RoleService) Get(name string) (data *Role, err error) {
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id35
 func (e *RoleService) Put(role *Role) (err error) {
 	path := fmt.Sprintf("roles/%s", role.Name)
-	err = e.client.magicRequestDecoder("PUT", path, role, nil)
+	//  err = e.client.magicRequestDecoder("PUT", path, role, nil)
+	body, err := JSONReader(role)
+	if err != nil {
+		return
+	}
+
+	err = e.client.magicRequestDecoder(
+		"PUT",
+		path,
+		body,
+		nil,
+	)
 	return
 }
 

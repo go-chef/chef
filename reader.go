@@ -1,20 +1,17 @@
 package chef
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 )
 
-// Reader is a map string interface of arbitrary json
-type Reader map[string]interface{}
-
-// Read uses json.Marshal internally to provide a []byte interface to our raw json data
-func (b *Reader) Read(p []byte) (size int, err error) {
-	fmt.Println(b)
-	if buf, err := json.Marshal(&b); err == nil {
-		copy(p, buf)
-		fmt.Println(fmt.Sprintf("%s", buf))
+// JSONReader handles arbitrary types and synthesizes a streaming encoder for them.
+func JSONReader(v interface{}) (io.Reader, error) {
+	buf := new(bytes.Buffer)
+	err := json.NewEncoder(buf).Encode(v)
+	if err != nil {
+		return nil, err
 	}
-	return len(p), io.EOF
+	return buf, nil
 }

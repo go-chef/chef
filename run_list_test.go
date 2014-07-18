@@ -1,19 +1,18 @@
-package chef
+package chef_test
 
 import (
+	"github.com/go-chef/chef"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 var (
-	runList RunList = []string{"recipe[foo]", "recipe[baz]", "role[banana]"}
+	rl = chef.RunList{"recipe[foo]", "recipe[baz]", "role[banana]"}
 )
 
 func TestNodeRunList(t *testing.T) {
-	rl := runList
-
 	Convey("Node.RunList() should be a RunList", t, func() {
-		So(rl, ShouldHaveSameTypeAs, RunList{})
+		So(rl, ShouldHaveSameTypeAs, chef.RunList{})
 	})
 
 	Convey("Node.RunList() should be populated", t, func() {
@@ -22,7 +21,7 @@ func TestNodeRunList(t *testing.T) {
 		So(rl, ShouldContain, "role[banana]")
 	})
 
-	rl = RunList{}
+	rl = chef.RunList{}
 	Convey("Empty RunList should be valid", t, func() {
 		So(rl, ShouldBeEmpty)
 	})

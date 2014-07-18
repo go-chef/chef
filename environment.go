@@ -15,15 +15,16 @@ type EnvironmentListResult map[string]string
 
 // Environment represents the native Go version of the deserialized Environment type
 type Environment struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	ChefType    string      `json:"chef_type"`
-	Attributes  interface{} `json:"attributes,omitempty"`
-	// DefaultAttributes  interface{}       `json:"default_attributes,omitempty"`
-	// OverrideAttributes interface{}       `json:"override_attributes,omitempty"`
-	JsonClass        string            `json:"json_class,omitempty"`
-	CookbookVersions map[string]string `json:"cookbook_versions"`
-	i                int64             // current reading index
+	Name               string            `json:"name"`
+	Description        string            `json:"description"`
+	ChefType           string            `json:"chef_type"`
+	Attributes         interface{}       `json:"attributes,omitempty"`
+	DefaultAttributes  interface{}       `json:"default_attributes,omitempty"`
+	OverrideAttributes interface{}       `json:"override_attributes,omitempty"`
+	JsonClass          string            `json:"json_class,omitempty"`
+	CookbookVersions   map[string]string `json:"cookbook_versions"`
+	i                  int64             // current reading index
+	buf                []byte
 }
 
 func (b *Environment) Read(p []byte) (n int, err error) {
@@ -35,19 +36,20 @@ func (b *Environment) Read(p []byte) (n int, err error) {
 		return 0, nil
 	}
 
-	buf, err := json.Marshal(&b) // should save this
-	if err != nil {
-		fmt.Println("error doing json")
-		return 0, err
+	if b.buf == nil {
+		b.buf, err = json.Marshal(&b)
+		if err != nil {
+			return 0, err
+		}
 	}
 
-	fmt.Println(fmt.Sprintf("sending: %s", buf))
-	if b.i >= int64(len(buf)) {
+	if b.i >= int64(len(b.buf)) {
 		b.i = 0
+		b.buf = nil
 		return 0, io.EOF
 	}
 
-	n = copy(p, buf[b.i:])
+	n = copy(p, b.buf[b.i:])
 	b.i += int64(n)
 	return
 }

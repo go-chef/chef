@@ -89,16 +89,8 @@ func NewClient(cfg *Config) (*Client, error) {
 }
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
-func (c *Client) magicRequestDecoder(method, path string, body interface{}, v interface{}) error {
-	buffer := new(bytes.Buffer)
-	if body != nil {
-		err := json.NewEncoder(buffer).Encode(body)
-		if err != nil {
-			return err
-		}
-	}
-
-	req, err := c.MakeRequest(method, path, buffer)
+func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
+	req, err := c.MakeRequest(method, path, body)
 	if err != nil {
 		return err
 	}
@@ -123,6 +115,7 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 	if err != nil {
 		return nil, err
 	}
+
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
 
@@ -142,6 +135,9 @@ func CheckResponse(r *http.Response) error {
 }
 
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+	// FIXME: We can't keep this here
+	req.Header.Set("Content-Type", "application/json")
+
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

@@ -35,6 +35,7 @@ type Client struct {
 	Cookbooks    *CookbookService
 	Environments *EnvironmentService
 	Nodes        *NodeService
+	Roles        *RoleService
 }
 
 // Config contains the configuration options for a chef client
@@ -85,6 +86,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Cookbooks = &CookbookService{client: c}
 	c.Environments = &EnvironmentService{client: c}
 	c.Nodes = &NodeService{client: c}
+	c.Roles = &RoleService{client: c}
 	return c, nil
 }
 

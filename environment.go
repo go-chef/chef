@@ -70,6 +70,19 @@ func (e *EnvironmentService) List() (data *EnvironmentListResult, err error) {
 	return
 }
 
+// Create an environment in the Chef server.
+//
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id15
+func (e *EnvironmentService) Create(environment *Environment) (err error) {
+	path := fmt.Sprintf("environments")
+	err = e.client.magicRequestDecoder("POST", path, environment, nil)
+	return
+}
+
+// Delete an environment from the Chef server.
+//
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id16
+
 // Get gets an environment from the Chef server.
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id17
@@ -87,3 +100,19 @@ func (e *EnvironmentService) Put(environment *Environment) (err error) {
 	err = e.client.magicRequestDecoder("PUT", path, environment, nil)
 	return
 }
+
+// Get the versions of a cookbook for this environment from the Chef server.
+//
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id19
+
+// Get a hash of cookbooks and cookbook versions (including all dependencies) that
+// are required by the run_list array. Version constraints may be specified using
+// the @ symbol after the cookbook name as a delimiter. Version constraints may also
+// be present when the cookbook_versions attributes is specified for an environment
+// or when dependencies are specified by a cookbook.
+//
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id20
+
+// Get a list of cookbooks and cookbook versions that are available to the specified environment.
+//
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id21

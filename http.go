@@ -15,6 +15,8 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // ChefVersion that we pretend to emulate
@@ -97,10 +99,8 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 		return err
 	}
 
-	if body != nil {
-		b := make([]byte, 8)
-		_, _ = body.Read(b)
-		fmt.Println("b:", b)
+	if method == "PUT" && path == "roles" {
+		spew.Dump(body)
 	}
 
 	// BUG(fujin) this shit sucks

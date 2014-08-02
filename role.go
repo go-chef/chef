@@ -1,6 +1,10 @@
 package chef
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/davecgh/go-spew/spew"
+)
 
 type RoleService struct {
 	client *Client
@@ -54,9 +58,7 @@ func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
 		return
 	}
 
-	b := make([]byte, 8)
-	_, _ = body.Read(b)
-	fmt.Println("b!", b)
+	spew.Dump(body)
 
 	// BUG(fujiN): This is now both a *response* decoder and handles upload.. gettin smelly
 	err = e.client.magicRequestDecoder(

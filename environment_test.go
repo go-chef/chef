@@ -3,6 +3,7 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"io"
 	"log"
 	"net/http"
@@ -43,7 +44,7 @@ func TestEnvironmentsService_List(t *testing.T) {
 		t.Errorf("Environments.List returned error: %v", err)
 	}
 
-	want := map[string]string{"_default": "blah", "development": "blah"}
+	want := &EnvironmentListResult{"_default": "blah", "development": "blah"}
 
 	if !reflect.DeepEqual(environments, want) {
 		t.Errorf("Environments.List returned %+v, want %+v", environments, want)

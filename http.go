@@ -94,25 +94,10 @@ func NewClient(cfg *Config) (*Client, error) {
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
 func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
-	if method == "PUT" && path == "roles" {
-		fmt.Println("before")
-		spew.Dump(body)
-	}
-
 	req, err := c.MakeRequest(method, path, body)
 	if err != nil {
 		return err
 	}
-
-	if method == "PUT" && path == "roles" {
-		fmt.Println("after")
-		spew.Dump(body)
-	}
-
-	// BUG(fujin) this shit sucks
-	// smelly
-	// typ := http.DetectContentBuffer(body)
-	// We have to insert request.content-type <--
 
 	_, err = c.Do(req, v)
 	if err != nil {
@@ -127,8 +112,14 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 	if err != nil {
 		return nil, err
 	}
-
 	u := c.BaseURL.ResolveReference(relativeUrl)
+
+	// If there is a boody then we want to set the content-type header apropriately
+	body_test := bytes.NewBuffer(make([]byte, 512))
+	if body != nil {
+		// copy first 512 bytes of boddy for content-type detection.
+		io.CopyN(body_test, body, 512)
+	}
 
 	// NewRequest uses a new value object of body
 	req, err := http.NewRequest(method, u.String(), body)
@@ -136,21 +127,11 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 		return nil, err
 	}
 
-	// lol
-	if body != nil {
-		buf := make([]byte, 512)
-		// Use another "value object" of body, to determine the content type
-		n, err := body.Read(buf)
-
-		if n > 0 && err != nil {
-			buf = buf[:n]
-			req.Header.Set("Content-Type", http.DetectContentType(buf))
-		}
-	}
+	// Set content type header
+	req.Header.Set("Content-Type", http.DetectContentType(body_test.Bytes()))
 
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
-
 	return req, nil
 }
 
@@ -172,10 +153,6 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	// if req.Header.Get("Content-Type") == "" {
 	// 	return nil, errors.New("content type missing")
 	// }
-
-	// BUG(fujin): We can't keep this here
-	// we should determine the content type from the buf itself with http.DetectContentType(buf)
-	req.Header.Set("Content-Type", "application/json")
 
 	res, err := c.client.Do(req)
 	if err != nil {

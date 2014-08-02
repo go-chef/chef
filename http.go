@@ -15,8 +15,6 @@ import (
 	"path"
 	"strings"
 	"time"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 // ChefVersion that we pretend to emulate

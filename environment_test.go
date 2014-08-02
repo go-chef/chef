@@ -3,7 +3,6 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"io"
 	"log"
 	"net/http"

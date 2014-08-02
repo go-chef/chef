@@ -94,12 +94,18 @@ func NewClient(cfg *Config) (*Client, error) {
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
 func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
+	if method == "PUT" && path == "roles" {
+		fmt.Println("before")
+		spew.Dump(body)
+	}
+
 	req, err := c.MakeRequest(method, path, body)
 	if err != nil {
 		return err
 	}
 
 	if method == "PUT" && path == "roles" {
+		fmt.Println("after")
 		spew.Dump(body)
 	}
 

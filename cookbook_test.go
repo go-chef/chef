@@ -1,4 +1,4 @@
-package chef
+package chef_test
 
 import (
 	"fmt"

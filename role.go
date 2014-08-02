@@ -9,6 +9,7 @@ type RoleService struct {
 }
 
 type RoleListResult map[string]string
+type RoleCreateResult map[string]string
 
 // Role represents the native Go version of the deserialized Role type
 type Role struct {
@@ -29,6 +30,14 @@ func (e RoleListResult) String() (out string) {
 	return out
 }
 
+// String makes RoleCreateResult implement the string result
+func (e RoleCreateResult) String() (out string) {
+	for k, v := range e {
+		out += fmt.Sprintf("%s => %s\n", k, v)
+	}
+	return out
+}
+
 // List lists the roles in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id31
@@ -40,9 +49,8 @@ func (e *RoleService) List() (data *RoleListResult, err error) {
 // Create a new role in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id32
-func (e *RoleService) Create(role *Role) (err error) {
-	path := fmt.Sprintf("roles")
-	//  err = e.client.magicRequestDecoder("POST", path, role, nil)
+func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
+	// err = e.client.magicRequestDecoder("POST", "roles", role, &data)
 	body, err := JSONReader(role)
 	if err != nil {
 		return
@@ -52,9 +60,9 @@ func (e *RoleService) Create(role *Role) (err error) {
 
 	err = e.client.magicRequestDecoder(
 		"PUT",
-		path,
+		"roles",
 		body,
-		nil,
+		&data,
 	)
 
 	return
@@ -76,7 +84,7 @@ func (e *RoleService) Get(name string) (data *Role, err error) {
 // Update a role in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id35
-func (e *RoleService) Put(role *Role) (err error) {
+func (e *RoleService) Put(role *Role) (data *Role, err error) {
 	path := fmt.Sprintf("roles/%s", role.Name)
 	//  err = e.client.magicRequestDecoder("PUT", path, role, nil)
 	body, err := JSONReader(role)
@@ -88,7 +96,7 @@ func (e *RoleService) Put(role *Role) (err error) {
 		"PUT",
 		path,
 		body,
-		nil,
+		&data,
 	)
 	return
 }

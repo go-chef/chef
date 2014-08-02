@@ -22,8 +22,8 @@ const ChefVersion = "11.12.0"
 
 // AuthConfig representing a client and a private key used for encryption
 type AuthConfig struct {
-	privateKey *rsa.PrivateKey
-	clientName string
+	PrivateKey *rsa.PrivateKey
+	ClientName string
 }
 
 // Client is vessel for public methods used against the chef-server
@@ -64,7 +64,7 @@ func (r *ErrorResponse) Error() string {
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
 func NewClient(cfg *Config) (*Client, error) {
-	pk, err := privateKeyFromString([]byte(cfg.Key))
+	pk, err := PrivateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func NewClient(cfg *Config) (*Client, error) {
 
 	c := &Client{
 		Auth: &AuthConfig{
-			privateKey: pk,
-			clientName: cfg.Name,
+			PrivateKey: pk,
+			ClientName: cfg.Name,
 		},
 		client:  &http.Client{Transport: tr},
 		BaseURL: baseUrl,
@@ -202,13 +202,13 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	request.Header.Set("Method", request.Method)
-	request.Header.Set("Hashed Path", hashStr(endpoint))
+	request.Header.Set("Hashed Path", HashStr(endpoint))
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("X-Chef-Version", ChefVersion)
 	request.Header.Set("X-Ops-Timestamp", time.Now().UTC().Format(time.RFC3339))
-	request.Header.Set("X-Ops-UserId", ac.clientName)
+	request.Header.Set("X-Ops-UserId", ac.ClientName)
 	request.Header.Set("X-Ops-Sign", "algorithm=sha1;version=1.0")
-	request.Header.Set("X-Ops-Content-Hash", calcBodyHash(request))
+	request.Header.Set("X-Ops-Content-Hash", CalcBodyHash(request))
 
 	// To validate the signature it seems to be very particular
 	var content string
@@ -219,14 +219,14 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
-	signature, err := generateSignature(ac.privateKey, content)
+	signature, err := GenerateSignature(ac.PrivateKey, content)
 	if err != nil {
 		return err
 	}
 
 	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks
-	base64sig := base64BlockEncode(signature, 60)
+	base64sig := Base64BlockEncode(signature, 60)
 
 	// roll over the auth slice and add the apropriate header
 	for index, value := range base64sig {
@@ -236,8 +236,8 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	return nil
 }
 
-// modified from goiardi calcBodyHash
-func calcBodyHash(r *http.Request) string {
+// modified from goiardi CalcBodyHash
+func CalcBodyHash(r *http.Request) string {
 	var bodyStr string
 
 	if r.Body == nil {
@@ -250,12 +250,12 @@ func calcBodyHash(r *http.Request) string {
 
 	// Since we're not setting the encoded slice limit
 	// we can safely call out [0]
-	chkHash := hashStr(bodyStr)
+	chkHash := HashStr(bodyStr)
 	return chkHash
 }
 
-// privateKeyFromString parses an RSA private key from a string
-func privateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
+// PrivateKeyFromString parses an RSA private key from a string
+func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
 		return nil, fmt.Errorf("block size invalid for '%s'", string(key))

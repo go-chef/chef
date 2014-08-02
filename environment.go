@@ -12,6 +12,7 @@ type EnvironmentService struct {
 }
 
 type EnvironmentListResult map[string]string
+type EnvironmentCreateResult map[string]string
 
 // Environment represents the native Go version of the deserialized Environment type
 type Environment struct {
@@ -62,9 +63,17 @@ func (e EnvironmentListResult) String() (out string) {
 	return out
 }
 
+// String makes EnvironmentCreateResult implement the string result
+func (e EnvironmentCreateResult) String() (out string) {
+	for k, v := range e {
+		out += fmt.Sprintf("%s => %s\n", k, v)
+	}
+	return out
+}
+
 // List lists the environments in the Chef server.
 //
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id14
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id14
 func (e *EnvironmentService) List() (data *EnvironmentListResult, err error) {
 	err = e.client.magicRequestDecoder("GET", "environments", nil, &data)
 	return
@@ -73,9 +82,8 @@ func (e *EnvironmentService) List() (data *EnvironmentListResult, err error) {
 // Create an environment in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id15
-func (e *EnvironmentService) Create(environment *Environment) (err error) {
-	path := fmt.Sprintf("environments")
-	err = e.client.magicRequestDecoder("POST", path, environment, nil)
+func (e *EnvironmentService) Create(environment *Environment) (data *EnvironmentCreateResult, err error) {
+	err = e.client.magicRequestDecoder("POST", "environments", environment, &data)
 	return
 }
 
@@ -85,7 +93,7 @@ func (e *EnvironmentService) Create(environment *Environment) (err error) {
 
 // Get gets an environment from the Chef server.
 //
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id17
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id17
 func (e *EnvironmentService) Get(name string) (data *Environment, err error) {
 	path := fmt.Sprintf("environments/%s", name)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)
@@ -94,10 +102,10 @@ func (e *EnvironmentService) Get(name string) (data *Environment, err error) {
 
 // Write an environment to the Chef server.
 //
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id18
-func (e *EnvironmentService) Put(environment *Environment) (err error) {
+// Chef API docs: http://docs.getchef.com/api_chef_server.html#id18
+func (e *EnvironmentService) Put(environment *Environment) (data *Environment, err error) {
 	path := fmt.Sprintf("environments/%s", environment.Name)
-	err = e.client.magicRequestDecoder("PUT", path, environment, nil)
+	err = e.client.magicRequestDecoder("PUT", path, environment, &data)
 	return
 }
 

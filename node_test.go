@@ -1,4 +1,4 @@
-package chef
+package chef_test
 
 import (
 	"encoding/json"
@@ -9,6 +9,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/go-chef/chef"
 	// . "github.com/smartystreets/goconvey/convey"
 )
 
@@ -22,7 +24,7 @@ func TestNodeFromJSONDecoder(t *testing.T) {
 		t.Error("unexpected error", err, "during os.Open on", testNodeJSON)
 	} else {
 		dec := json.NewDecoder(file)
-		var n Node
+		var n chef.Node
 		if err := dec.Decode(&n); err == io.EOF {
 			log.Println(n)
 		} else if err != nil {
@@ -69,7 +71,7 @@ func TestNodesService_Get(t *testing.T) {
 		t.Errorf("Nodes.Get returned error: %v", err)
 	}
 
-	want := Node{
+	want := chef.Node{
 		Name:        "node1",
 		JsonClass:   "Chef::Node",
 		ChefType:    "node",

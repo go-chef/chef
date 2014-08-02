@@ -1,4 +1,4 @@
-package chef
+package chef_test
 
 import (
 	"bytes"
@@ -7,8 +7,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"math/big"
 	"net/http"
@@ -17,6 +15,10 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	. "github.com/ctdk/goiardi/chefcrypto"
+	"github.com/go-chef/chef"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -30,7 +32,7 @@ var (
 
 	mux    *http.ServeMux
 	server *httptest.Server
-	client *Client
+	client *chef.Client
 )
 
 const (
@@ -123,7 +125,7 @@ func (nopCloser) Close() error { return nil }
 func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
-	client, _ = NewClient(&Config{
+	client, _ = chef.NewClient(&chef.Config{
 		Name:    userid,
 		Key:     privateKey,
 		BaseURL: server.URL,
@@ -152,15 +154,15 @@ func publicKeyFromString(key []byte) (*rsa.PublicKey, error) {
 	return rsaKey.(*rsa.PublicKey), nil
 }
 
-func makeAuthConfig() (*AuthConfig, error) {
-	pk, err := privateKeyFromString([]byte(privateKey))
+func makeAuthConfig() (*chef.AuthConfig, error) {
+	pk, err := chef.PrivateKeyFromString([]byte(privateKey))
 	if err != nil {
 		return nil, err
 	}
 
-	ac := &AuthConfig{
-		privateKey: pk,
-		clientName: userid,
+	ac := &chef.AuthConfig{
+		PrivateKey: pk,
+		ClientName: userid,
 	}
 	return ac, nil
 }
@@ -180,14 +182,14 @@ func TestBase64BlockEncodeNoLimit(t *testing.T) {
 	}
 	content = strings.TrimSuffix(content, "\n")
 
-	signature, _ := generateSignature(ac.privateKey, content)
-	base64BlockEncode(signature, 0)
+	signature, _ := chef.GenerateSignature(ac.PrivateKey, content)
+	chef.Base64BlockEncode(signature, 0)
 }
 
 func TestSignRequestBadSignature(t *testing.T) {
 	ac, err := makeAuthConfig()
 	request, err := http.NewRequest("GET", requestURL, nil)
-	ac.privateKey.PublicKey.N = big.NewInt(23234728432324)
+	ac.PrivateKey.PublicKey.N = big.NewInt(23234728432324)
 
 	err = ac.SignRequest(request)
 	if err == nil {
@@ -310,7 +312,7 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if calcBodyHash(req) != contentHash {
+	if chef.CalcBodyHash(req) != contentHash {
 		fmt.Fprintf(rw, "Content hash did not match hash of request body")
 
 	}
@@ -451,7 +453,7 @@ func assembleHeaderToCheck(r *http.Request) string {
 }
 
 func TestGenerateHash(t *testing.T) {
-	input, output := hashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
+	input, output := chef.HashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
 
 	Convey("correctly hashes a given input string", t, func() {
 		So(input, ShouldEqual, output)
@@ -463,7 +465,7 @@ func TestGenerateSignatureError(t *testing.T) {
 	ac, _ := makeAuthConfig()
 
 	// BUG(fujin): what about the 'hi' string is not meant to be signable?
-	sig, err := generateSignature(ac.privateKey, "hi")
+	sig, err := chef.GenerateSignature(ac.PrivateKey, "hi")
 
 	Convey("sig should be empty?", t, func() {
 		So(sig, ShouldNotBeEmpty)
@@ -495,26 +497,26 @@ func TestRequestError(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
-	c, err := NewClient(cfg)
+	cfg := &chef.Config{Name: "testclient", Key: privateKey, SkipSSL: false}
+	c, err := chef.NewClient(cfg)
 	if err != nil {
 		t.Error("Couldn't make a valid client...\n", err)
 	}
 	// simple validation on the created client
-	if c.Auth.clientName != "testclient" {
-		t.Error("unexpected client name: ", c.Auth.clientName)
+	if c.Auth.ClientName != "testclient" {
+		t.Error("unexpected client name: ", c.Auth.ClientName)
 	}
 
 	// Bad PEM should be an error
-	cfg = &Config{Name: "blah", Key: "not a key", SkipSSL: false}
-	c, err = NewClient(cfg)
+	cfg = &chef.Config{Name: "blah", Key: "not a key", SkipSSL: false}
+	c, err = chef.NewClient(cfg)
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
 
 	// Not a proper key should be an error
-	cfg = &Config{Name: "blah", Key: badPrivateKey, SkipSSL: false}
-	c, err = NewClient(cfg)
+	cfg = &chef.Config{Name: "blah", Key: badPrivateKey, SkipSSL: false}
+	c, err = chef.NewClient(cfg)
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
@@ -523,8 +525,8 @@ func TestNewClient(t *testing.T) {
 func TestMakeRequest(t *testing.T) {
 	var err error
 	server := createServer()
-	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
-	c, _ := NewClient(cfg)
+	cfg := &chef.Config{Name: "testclient", Key: privateKey, SkipSSL: false}
+	c, _ := chef.NewClient(cfg)
 	defer server.Close()
 
 	request, err := c.MakeRequest("GET", server.URL, nil)

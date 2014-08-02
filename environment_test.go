@@ -43,7 +43,7 @@ func TestEnvironmentsService_List(t *testing.T) {
 		t.Errorf("Environments.List returned error: %v", err)
 	}
 
-	want := map[string]string{"_default": "blah", "development": "blah"}
+	want := &EnvironmentListResult{"_default": "blah", "development": "blah"}
 
 	if !reflect.DeepEqual(environments, want) {
 		t.Errorf("Environments.List returned %+v, want %+v", environments, want)
@@ -75,5 +75,84 @@ func TestEnvironmentsService_Get(t *testing.T) {
 
 	if !reflect.DeepEqual(environments, want) {
 		t.Errorf("Environments.Get returned %+v, want %+v", environments, want)
+	}
+}
+
+func TestEnvironmentsService_Create(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{ "uri": "http://localhost:4000/environments/dev" }`)
+	})
+
+	role := &Environment{
+		Name:             "dev",
+		ChefType:         "environment",
+		JsonClass:        "Chef::Environment",
+		Attributes:       "",
+		Description:      "",
+		CookbookVersions: map[string]string{},
+	}
+
+	uri, err := client.Environments.Create(role)
+	if err != nil {
+		t.Errorf("Environments.Create returned error: %v", err)
+	}
+
+	want := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+
+	if !reflect.DeepEqual(uri, want) {
+		t.Errorf("Environments.Create returned %+v, want %+v", uri, want)
+	}
+}
+
+func TestEnvironmentsService_Put(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments/dev", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "dev",
+		  "json_class": "Chef::Environment",
+		  "description": "The Dev Environment",
+		  "cookbook_versions": {},
+		  "chef_type": "environment"
+		}`)
+	})
+
+	environment := &Environment{
+		Name:             "dev",
+		ChefType:         "environment",
+		JsonClass:        "Chef::Environment",
+		Description:      "The Dev Environment",
+		CookbookVersions: map[string]string{},
+	}
+
+	updatedEnvironment, err := client.Environments.Put(environment)
+	if err != nil {
+		t.Errorf("Environments.Put returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(updatedEnvironment, environment) {
+		t.Errorf("Environments.Put returned %+v, want %+v", updatedEnvironment, environment)
+	}
+}
+
+func TestEnvironmentsService_EnvironmentListResultString(t *testing.T) {
+	e := &EnvironmentListResult{
+		"_default":  "https://api.opscode.com/organizations/org_name/environments/_default",
+		"webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
+	want := "_default => https://api.opscode.com/organizations/org_name/environments/_default\nwebserver => https://api.opscode.com/organizations/org_name/environments/webserver\n"
+	if e.String() != want {
+		t.Errorf("EnvironmentListResult.String returned %+v, want %+v", e.String(), want)
+	}
+}
+
+func TestEnvironmentsService_EnvironmentCreateResultString(t *testing.T) {
+	e := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+	want := "uri => http://localhost:4000/environments/dev\n"
+	if e.String() != want {
+		t.Errorf("EnvironmentCreateResult.String returned %+v, want %+v", e.String(), want)
 	}
 }

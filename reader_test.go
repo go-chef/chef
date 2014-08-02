@@ -1,11 +1,12 @@
 package chef_test
 
 import (
-	"github.com/go-chef/chef"
 	"io"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/go-chef/chef"
 )
 
 type TestEncoder struct {

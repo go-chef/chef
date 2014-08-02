@@ -97,6 +97,12 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 		return err
 	}
 
+	if body != nil {
+		b := make([]byte, 8)
+		_, _ = body.Read(b)
+		fmt.Println("b:", b)
+	}
+
 	// BUG(fujin) this shit sucks
 	// smelly
 	// typ := http.DetectContentBuffer(body)

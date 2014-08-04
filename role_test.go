@@ -2,70 +2,37 @@ package chef
 
 import (
 	"encoding/json"
+	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	"io"
-	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
-	"path"
+	"reflect"
 	"testing"
 )
 
 var (
 	testRoleJSON = "test/role.json"
 	// FML
-	testRoleMapStringInterfaceLol, _ = NewRole(&Reader{
-		"name":       "test",
-		"run_list":   []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
-		"chef_type":  "role",
-		"json_class": "Chef::Role",
-		"default_attributes": map[string]interface{}{
-			"tags": map[string]interface{}{},
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "no",
-					"max_auth_tries":    "3",
-				},
-			},
-		},
-		"override_attributes": map[string]interface{}{
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "yes",
-					"max_auth_tries":    "1",
-				},
-			},
-		},
-	})
+	testRole = &Role{
+		Name:               "test",
+		ChefType:           "role",
+		Description:        "Test Role",
+		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		JSONClass:          "Chef::Role",
+		DefaultAttributes:  struct{}{},
+		OverrideAttributes: struct{}{},
+	}
 )
 
 func TestRoleName(t *testing.T) {
 	// BUG(spheromak): Pull these constructors out into a Convey Decorator
-	n1 := testRoleMapStringInterfaceLol // (*Role)
+	n1 := testRole
 	name := n1.Name
 
 	Convey("Role name is 'test'", t, func() {
 		So(name, ShouldEqual, "test")
-	})
-
-	swordWithoutASheathe, err := NewRole(&Reader{
-		"foobar": "baz",
-	})
-
-	name = swordWithoutASheathe.Name
-	Convey("Role without a name", t, func() {
-		So(name, ShouldBeEmpty)
-		So(err, ShouldBeNil)
-	})
-}
-
-func TestRoleAttribute(t *testing.T) {
-	n := testRoleMapStringInterfaceLol
-	attr := n.Default
-	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
-	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-	Convey("Role.Default should map", t, func() {
-		So(ugh, ShouldEqual, "no")
 	})
 }
 
@@ -84,35 +51,142 @@ func TestRoleFromJSONDecoder(t *testing.T) {
 	}
 }
 
-// TestNewRole checks the NewRole Reader chain for Type
-func TestNewRole(t *testing.T) {
-	var v interface{}
-	v = testRoleMapStringInterfaceLol
-	Convey("NewRole should create a Role", t, func() {
-		So(v, ShouldHaveSameTypeAs, &Role{})
+func TestRolesService_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"foo":"http://localhost:4000/roles/foo", "webserver":"http://localhost:4000/roles/webserver"}`)
 	})
 
-	Convey("NewRole should error if decode fails", t, func() {
+	roles, err := client.Roles.List()
+	if err != nil {
+		t.Errorf("Roles.List returned error: %v", err)
+	}
 
-		failRole, err := NewRole(&Reader{
-			"name": struct{}{},
-		})
+	want := &RoleListResult{"foo": "http://localhost:4000/roles/foo", "webserver": "http://localhost:4000/roles/webserver"}
 
-		So(err, ShouldNotBeNil)
-		So(failRole, ShouldBeNil)
-	})
+	if !reflect.DeepEqual(roles, want) {
+		t.Errorf("Roles.List returned %+v, want %+v", roles, want)
+	}
 }
 
-// TestRoleReadIntoFile tests that Read() can be used to read by io.Readers
-// BUG(fujin): re-do with goconvey
-func TestRoleReadIntoFile(t *testing.T) {
-	n1 := testRoleMapStringInterfaceLol // (*Role)
-	tf, _ := ioutil.TempFile("test", "role-to-file")
-	// Copy to tempfile (I use Read() internally)
-	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
-	io.Copy(tf, n1)
+func TestRolesService_Get(t *testing.T) {
+	setup()
+	defer teardown()
 
-	// Close and remove tempfile
-	tf.Close()
-	os.Remove(path.Clean(tf.Name()))
+	mux.HandleFunc("/roles/webserver", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "webserver",
+		  "chef_type": "role",
+		  "json_class": "Chef::Role",
+		  "default_attributes": "",
+		  "description": "A webserver",
+		  "run_list": [
+		    "recipe[unicorn]",
+		    "recipe[apache2]"
+		  ],
+		  "override_attributes": ""
+		}
+		`)
+	})
+
+	role, err := client.Roles.Get("webserver")
+	if err != nil {
+		t.Errorf("Roles.Get returned error: %v", err)
+	}
+
+	want := &Role{
+		Name:               "webserver",
+		ChefType:           "role",
+		JSONClass:          "Chef::Role",
+		DefaultAttributes:  "",
+		Description:        "A webserver",
+		RunList:            []string{"recipe[unicorn]", "recipe[apache2]"},
+		OverrideAttributes: "",
+	}
+
+	if !reflect.DeepEqual(role, want) {
+		t.Errorf("Roles.Get returned %+v, want %+v", role, want)
+	}
+}
+
+func TestRolesService_Create(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{ "uri": "http://localhost:4000/roles/webserver" }`)
+	})
+
+	role := &Role{
+		Name:               "webserver",
+		ChefType:           "role",
+		JSONClass:          "Chef::Role",
+		DefaultAttributes:  "",
+		Description:        "A webserver",
+		RunList:            []string{"recipe[unicorn]", "recipe[apache2]"},
+		OverrideAttributes: "",
+	}
+
+	uri, err := client.Roles.Create(role)
+	if err != nil {
+		t.Errorf("Roles.Create returned error: %v", err)
+	}
+
+	want := &RoleCreateResult{"uri": "http://localhost:4000/roles/webserver"}
+
+	if !reflect.DeepEqual(uri, want) {
+		t.Errorf("Roles.Create returned %+v, want %+v", uri, want)
+	}
+}
+
+func TestRolesService_Put(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles/webserver", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "webserver",
+		  "chef_type": "role",
+		  "json_class": "Chef::Role",
+		  "description": "A webserver",
+		  "run_list": [
+		    "recipe[apache2]"
+		  ]
+		}`)
+	})
+
+	role := &Role{
+		Name:        "webserver",
+		ChefType:    "role",
+		JSONClass:   "Chef::Role",
+		Description: "A webserver",
+		RunList:     []string{"recipe[apache2]"},
+	}
+
+	updatedRole, err := client.Roles.Put(role)
+	if err != nil {
+		t.Errorf("Roles.Put returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(updatedRole, role) {
+		t.Errorf("Roles.Put returned %+v, want %+v", updatedRole, role)
+	}
+}
+
+func TestRolesService_RoleListResultString(t *testing.T) {
+	r := &RoleListResult{"foo": "http://localhost:4000/roles/foo"}
+	want := "foo => http://localhost:4000/roles/foo\n"
+	if r.String() != want {
+		t.Errorf("RoleListResult.String returned %+v, want %+v", r.String(), want)
+	}
+}
+
+func TestRolesService_RoleCreateResultString(t *testing.T) {
+	r := &RoleCreateResult{"uri": "http://localhost:4000/roles/webserver"}
+	want := "uri => http://localhost:4000/roles/webserver\n"
+	if r.String() != want {
+		t.Errorf("RoleCreateResult.String returned %+v, want %+v", r.String(), want)
+	}
 }

@@ -1,70 +1,144 @@
 package chef
 
-import (
-	"github.com/mitchellh/mapstructure"
-)
+import "fmt"
 
-// Cookbook is the chef-cookbook container
-type Cookbook struct {
-	*Reader
-	*nativeCookbook
+// CookbookService  is the service for interacting with chef server cookbooks endpoint
+type CookbookService struct {
+	client *Client
 }
 
-// Each Cookbook lists it's files as a cookbookItem. This structure captures those and makes it easier to work with cook data
+// CookbookItem represents a object of cookbook file data
 type CookbookItem struct {
-	Url         string `mapstructure:"url"`
-	Path        string `mapstructure:"path"`
-	Name        string `mapstructure:"name"`
-	Checksum    string `mapstructure:"checksum"`
-	Specificity string `mapstructure:"specificity"`
+	Url         string `json:"url,omitempty"`
+	Path        string `json:"path,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Checksum    string `json:"checksum,omitempty"`
+	Specificity string `json:"specificity,omitempty"`
+}
+
+// CookbookListResult is the summary info returned by chef-api when listing
+// http://docs.opscode.com/api_chef_server.html#cookbooks
+type CookbookListResult map[string]CookbookVersions
+
+// CookbookVersions is the data container returned from the chef server when listing all cookbooks
+type CookbookVersions struct {
+	Url      string            `json:"url,omitempty"`
+	Versions []CookbookVersion `json:"versions,omitempty"`
+}
+
+// CookbookVersion is the data for a specific cookbook version
+type CookbookVersion struct {
+	Url     string `json:"url,omitempty"`
+	Version string `json:"version,omitempty"`
 }
 
 // CookbookMeta represents a Golang version of cookbook metadata
 type CookbookMeta struct {
-	Name            string                 `mapstructure:"cookbook_name"`
-	Version         string                 `mapstructure:"version"`
-	Description     string                 `mapstructure:"description"`
-	LongDescription string                 `mapstructure:"long_description"`
-	Maintainer      string                 `mapstructure:"maintainer"`
-	MaintainerEmail string                 `mapstructure:"maintainer_email"`
-	License         string                 `mapstructure:"license"`
-	Platforms       map[string]string      `mapstructure:"platforms"`
-	Depends         map[string]string      `mapstructure:"dependencies"`
-	Reccomends      map[string]string      `mapstructure:"recommendations"`
-	Suggests        map[string]string      `mapstructure:"suggestions"`
-	Conflicts       map[string]string      `mapstructure:"conflicting"`
-	Provides        map[string]string      `mapstructure:"providing"`
-	Replaces        map[string]string      `mapstructure:"replacing"`
-	attributes      map[string]interface{} `mapstructure:"attributes"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
-	groupings       map[string]interface{} `mapstructure:"groupings"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
-	recipes         map[string]string      `mapstructure:"recipes"`
+	Name            string                 `json:"cookbook_name,omitempty"`
+	Version         string                 `json:"version,omitempty"`
+	Description     string                 `json:"description,omitempty"`
+	LongDescription string                 `json:"long_description,omitempty"`
+	Maintainer      string                 `json:"maintainer,omitempty"`
+	MaintainerEmail string                 `json:"maintainer_email,omitempty"`
+	License         string                 `json:"license,omitempty"`
+	Platforms       map[string]string      `json:"platforms,omitempty"`
+	Depends         map[string]string      `json:"dependencies,omitempty"`
+	Reccomends      map[string]string      `json:"recommendations,omitempty"`
+	Suggests        map[string]string      `json:"suggestions,omitempty"`
+	Conflicts       map[string]string      `json:"conflicting,omitempty"`
+	Provides        map[string]string      `json:"providing,omitempty"`
+	Replaces        map[string]string      `json:"replacing,omitempty"`
+	attributes      map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
+	groupings       map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
+	recipes         map[string]string      `json:"recipes,omitempty"`
 }
 
-// NativeNode represents the native Go version of the deserialized cookbook
-type nativeCookbook struct {
-	Name         string         `mapstructure:"name"`
-	Version      string         `mapstructure:"version"`
-	ChefType     string         `mapstructure:"chef_type"`
-	Frozen       bool           `mapstructure:"frozen?"`
-	JsonClass    string         `mapstructure:"json_class"`
-	CookbookName string         `mapstructure:"cookbook_name"` // yes the json can have this :\
-	Files        []CookbookItem `mapstructure:"files"`
-	Templates    []CookbookItem `mapstructure:"Templates"`
-	Attributes   []CookbookItem `mapstructure:"attributes"`
-	Recipes      []CookbookItem `mapstructure:"recipes"`
-	Definitions  []CookbookItem `mapstructure:"definitions"`
-	Libraries    []CookbookItem `mapstructure:"libraries"`
-	Providers    []CookbookItem `mapstructure:"Providers"`
-	Resources    []CookbookItem `mapstructure:"Resources"`
-	RootFiles    []CookbookItem `mapstructure:"Templates"`
-	Metadata     CookbookMeta   `mapstructure:"Metadata"`
+// Cookbook represents the native Go version of the deserialized api cookbook
+type Cookbook struct {
+	CookbookName string         `json:"cookbook_name"`
+	Name         string         `json:"name"`
+	Version      string         `json:"version,omitempty"`
+	ChefType     string         `json:"chef_type,omitempty"`
+	Frozen       bool           `json:"frozen?,omitempty"`
+	JsonClass    string         `json:"json_class,omitempty"`
+	Files        []CookbookItem `json:"files,omitempty"`
+	Templates    []CookbookItem `json:"Templates,omitempty"`
+	Attributes   []CookbookItem `json:"attributes,omitempty"`
+	Recipes      []CookbookItem `json:"recipes,omitempty"`
+	Definitions  []CookbookItem `json:"definitions,omitempty"`
+	Libraries    []CookbookItem `json:"libraries,omitempty"`
+	Providers    []CookbookItem `json:"Providers,omitempty"`
+	Resources    []CookbookItem `json:"Resources,omitempty"`
+	RootFiles    []CookbookItem `json:"Templates,omitempty"`
+	Metadata     CookbookMeta   `json:"Metadata,omitempty"`
 }
 
-// NewCookbook is used to create a cookbook from a Reader
-func NewCookbook(reader *Reader) (*Cookbook, error) {
-	cook := Cookbook{reader, &nativeCookbook{}}
-	if err := mapstructure.Decode(reader, cook.nativeCookbook); err != nil {
-		return nil, err
+// String makes CookbookListResult implement the string result
+func (c CookbookListResult) String() (out string) {
+	for k, v := range c {
+		out += fmt.Sprintf("%s => %s\n", k, v.Url)
+		for _, i := range v.Versions {
+			out += fmt.Sprintf(" * %s\n", i.Version)
+		}
 	}
-	return &cook, nil
+	return out
+}
+
+// versionParams assembles a querystring for the chef api's  num_versions
+// This is used to restrict the number of versions returned in the reponse
+func versionParams(path, numVersions string) string {
+	if numVersions == "0" {
+		numVersions = "all"
+	}
+
+	// need to optionally add numVersion args to the request
+	if len(numVersions) > 0 {
+		path = fmt.Sprintf("%s?num_versions=%s", path, numVersions)
+	}
+	return path
+}
+
+// Get retruns a CookbookVersion for a specific cookbook
+//  GET /cookbooks/name
+func (c *CookbookService) Get(name string) (data CookbookVersion, err error) {
+	path := fmt.Sprintf("cookbooks/%s", name)
+	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+	return
+}
+
+// GetAvailable returns the versions of a coookbook available on a server
+func (c *CookbookService) GetAvailableVersions(name, numVersions string) (data CookbookListResult, err error) {
+	path := versionParams(fmt.Sprintf("cookbooks/%s", name), numVersions)
+	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+	return
+}
+
+// GetVersion fetches a specific version of a cookbooks data from the server api
+//   GET /cookbook/foo/1.2.3
+//   GET /cookbook/foo/_latest
+//   Chef API docs: http://docs.opscode.com/api_chef_server.html#id5
+func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err error) {
+	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
+	c.client.magicRequestDecoder("GET", url, nil, &data)
+	return
+}
+
+// ListVersions lists the cookbooks available on the server limited to numVersions
+//   Chef API docs: http://docs.opscode.com/api_chef_server.html#id2
+func (c *CookbookService) ListAvailableVersions(numVersions string) (data CookbookListResult, err error) {
+	path := versionParams("cookbooks", numVersions)
+	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+	return
+}
+
+// List returns a CookbookListResult with the latest versions of cookbooks available on the server
+func (c *CookbookService) List() (CookbookListResult, error) {
+	return c.ListAvailableVersions("")
+}
+
+// DeleteVersion removes a version of a cook from a server
+func (c *CookbookService) Delete(name, version string) (err error) {
+	path := fmt.Sprintf("cookbooks/%s", name)
+	err = c.client.magicRequestDecoder("DELETE", path, nil, nil)
+	return
 }

@@ -2,72 +2,18 @@ package chef
 
 import (
 	"encoding/json"
-	. "github.com/smartystreets/goconvey/convey"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
-	"path"
+	"reflect"
 	"testing"
 )
 
 var (
 	testNodeJSON = "test/node.json"
-	// FML
-	testNodeMapStringInterfaceLol, _ = NewNode(&Reader{
-		"name":       "test",
-		"run_list":   []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
-		"chef_type":  "node",
-		"json_class": "Chef::Node",
-		"normal": map[string]interface{}{
-			"tags": map[string]interface{}{},
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "no",
-					"max_auth_tries":    "3",
-				},
-			},
-		},
-		"override": map[string]interface{}{
-			"openssh": map[string]interface{}{
-				"server": map[string]string{
-					"permit_root_login": "yes",
-					"max_auth_tries":    "1",
-				},
-			},
-		},
-	})
 )
-
-func TestNodeName(t *testing.T) {
-	// BUG(spheromak): Pull these constructors out into a Convey Decorator
-	n1 := testNodeMapStringInterfaceLol // (*Node)
-	name := n1.Name
-
-	Convey("Node name is 'test'", t, func() {
-		So(name, ShouldEqual, "test")
-	})
-
-	swordWithoutASheathe, err := NewNode(&Reader{
-		"foobar": "baz",
-	})
-
-	name = swordWithoutASheathe.Name
-	Convey("Node without a name", t, func() {
-		So(name, ShouldBeEmpty)
-		So(err, ShouldBeNil)
-	})
-}
-
-func TestNodeAttribute(t *testing.T) {
-	n := testNodeMapStringInterfaceLol
-	attr := n.Normal
-	// BUG(spheromak): Holy shit this is ugly. Need to do something to make this easier for sure.
-	ugh := attr["openssh"].(map[string]interface{})["server"].(map[string]string)["permit_root_login"]
-	Convey("Node.Normal should map", t, func() {
-		So(ugh, ShouldEqual, "no")
-	})
-}
 
 // BUG(fujin): re-do with goconvey
 func TestNodeFromJSONDecoder(t *testing.T) {
@@ -84,35 +30,52 @@ func TestNodeFromJSONDecoder(t *testing.T) {
 	}
 }
 
-// TestNewNode checks the NewNode Reader chain for Type
-func TestNewNode(t *testing.T) {
-	var v interface{}
-	v = testNodeMapStringInterfaceLol
-	Convey("NewNode should create a Node", t, func() {
-		So(v, ShouldHaveSameTypeAs, &Node{})
+func TestNodesService_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/nodes", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"node1":"https://chef/nodes/node1", "node2":"https://chef/nodes/node2"}`)
 	})
 
-	Convey("NewNode should error if decode fails", t, func() {
+	nodes, err := client.Nodes.List()
+	if err != nil {
+		t.Errorf("Nodes.List returned error: %v", err)
+	}
 
-		failNode, err := NewNode(&Reader{
-			"name": struct{}{},
-		})
+	want := map[string]string{"node1": "https://chef/nodes/node1", "node2": "https://chef/nodes/node2"}
 
-		So(err, ShouldNotBeNil)
-		So(failNode, ShouldBeNil)
-	})
+	if !reflect.DeepEqual(nodes, want) {
+		t.Errorf("Nodes.List returned %+v, want %+v", nodes, want)
+	}
 }
 
-// TestNodeReadIntoFile tests that Read() can be used to read by io.Readers
-// BUG(fujin): re-do with goconvey
-func TestNodeReadIntoFile(t *testing.T) {
-	n1 := testNodeMapStringInterfaceLol // (*Node)
-	tf, _ := ioutil.TempFile("test", "node-to-file")
-	// Copy to tempfile (I use Read() internally)
-	// BUG(fujin): this is currently doing that weird 32768 bytes read thing again.
-	io.Copy(tf, n1)
+func TestNodesService_Get(t *testing.T) {
+	setup()
+	defer teardown()
 
-	// Close and remove tempfile
-	tf.Close()
-	os.Remove(path.Clean(tf.Name()))
+	mux.HandleFunc("/nodes/node1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+	    "name": "node1",
+	    "json_class": "Chef::Node",
+	    "chef_type": "node",
+	    "chef_environment": "development"
+		}`)
+	})
+
+	nodes, err := client.Nodes.Get("node1")
+	if err != nil {
+		t.Errorf("Nodes.Get returned error: %v", err)
+	}
+
+	want := Node{
+		Name:        "node1",
+		JsonClass:   "Chef::Node",
+		ChefType:    "node",
+		Environment: "development",
+	}
+
+	if !reflect.DeepEqual(nodes, want) {
+		t.Errorf("Nodes.Get returned %+v, want %+v", nodes, want)
+	}
 }

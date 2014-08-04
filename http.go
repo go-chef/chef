@@ -5,10 +5,13 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -19,31 +22,54 @@ const ChefVersion = "11.12.0"
 
 // AuthConfig representing a client and a private key used for encryption
 type AuthConfig struct {
-	privateKey *rsa.PrivateKey
-	clientName string
+	PrivateKey *rsa.PrivateKey
+	ClientName string
 }
 
 // Client is vessel for public methods used against the chef-server
 type Client struct {
-	Auth   *AuthConfig
-	client *http.Client
+	Auth    *AuthConfig
+	BaseURL *url.URL
+	client  *http.Client
+
+	Cookbooks    *CookbookService
+	Environments *EnvironmentService
+	Nodes        *NodeService
+	Roles        *RoleService
 }
 
 // Config contains the configuration options for a chef client
 type Config struct {
 	Name    string
 	Key     string
+	BaseURL string
 	SkipSSL bool
+}
+
+/*
+An ErrorResponse reports one or more errors caused by an API request.
+Thanks to https://github.com/google/go-github
+*/
+type ErrorResponse struct {
+	Response *http.Response // HTTP response that caused this error
+}
+
+func (r *ErrorResponse) Error() string {
+	return fmt.Sprintf("%v %v: %d",
+		r.Response.Request.Method, r.Response.Request.URL,
+		r.Response.StatusCode)
 }
 
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
 func NewClient(cfg *Config) (*Client, error) {
-	pk, err := privateKeyFromString([]byte(cfg.Key))
+	pk, err := PrivateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
 	}
+
+	baseUrl, _ := url.Parse(cfg.BaseURL)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.SkipSSL},
@@ -51,28 +77,107 @@ func NewClient(cfg *Config) (*Client, error) {
 
 	c := &Client{
 		Auth: &AuthConfig{
-			privateKey: pk,
-			clientName: cfg.Name,
+			PrivateKey: pk,
+			ClientName: cfg.Name,
 		},
-		client: &http.Client{Transport: tr},
+		client:  &http.Client{Transport: tr},
+		BaseURL: baseUrl,
 	}
+	c.Cookbooks = &CookbookService{client: c}
+	c.Environments = &EnvironmentService{client: c}
+	c.Nodes = &NodeService{client: c}
+	c.Roles = &RoleService{client: c}
 	return c, nil
 }
 
+// magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
+func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
+	req, err := c.MakeRequest(method, path, body)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, v)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 // MakeRequest performs a signed request for the chef client
-func (c *Client) MakeRequest(method string, url string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, body)
+func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
 	}
+	u := c.BaseURL.ResolveReference(relativeUrl)
+
+	// If there is a boody then we want to set the content-type header apropriately
+	body_test := bytes.NewBuffer(make([]byte, 512))
+	if body != nil {
+		// copy first 512 bytes of boddy for content-type detection.
+		_, err = io.CopyN(body_test, body, 512)
+		if err != nil {
+			if err.Error() != "EOF" {
+				return nil, fmt.Errorf("Coping body failed: %s", err.Error())
+			}
+		}
+	}
+
+	// NewRequest uses a new value object of body
+	req, err := http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set content type header
+	req.Header.Set("Content-Type", http.DetectContentType(body_test.Bytes()))
+
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
+	return req, nil
+}
+
+// CheckResponse receives a pointer to a http.Response and generates an Error via unmarshalling
+func CheckResponse(r *http.Response) error {
+	if c := r.StatusCode; 200 <= c && c <= 299 {
+		return nil
+	}
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := ioutil.ReadAll(r.Body)
+	if err == nil && data != nil {
+		json.Unmarshal(data, errorResponse)
+	}
+	return errorResponse
+}
+
+// Do is used either internally via our magic request shite or a user may use it
+func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+	// if req.Header.Get("Content-Type") == "" {
+	// 	return nil, errors.New("content type missing")
+	// }
 
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// BUG(fujin) tightly coupled
+	err = CheckResponse(res) // <--
+	if err != nil {
+		return res, err
+	}
+
+	if v != nil {
+		if w, ok := v.(io.Writer); ok {
+			io.Copy(w, res.Body)
+		} else {
+			err = json.NewDecoder(res.Body).Decode(v)
+			if err != nil {
+				return res, err
+			}
+		}
+	}
 	return res, nil
 }
 
@@ -89,13 +194,13 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	request.Header.Set("Method", request.Method)
-	request.Header.Set("Hashed Path", hashStr(endpoint))
+	request.Header.Set("Hashed Path", HashStr(endpoint))
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("X-Chef-Version", ChefVersion)
 	request.Header.Set("X-Ops-Timestamp", time.Now().UTC().Format(time.RFC3339))
-	request.Header.Set("X-Ops-UserId", ac.clientName)
+	request.Header.Set("X-Ops-UserId", ac.ClientName)
 	request.Header.Set("X-Ops-Sign", "algorithm=sha1;version=1.0")
-	request.Header.Set("X-Ops-Content-Hash", calcBodyHash(request))
+	request.Header.Set("X-Ops-Content-Hash", CalcBodyHash(request))
 
 	// To validate the signature it seems to be very particular
 	var content string
@@ -106,14 +211,14 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
-	signature, err := generateSignature(ac.privateKey, content)
+	signature, err := GenerateSignature(ac.PrivateKey, content)
 	if err != nil {
 		return err
 	}
 
 	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks
-	base64sig := base64BlockEncode(signature, 60)
+	base64sig := Base64BlockEncode(signature, 60)
 
 	// roll over the auth slice and add the apropriate header
 	for index, value := range base64sig {
@@ -123,8 +228,8 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	return nil
 }
 
-// modified from goiardi calcBodyHash
-func calcBodyHash(r *http.Request) string {
+// modified from goiardi CalcBodyHash
+func CalcBodyHash(r *http.Request) string {
 	var bodyStr string
 
 	if r.Body == nil {
@@ -137,12 +242,12 @@ func calcBodyHash(r *http.Request) string {
 
 	// Since we're not setting the encoded slice limit
 	// we can safely call out [0]
-	chkHash := hashStr(bodyStr)
+	chkHash := HashStr(bodyStr)
 	return chkHash
 }
 
-// privateKeyFromString parses an RSA private key from a string
-func privateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
+// PrivateKeyFromString parses an RSA private key from a string
+func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
 		return nil, fmt.Errorf("block size invalid for '%s'", string(key))

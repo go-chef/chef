@@ -1,8 +1,6 @@
 package chef
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Environment has a Reader, hey presto
 type EnvironmentService struct {

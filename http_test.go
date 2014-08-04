@@ -196,8 +196,10 @@ func TestSignRequestBadSignature(t *testing.T) {
 }
 
 func TestSignRequestNoBody(t *testing.T) {
+	setup()
+	defer teardown()
 	ac, err := makeAuthConfig()
-	request, err := http.NewRequest("GET", requestURL, nil)
+	request, err := client.NewRequest("GET", requestURL, nil)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -222,12 +224,14 @@ func TestSignRequestBody(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	setup()
+	defer teardown()
 
 	// Gave up trying to implement this myself
 	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
 	// yay for sharing
-	requestBody := nopCloser{bytes.NewBufferString("somecoolbodytext")}
-	request, err := http.NewRequest("GET", requestURL, requestBody)
+	requestBody := strings.NewReader("somecoolbodytext")
+	request, err := client.NewRequest("GET", requestURL, requestBody)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -310,11 +314,6 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if CalcBodyHash(req) != contentHash {
-		fmt.Fprintf(rw, "Content hash did not match hash of request body")
-
-	}
-
 	signedHeaders, sherr := assembleSignedHeader(req)
 	if sherr != nil {
 		fmt.Fprintf(rw, sherr.Error())
@@ -330,8 +329,10 @@ func TestRequest(t *testing.T) {
 	ac, err := makeAuthConfig()
 	server := createServer()
 	defer server.Close()
+	setup()
+	defer teardown()
 
-	request, err := http.NewRequest("GET", server.URL, nil)
+	request, err := client.NewRequest("GET", server.URL, nil)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -363,7 +364,8 @@ func TestRequestToEndpoint(t *testing.T) {
 	server := createServer()
 	defer server.Close()
 
-	request, err := http.NewRequest("GET", server.URL+"/clients", nil)
+	requestBody := strings.NewReader("somecoolbodytext")
+	request, err := client.NewRequest("GET", server.URL+"/clients", requestBody)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -520,14 +522,14 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-func TestMakeRequest(t *testing.T) {
+func TestNewRequest(t *testing.T) {
 	var err error
 	server := createServer()
 	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
 	c, _ := NewClient(cfg)
 	defer server.Close()
 
-	request, err := c.MakeRequest("GET", server.URL, nil)
+	request, err := c.NewRequest("GET", server.URL, nil)
 	if err != nil {
 		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
 	}
@@ -538,13 +540,13 @@ func TestMakeRequest(t *testing.T) {
 	}
 
 	// This should fail because we've got an invalid URI
-	_, err = c.MakeRequest("GET", "%gh&%ij", nil)
+	_, err = c.NewRequest("GET", "%gh&%ij", nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
 	// This should fail because there is no TOODLES! method :D
-	request, err = c.MakeRequest("TOODLES!", "", nil)
+	request, err = c.NewRequest("TOODLES!", "", nil)
 	_, err = c.Do(request, nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
@@ -560,7 +562,7 @@ func TestDo_badjson(t *testing.T) {
 	})
 
 	stupidData := struct{}{}
-	request, err := client.MakeRequest("GET", "hashrocket", nil)
+	request, err := client.NewRequest("GET", "hashrocket", nil)
 	_, err = client.Do(request, &stupidData)
 	if err == nil {
 		t.Error(err)

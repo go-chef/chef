@@ -22,18 +22,12 @@ type Role struct {
 
 // String makes RoleListResult implement the string result
 func (e RoleListResult) String() (out string) {
-	for k, v := range e {
-		out += fmt.Sprintf("%s => %s\n", k, v)
-	}
-	return out
+	return strMapToStr(e)
 }
 
 // String makes RoleCreateResult implement the string result
 func (e RoleCreateResult) String() (out string) {
-	for k, v := range e {
-		out += fmt.Sprintf("%s => %s\n", k, v)
-	}
-	return out
+	return strMapToStr(e)
 }
 
 // List lists the roles in the Chef server.

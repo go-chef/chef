@@ -1,6 +1,7 @@
 package chef
 
 import "fmt"
+import "sort"
 
 // Environment has a Reader, hey presto
 type EnvironmentService struct {
@@ -22,20 +23,29 @@ type Environment struct {
 	CookbookVersions   map[string]string `json:"cookbook_versions"`
 }
 
+func strMapToStr(e map[string]string) (out string) {
+	keys := make([]string, len(e))
+	for k, _ := range e {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if k == "" {
+			continue
+		}
+		out += fmt.Sprintf("%s => %s\n", k, e[k])
+	}
+	return
+}
+
 // String makes EnvironmentListResult implement the string result
 func (e EnvironmentListResult) String() (out string) {
-	for k, v := range e {
-		out += fmt.Sprintf("%s => %s\n", k, v)
-	}
-	return out
+	return strMapToStr(e)
 }
 
 // String makes EnvironmentCreateResult implement the string result
 func (e EnvironmentCreateResult) String() (out string) {
-	for k, v := range e {
-		out += fmt.Sprintf("%s => %s\n", k, v)
-	}
-	return out
+	return strMapToStr(e)
 }
 
 // List lists the environments in the Chef server.

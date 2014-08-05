@@ -92,7 +92,7 @@ func NewClient(cfg *Config) (*Client, error) {
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
 func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
-	req, err := c.MakeRequest(method, path, body)
+	req, err := c.NewRequest(method, path, body)
 	if err != nil {
 		return err
 	}
@@ -104,25 +104,13 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 	return err
 }
 
-// MakeRequest performs a signed request for the chef client
-func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+// NewRequest performs a signed request for the chef client
+func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
 	}
 	u := c.BaseURL.ResolveReference(relativeUrl)
-
-	// If there is a boody then we want to set the content-type header apropriately
-	body_test := bytes.NewBuffer(make([]byte, 512))
-	if body != nil {
-		// copy first 512 bytes of boddy for content-type detection.
-		_, err = io.CopyN(body_test, body, 512)
-		if err != nil {
-			if err.Error() != "EOF" {
-				return nil, fmt.Errorf("Coping body failed: %s", err.Error())
-			}
-		}
-	}
 
 	// NewRequest uses a new value object of body
 	req, err := http.NewRequest(method, u.String(), body)
@@ -130,8 +118,10 @@ func (c *Client) MakeRequest(method string, requestUrl string, body io.Reader) (
 		return nil, err
 	}
 
-	// Set content type header
-	req.Header.Set("Content-Type", http.DetectContentType(body_test.Bytes()))
+	// Calculate the body hash
+	req.Header.Set("X-Ops-Content-Hash", CalcBodyHash(body))
+
+	req.Header.Set("Content-Type", "application/json")
 
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
@@ -200,7 +190,6 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	request.Header.Set("X-Ops-Timestamp", time.Now().UTC().Format(time.RFC3339))
 	request.Header.Set("X-Ops-UserId", ac.ClientName)
 	request.Header.Set("X-Ops-Sign", "algorithm=sha1;version=1.0")
-	request.Header.Set("X-Ops-Content-Hash", CalcBodyHash(request))
 
 	// To validate the signature it seems to be very particular
 	var content string
@@ -229,16 +218,15 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 }
 
 // modified from goiardi CalcBodyHash
-func CalcBodyHash(r *http.Request) string {
-	var bodyStr string
-
-	if r.Body == nil {
-		bodyStr = ""
-	} else {
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(r.Body)
-		bodyStr = buf.String()
+func CalcBodyHash(body io.Reader) string {
+	if body == nil {
+		return HashStr("")
 	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(body)
+	_, _ = body.(io.Seeker).Seek(0, 0)
+	bodyStr := buf.String()
 
 	// Since we're not setting the encoded slice limit
 	// we can safely call out [0]

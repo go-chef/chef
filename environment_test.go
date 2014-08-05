@@ -142,12 +142,10 @@ func TestEnvironmentsService_Put(t *testing.T) {
 }
 
 func TestEnvironmentsService_EnvironmentListResultString(t *testing.T) {
-	e := &EnvironmentListResult{
-		"_default":  "https://api.opscode.com/organizations/org_name/environments/_default",
-		"webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
+	e := &EnvironmentListResult{"_default": "https://api.opscode.com/organizations/org_name/environments/_default", "webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
 	want := "_default => https://api.opscode.com/organizations/org_name/environments/_default\nwebserver => https://api.opscode.com/organizations/org_name/environments/webserver\n"
 	if e.String() != want {
-		t.Errorf("EnvironmentListResult.String returned %+v, want %+v", e.String(), want)
+		t.Errorf("EnvironmentListResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
 	}
 }
 

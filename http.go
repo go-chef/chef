@@ -36,6 +36,7 @@ type Client struct {
 	Environments *EnvironmentService
 	Nodes        *NodeService
 	Roles        *RoleService
+	Sandboxes    *SandboxService
 }
 
 // Config contains the configuration options for a chef client
@@ -87,6 +88,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Environments = &EnvironmentService{client: c}
 	c.Nodes = &NodeService{client: c}
 	c.Roles = &RoleService{client: c}
+	c.Sandboxes = &SandboxService{client: c}
 	return c, nil
 }
 
@@ -121,6 +123,7 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	// Calculate the body hash
 	req.Header.Set("X-Ops-Content-Hash", CalcBodyHash(body))
 
+	// Bug(spheromak)  We need to figure out a way to not force content-type on these Requests
 	req.Header.Set("Content-Type", "application/json")
 
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
@@ -143,10 +146,6 @@ func CheckResponse(r *http.Response) error {
 
 // Do is used either internally via our magic request shite or a user may use it
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
-	// if req.Header.Get("Content-Type") == "" {
-	// 	return nil, errors.New("content type missing")
-	// }
-
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

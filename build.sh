@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# fixes build/test problems 
+if [ ! -d $GOPATH/src/github.com/go-chef/chef ];  then
+  mkdir -p $GOPATH/src/github.com/go-chef
+  ln -s ./ $GOPATH/src/github.com/go-chef/chef
+fi
+
 set -ex
 
 # Grab dependencies for coveralls.io integration
@@ -15,4 +21,3 @@ go test -coverprofile=coverage
 
 # Goveralls
 go tool cover -func=coverage
-goveralls -repotoken $COVERALLS_TOKEN -service="circleci"

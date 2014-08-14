@@ -44,7 +44,7 @@ func TestEnvironmentsService_List(t *testing.T) {
 		t.Errorf("Environments.List returned error: %v", err)
 	}
 
-	want := &EnvironmentListResult{"_default": "blah", "development": "blah"}
+	want := &EnvironmentResult{"_default": "blah", "development": "blah"}
 	if !reflect.DeepEqual(environments, want) {
 		//spew.Dump(environments)
 		//spew.Dump(want)
@@ -102,7 +102,7 @@ func TestEnvironmentsService_Create(t *testing.T) {
 		t.Errorf("Environments.Create returned error: %v", err)
 	}
 
-	want := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+	want := &EnvironmentResult{"uri": "http://localhost:4000/environments/dev"}
 
 	if !reflect.DeepEqual(uri, want) {
 		t.Errorf("Environments.Create returned %+v, want %+v", uri, want)
@@ -142,17 +142,17 @@ func TestEnvironmentsService_Put(t *testing.T) {
 }
 
 func TestEnvironmentsService_EnvironmentListResultString(t *testing.T) {
-	e := &EnvironmentListResult{"_default": "https://api.opscode.com/organizations/org_name/environments/_default", "webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
+	e := &EnvironmentResult{"_default": "https://api.opscode.com/organizations/org_name/environments/_default", "webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
 	want := "_default => https://api.opscode.com/organizations/org_name/environments/_default\nwebserver => https://api.opscode.com/organizations/org_name/environments/webserver\n"
 	if e.String() != want {
-		t.Errorf("EnvironmentListResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
+		t.Errorf("EnvironmentResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
 	}
 }
 
 func TestEnvironmentsService_EnvironmentCreateResultString(t *testing.T) {
-	e := &EnvironmentCreateResult{"uri": "http://localhost:4000/environments/dev"}
+	e := &EnvironmentResult{"uri": "http://localhost:4000/environments/dev"}
 	want := "uri => http://localhost:4000/environments/dev\n"
 	if e.String() != want {
-		t.Errorf("EnvironmentCreateResult.String returned %+v, want %+v", e.String(), want)
+		t.Errorf("EnvironmentResult.String returned %+v, want %+v", e.String(), want)
 	}
 }

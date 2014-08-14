@@ -8,8 +8,7 @@ type EnvironmentService struct {
 	client *Client
 }
 
-type EnvironmentListResult map[string]string
-type EnvironmentCreateResult map[string]string
+type EnvironmentResult map[string]string
 
 // Environment represents the native Go version of the deserialized Environment type
 type Environment struct {
@@ -38,20 +37,15 @@ func strMapToStr(e map[string]string) (out string) {
 	return
 }
 
-// String makes EnvironmentListResult implement the string result
-func (e EnvironmentListResult) String() (out string) {
-	return strMapToStr(e)
-}
-
-// String makes EnvironmentCreateResult implement the string result
-func (e EnvironmentCreateResult) String() (out string) {
+// String makes EnvironmentResult implement the string result
+func (e EnvironmentResult) String() (out string) {
 	return strMapToStr(e)
 }
 
 // List lists the environments in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id14
-func (e *EnvironmentService) List() (data *EnvironmentListResult, err error) {
+func (e *EnvironmentService) List() (data *EnvironmentResult, err error) {
 	err = e.client.magicRequestDecoder("GET", "environments", nil, &data)
 	return
 }
@@ -59,7 +53,7 @@ func (e *EnvironmentService) List() (data *EnvironmentListResult, err error) {
 // Create an environment in the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id15
-func (e *EnvironmentService) Create(environment *Environment) (data *EnvironmentCreateResult, err error) {
+func (e *EnvironmentService) Create(environment *Environment) (data *EnvironmentResult, err error) {
 	body, err := JSONReader(environment)
 	if err != nil {
 		return

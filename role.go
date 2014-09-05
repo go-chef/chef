@@ -50,7 +50,7 @@ func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
 
 	// BUG(fujiN): This is now both a *response* decoder and handles upload.. gettin smelly
 	err = e.client.magicRequestDecoder(
-		"PUT",
+		"POST",
 		"roles",
 		body,
 		&data,

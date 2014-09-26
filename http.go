@@ -33,6 +33,7 @@ type Client struct {
 	client  *http.Client
 
 	Cookbooks    *CookbookService
+	DataBags     *DataBagService
 	Environments *EnvironmentService
 	Nodes        *NodeService
 	Roles        *RoleService
@@ -85,6 +86,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		BaseURL: baseUrl,
 	}
 	c.Cookbooks = &CookbookService{client: c}
+	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}
 	c.Nodes = &NodeService{client: c}
 	c.Roles = &RoleService{client: c}

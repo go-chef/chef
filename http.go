@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -19,6 +20,11 @@ import (
 
 // ChefVersion that we pretend to emulate
 const ChefVersion = "11.12.0"
+
+// Body wraps io.Reader and adds methods for calculating hashes and detecting content
+type Body struct {
+	io.Reader
+}
 
 // AuthConfig representing a client and a private key used for encryption
 type AuthConfig struct {
@@ -54,6 +60,37 @@ Thanks to https://github.com/google/go-github
 */
 type ErrorResponse struct {
 	Response *http.Response // HTTP response that caused this error
+}
+
+// Buffer creates a  byte.Buffer copy from a io.Reader resets read on reader to 0,0
+func (body *Body) Buffer() *bytes.Buffer {
+	var b bytes.Buffer
+	if body.Reader == nil {
+		return &b
+	}
+
+	b.ReadFrom(body.Reader)
+	_, err := body.Reader.(io.Seeker).Seek(0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &b
+}
+
+// Hash calculates the body content hash
+func (body *Body) Hash() (h string) {
+	b := body.Buffer()
+	// empty buffs should return a empty string
+	if b.Len() == 0 {
+		h = HashStr("")
+	}
+	h = HashStr(b.String())
+	return
+}
+
+// ContentType returns the content-type string of Body as detected by http.DetectContentType()
+func (body *Body) ContentType() string {
+	return http.DetectContentType(body.Buffer().Bytes())
 }
 
 func (r *ErrorResponse) Error() string {
@@ -122,11 +159,15 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 		return nil, err
 	}
 
-	// Calculate the body hash
-	req.Header.Set("X-Ops-Content-Hash", CalcBodyHash(body))
+	myBody := &Body{body}
 
-	// Bug(spheromak)  We need to figure out a way to not force content-type on these Requests
-	req.Header.Set("Content-Type", "application/json")
+	if body != nil {
+		// Detect Content-type
+		req.Header.Set("Content-Type", myBody.ContentType())
+	}
+
+	// Calculate the body hash
+	req.Header.Set("X-Ops-Content-Hash", myBody.Hash())
 
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
@@ -216,23 +257,6 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	return nil
-}
-
-// modified from goiardi CalcBodyHash
-func CalcBodyHash(body io.Reader) string {
-	if body == nil {
-		return HashStr("")
-	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(body)
-	_, _ = body.(io.Seeker).Seek(0, 0)
-	bodyStr := buf.String()
-
-	// Since we're not setting the encoded slice limit
-	// we can safely call out [0]
-	chkHash := HashStr(bodyStr)
-	return chkHash
 }
 
 // PrivateKeyFromString parses an RSA private key from a string

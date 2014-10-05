@@ -15,7 +15,6 @@ var (
 	testNodeJSON = "test/node.json"
 )
 
-// BUG(fujin): re-do with goconvey
 func TestNodeFromJSONDecoder(t *testing.T) {
 	if file, err := os.Open(testNodeJSON); err != nil {
 		t.Error("unexpected error", err, "during os.Open on", testNodeJSON)
@@ -30,52 +29,94 @@ func TestNodeFromJSONDecoder(t *testing.T) {
 	}
 }
 
-func TestNodesService_List(t *testing.T) {
+func TestNode_NewNode(t *testing.T) {
+	n := NewNode("testnode")
+	expect := Node{
+		Name:        "testnode",
+		Environment: "_default",
+		ChefType:    "node",
+		JsonClass:   "Chef::Node",
+	}
+
+	if !reflect.DeepEqual(n, expect) {
+		t.Errorf("NewNode returned %+v, want %+v", n, expect)
+	}
+}
+
+func TestNodesService_Methods(t *testing.T) {
 	setup()
 	defer teardown()
 
 	mux.HandleFunc("/nodes", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{"node1":"https://chef/nodes/node1", "node2":"https://chef/nodes/node2"}`)
+		switch {
+		case r.Method == "GET":
+			fmt.Fprintf(w, `{"node1":"https://chef/nodes/node1", "node2":"https://chef/nodes/node2"}`)
+		case r.Method == "POST":
+			fmt.Fprintf(w, `{ "uri": "http://localhost:4545/nodes/node1" }`)
+		}
 	})
 
-	nodes, err := client.Nodes.List()
-	if err != nil {
-		t.Errorf("Nodes.List returned error: %v", err)
-	}
-
-	want := map[string]string{"node1": "https://chef/nodes/node1", "node2": "https://chef/nodes/node2"}
-
-	if !reflect.DeepEqual(nodes, want) {
-		t.Errorf("Nodes.List returned %+v, want %+v", nodes, want)
-	}
-}
-
-func TestNodesService_Get(t *testing.T) {
-	setup()
-	defer teardown()
-
 	mux.HandleFunc("/nodes/node1", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{
+		switch {
+		case r.Method == "GET" || r.Method == "PUT":
+			fmt.Fprintf(w, `{
 	    "name": "node1",
 	    "json_class": "Chef::Node",
 	    "chef_type": "node",
 	    "chef_environment": "development"
 		}`)
+		case r.Method == "DELETE":
+		}
 	})
 
-	nodes, err := client.Nodes.Get("node1")
+	// Test list
+	nodes, err := client.Nodes.List()
+	if err != nil {
+		t.Errorf("Nodes.List returned error: %v", err)
+	}
+
+	listWant := map[string]string{"node1": "https://chef/nodes/node1", "node2": "https://chef/nodes/node2"}
+
+	if !reflect.DeepEqual(nodes, listWant) {
+		t.Errorf("Nodes.List returned %+v, want %+v", nodes, listWant)
+	}
+
+	// test Get
+	node, err := client.Nodes.Get("node1")
 	if err != nil {
 		t.Errorf("Nodes.Get returned error: %v", err)
 	}
 
-	want := Node{
-		Name:        "node1",
-		JsonClass:   "Chef::Node",
-		ChefType:    "node",
-		Environment: "development",
+	wantNode := NewNode("node1")
+	wantNode.Environment = "development"
+	if !reflect.DeepEqual(node, wantNode) {
+		t.Errorf("Nodes.Get returned %+v, want %+v", node, wantNode)
 	}
 
-	if !reflect.DeepEqual(nodes, want) {
-		t.Errorf("Nodes.Get returned %+v, want %+v", nodes, want)
+	// test Post
+	res, err := client.Nodes.Post(wantNode)
+	if err != nil {
+		t.Errorf("Nodes.Post returned error: %s", err.Error())
+	}
+
+	postResult := &NodeResult{"http://localhost:4545/nodes/node1"}
+	if !reflect.DeepEqual(postResult, res) {
+		t.Errorf("Nodes.Post returned %+v, want %+v", res, postResult)
+	}
+
+	// test Put
+	putRes, err := client.Nodes.Put(node)
+	if err != nil {
+		t.Errorf("Nodes.Put returned error", err)
+	}
+
+	if !reflect.DeepEqual(putRes, node) {
+		t.Errorf("Nodes.Post returned %+v, want %+v", putRes, node)
+	}
+
+	// test Delete
+	err = client.Nodes.Delete(node.Name)
+	if err != nil {
+		t.Errorf("Nodes.Delete returned error", err)
 	}
 }

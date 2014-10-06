@@ -54,7 +54,7 @@ More usage examples can be found in the [examples](examples) directory.
        }
      
        // List Cookbooks
-       cookList := client.Cookbooks.List()
+       cookList, err := client.Cookbooks.List()
        if err != nil {
          fmt.Println("Issue listing cookbooks:", err)
        }

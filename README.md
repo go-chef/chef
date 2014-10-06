@@ -89,7 +89,7 @@ Copyright 2013-2014, Jesse Nelson
 Like many Chef ecosystem programs, go-chef/chef is licensed under the Apache 2.0
 License. See the LICENSE file for details.
 
-Chef is copyright (c) 2008-2014 Opscode, Inc. and its various contributors.
+Chef is copyright (c) 2008-2014 Chef, Inc. and its various contributors.
 
 Thanks go out to the fine folks of Opscode and the Chef community for all their
 hard work.

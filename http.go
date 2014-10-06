@@ -27,6 +27,7 @@ type Body struct {
 }
 
 // AuthConfig representing a client and a private key used for encryption
+//  This is embedded in the Client type
 type AuthConfig struct {
 	PrivateKey *rsa.PrivateKey
 	ClientName string
@@ -46,11 +47,18 @@ type Client struct {
 	Sandboxes    *SandboxService
 }
 
-// Config contains the configuration options for a chef client
+// Config contains the configuration options for a chef client. This is Used primarily in the NewClient() constructor in order to setup a proper client object
 type Config struct {
-	Name    string
-	Key     string
+	// This should be the user ID on the chef server
+	Name string
+
+	// This is the plain text private Key for the user
+	Key string
+
+	// BaseURL is the chef server URL used to connect too. Is using orgs you should include your org in the url
 	BaseURL string
+
+	// When set to false (default) this will enable SSL Cert Verification. If you need to disable Cert Verification set to true
 	SkipSSL bool
 }
 

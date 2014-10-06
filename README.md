@@ -63,3 +63,33 @@ More usage examples can be found in the [examples](examples) directory.
        fmt.Println(cookList)
      }
 
+## CONTRIBUTING
+
+If you feel like contributing, great! Just fork the repo, make your
+improvements, and submit a pull request. Tests would, of course, be appreciated.
+Adding tests where there are no tests currently would be even more appreciated.
+At least, though, try and not break anything worse than it is. Test coverage has
+improved, but is still an ongoing concern.
+
+## AUTHORS
+
+|               |                                                |
+|:--------------|:-----------------------------------------------|
+|Jesse Nelson   |[@spheromak](https://github.com/spheromak)
+|AJ Christensen |[@fujin](https://github.com/fujin)
+|Brad Beam      |[@bradbeam](https://github.com/bradbeam)
+|Kraig Amador   |[@bigkraig](https://github.com/bigkraig)
+
+## COPYRIGHT
+
+Copyright 2013-2014, Jesse Nelson
+
+## LICENSE
+
+Like many Chef ecosystem programs, go-chef/chef is licensed under the Apache 2.0
+License. See the LICENSE file for details.
+
+Chef is copyright (c) 2008-2014 Opscode, Inc. and its various contributors.
+
+Thanks go out to the fine folks of Opscode and the Chef community for all their
+hard work.

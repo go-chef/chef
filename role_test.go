@@ -3,13 +3,13 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -20,7 +20,7 @@ var (
 		ChefType:           "role",
 		Description:        "Test Role",
 		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
-		JSONClass:          "Chef::Role",
+		JsonClass:          "Chef::Role",
 		DefaultAttributes:  struct{}{},
 		OverrideAttributes: struct{}{},
 	}
@@ -99,7 +99,7 @@ func TestRolesService_Get(t *testing.T) {
 	want := &Role{
 		Name:               "webserver",
 		ChefType:           "role",
-		JSONClass:          "Chef::Role",
+		JsonClass:          "Chef::Role",
 		DefaultAttributes:  "",
 		Description:        "A webserver",
 		RunList:            []string{"recipe[unicorn]", "recipe[apache2]"},
@@ -122,7 +122,7 @@ func TestRolesService_Create(t *testing.T) {
 	role := &Role{
 		Name:               "webserver",
 		ChefType:           "role",
-		JSONClass:          "Chef::Role",
+		JsonClass:          "Chef::Role",
 		DefaultAttributes:  "",
 		Description:        "A webserver",
 		RunList:            []string{"recipe[unicorn]", "recipe[apache2]"},
@@ -160,7 +160,7 @@ func TestRolesService_Put(t *testing.T) {
 	role := &Role{
 		Name:        "webserver",
 		ChefType:    "role",
-		JSONClass:   "Chef::Role",
+		JsonClass:   "Chef::Role",
 		Description: "A webserver",
 		RunList:     []string{"recipe[apache2]"},
 	}

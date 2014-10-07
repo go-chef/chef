@@ -17,7 +17,7 @@ type Role struct {
 	RunList            RunList     `json:"run_list"`
 	DefaultAttributes  interface{} `json:"default_attributes,omitempty"`
 	OverrideAttributes interface{} `json:"override_attributes,omitempty"`
-	JSONClass          string      `json:"json_class,omitempty"`
+	JsonClass          string      `json:"json_class,omitempty"`
 }
 
 // String makes RoleListResult implement the string result

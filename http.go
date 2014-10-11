@@ -45,6 +45,7 @@ type Client struct {
 	Nodes        *NodeService
 	Roles        *RoleService
 	Sandboxes    *SandboxService
+	Search       *SearchService
 }
 
 // Config contains the configuration options for a chef client. This is Used primarily in the NewClient() constructor in order to setup a proper client object
@@ -136,6 +137,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Nodes = &NodeService{client: c}
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
+	c.Search = &SearchService{client: c}
 	return c, nil
 }
 
@@ -155,7 +157,7 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 	return err
 }
 
-// NewRequest performs a signed request for the chef client
+// NewRequest returns a signed request  suitable for the chef server
 func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
@@ -168,6 +170,11 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	if err != nil {
 		return nil, err
 	}
+
+	// parse and encode Querystring Values
+	values := req.URL.Query()
+	req.URL.RawQuery = values.Encode()
+	debug("Encoded url %+v", u)
 
 	myBody := &Body{body}
 

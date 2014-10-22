@@ -89,6 +89,29 @@ func (e SearchService) Exec(idx, statement string) (res SearchResult, err error)
 	return
 }
 
+// PartialExec Executes a partial search based on passed in params and the query.
+func (e SearchService) PartialExec(idx, statement string, params map[string]interface{}) (res map[string]interface{}, err error) {
+	query := SearchQuery{
+		Index: idx,
+		Query: statement,
+		// These are the defaults in chef: https://github.com/opscode/chef/blob/master/lib/chef/search/query.rb#L102-L105
+		SortBy: "X_CHEF_id_CHEF_X asc",
+		Start:  0,
+		Rows:   1000,
+	}
+
+	fullUrl := fmt.Sprintf("/search/%s", query)
+
+	body, err := JSONReader(params)
+	if err != nil {
+		debug("Problem encoding params for body")
+		return
+	}
+
+	err = e.client.magicRequestDecoder("POST", fullUrl, body, &res)
+	return
+}
+
 // List lists the nodes in the Chef server.
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id25

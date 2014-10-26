@@ -33,7 +33,7 @@ func (q SearchQuery) String() string {
 	return fmt.Sprintf("%s?q=%s&rows=%d&sort=%s&start=%d", q.Index, q.Query, q.Rows, q.SortBy, q.Start)
 }
 
-// search result will return a slice of interface{} of chef-like objects (roles/nodes/etc)
+// SearchResult will return a slice of interface{} of chef-like objects (roles/nodes/etc)
 type SearchResult struct {
 	Total int
 	Start int
@@ -44,6 +44,20 @@ type SearchResult struct {
 func (q SearchQuery) Do(client *Client) (res SearchResult, err error) {
 	fullUrl := fmt.Sprintf("/search/%s", q)
 	err = client.magicRequestDecoder("GET", fullUrl, nil, &res)
+	return
+}
+
+// DoPartial will execute the search query on the client with partal mapping
+func (q SearchQuery) DoPartial(client *Client, params map[string]interface{}) (res SearchResult, err error) {
+	fullUrl := fmt.Sprintf("/search/%s", q)
+
+	body, err := JSONReader(params)
+	if err != nil {
+		debug("Problem encoding params for body", err.Error())
+		return
+	}
+
+	err = client.magicRequestDecoder("POST", fullUrl, body, &res)
 	return
 }
 
@@ -90,7 +104,7 @@ func (e SearchService) Exec(idx, statement string) (res SearchResult, err error)
 }
 
 // PartialExec Executes a partial search based on passed in params and the query.
-func (e SearchService) PartialExec(idx, statement string, params map[string]interface{}) (res map[string]interface{}, err error) {
+func (e SearchService) PartialExec(idx, statement string, params map[string]interface{}) (res SearchResult, err error) {
 	query := SearchQuery{
 		Index: idx,
 		Query: statement,

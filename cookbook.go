@@ -48,9 +48,9 @@ type CookbookMeta struct {
 	Conflicts       map[string]string      `json:"conflicting,omitempty"`
 	Provides        map[string]string      `json:"providing,omitempty"`
 	Replaces        map[string]string      `json:"replacing,omitempty"`
-	attributes      map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
-	groupings       map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
-	recipes         map[string]string      `json:"recipes,omitempty"`
+	Attributes      map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
+	Groupings       map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
+	Recipes         map[string]string      `json:"recipes,omitempty"`
 }
 
 // Cookbook represents the native Go version of the deserialized api cookbook

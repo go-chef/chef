@@ -73,4 +73,17 @@ func main() {
 	os.Stdout.Write(jsonData)
 	os.Stdout.WriteString("\n")
 
+	// Partial search
+	log.Print("Partial Search")
+	part := make(map[string]interface{})
+	part["name"] = []string{"name"}
+	pres, err := client.Search.PartialExec("node", "*:*", part)
+	if err != nil {
+		log.Fatal("Error running Search.PartialExec()", err)
+	}
+
+	jsonData, err = json.MarshalIndent(pres, "", "\t")
+	os.Stdout.Write(jsonData)
+	os.Stdout.WriteString("\n")
+
 }

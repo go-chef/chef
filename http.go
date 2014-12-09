@@ -39,6 +39,7 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
+	ACLs         *ACLService
 	Cookbooks    *CookbookService
 	DataBags     *DataBagService
 	Environments *EnvironmentService
@@ -131,6 +132,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		client:  &http.Client{Transport: tr},
 		BaseURL: baseUrl,
 	}
+	c.ACLs = &ACLService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}

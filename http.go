@@ -100,6 +100,9 @@ func (body *Body) Hash() (h string) {
 
 // ContentType returns the content-type string of Body as detected by http.DetectContentType()
 func (body *Body) ContentType() string {
+	if json.Unmarshal(body.Buffer().Bytes(), &struct{}{}) == nil {
+		return "application/json"
+	}
 	return http.DetectContentType(body.Buffer().Bytes())
 }
 

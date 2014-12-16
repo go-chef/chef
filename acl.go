@@ -18,14 +18,6 @@ type ACLitems struct {
 // ACLitem
 type ACLitem []string
 
-var DefaultACLs = [5]string{
-	"create",
-	"read",
-	"update",
-	"delete",
-	"grant",
-}
-
 func NewACL(acltype string, actors, groups ACLitem) (acl *ACL) {
 	acl = &ACL{
 		acltype: ACLitems{

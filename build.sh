@@ -16,6 +16,9 @@ go get -u github.com/ctdk/goiardi/authentication
 go get -u github.com/davecgh/go-spew/spew
 go get -u github.com/smartystreets/goconvey/convey
 
+# go test -coverprofile=coverage dependency
+go get -u code.google.com/p/go.tools/cmd/cover
+
 # Overwrite the coverage file
 go test -coverprofile=coverage
 

@@ -39,6 +39,7 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
+	ACLs         *ACLService
 	Cookbooks    *CookbookService
 	DataBags     *DataBagService
 	Environments *EnvironmentService
@@ -99,6 +100,9 @@ func (body *Body) Hash() (h string) {
 
 // ContentType returns the content-type string of Body as detected by http.DetectContentType()
 func (body *Body) ContentType() string {
+	if json.Unmarshal(body.Buffer().Bytes(), &struct{}{}) == nil {
+		return "application/json"
+	}
 	return http.DetectContentType(body.Buffer().Bytes())
 }
 
@@ -131,6 +135,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		client:  &http.Client{Transport: tr},
 		BaseURL: baseUrl,
 	}
+	c.ACLs = &ACLService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}

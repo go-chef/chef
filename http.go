@@ -40,6 +40,7 @@ type Client struct {
 	client  *http.Client
 
 	ACLs         *ACLService
+	Clients      *ApiClientService
 	Cookbooks    *CookbookService
 	DataBags     *DataBagService
 	Environments *EnvironmentService
@@ -62,6 +63,9 @@ type Config struct {
 
 	// When set to false (default) this will enable SSL Cert Verification. If you need to disable Cert Verification set to true
 	SkipSSL bool
+
+	// Time to wait in seconds before giving up on a request to the server
+	Timeout time.Duration
 }
 
 /*
@@ -132,10 +136,14 @@ func NewClient(cfg *Config) (*Client, error) {
 			PrivateKey: pk,
 			ClientName: cfg.Name,
 		},
-		client:  &http.Client{Transport: tr},
+		client: &http.Client{
+			Transport: tr,
+			Timeout:   cfg.Timeout * time.Second,
+		},
 		BaseURL: baseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
+	c.Clients = &ApiClientService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}

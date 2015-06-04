@@ -40,6 +40,7 @@ type Client struct {
 	client  *http.Client
 
 	ACLs         *ACLService
+	Clients      *ApiClientService
 	Cookbooks    *CookbookService
 	DataBags     *DataBagService
 	Environments *EnvironmentService
@@ -142,6 +143,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		BaseURL: baseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
+	c.Clients = &ApiClientService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}

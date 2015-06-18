@@ -71,13 +71,20 @@ func (d *DataBagService) ListItems(name string) (data *DataBagListResult, err er
 
 // CreateItem adds an item to a data bag
 //   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id21
-func (d *DataBagService) CreateItem() (err error) {
-	return
+func (d *DataBagService) CreateItem(databagName string, databagItem DataBagItem) (err error) {
+	body, err := JSONReader(databagItem)
+	if err != nil {
+		return
+	}
+	path := fmt.Sprintf("data/%s", databagName)
+	return d.client.magicRequestDecoder("POST", path, body, nil)
 }
 
 // DeleteItem deletes an item from a data bag
 //   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id22
-func (d *DataBagService) DeleteItem() (err error) {
+func (d *DataBagService) DeleteItem(databagName, databagItem string) (err error) {
+	path := fmt.Sprintf("data/%s/%s", databagName, databagItem)
+	err = d.client.magicRequestDecoder("DELETE", path, nil, nil)
 	return
 }
 
@@ -91,6 +98,11 @@ func (d *DataBagService) GetItem(databagName, databagItem string) (item DataBagI
 
 // UpdateItem updates an item in a data bag
 //    Chef API Docs: http://docs.getchef.com/api_chef_server.html#id24
-func (d *DataBagService) UpdateItem() (err error) {
-	return
+func (d *DataBagService) UpdateItem(databagName, databagItemId string, databagItem DataBagItem) (err error) {
+	body, err := JSONReader(databagItem)
+	if err != nil {
+		return
+	}
+	path := fmt.Sprintf("data/%s/%s", databagName, databagItemId)
+	return d.client.magicRequestDecoder("PUT", path, body, nil)
 }

@@ -107,11 +107,16 @@ func TestDataBagsService_CreateItem(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/data/bag1", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, ``)
 	})
 
-	err := client.DataBags.CreateItem()
+	dbi := map[string]string{
+		"id":  "item1",
+		"foo": "test123",
+	}
+
+	err := client.DataBags.CreateItem("bag1", dbi)
 	if err != nil {
 		t.Errorf("DataBags.CreateItem returned error: %v", err)
 	}
@@ -121,11 +126,11 @@ func TestDataBagsService_DeleteItem(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/data/bag1/item1", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, ``)
 	})
 
-	err := client.DataBags.DeleteItem()
+	err := client.DataBags.DeleteItem("bag1", "item1")
 	if err != nil {
 		t.Errorf("DataBags.DeleteItem returned error: %v", err)
 	}
@@ -135,11 +140,16 @@ func TestDataBagsService_UpdateItem(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/data/bag1/item1", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, ``)
 	})
 
-	err := client.DataBags.UpdateItem()
+	dbi := map[string]string{
+		"id":  "item1",
+		"foo": "test123",
+	}
+
+	err := client.DataBags.UpdateItem("bag1", "item1", dbi)
 	if err != nil {
 		t.Errorf("DataBags.UpdateItem returned error: %v", err)
 	}

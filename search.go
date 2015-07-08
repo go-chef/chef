@@ -42,14 +42,14 @@ type SearchResult struct {
 
 // Do will execute the search query on the client
 func (q SearchQuery) Do(client *Client) (res SearchResult, err error) {
-	fullUrl := fmt.Sprintf("/search/%s", q)
+	fullUrl := fmt.Sprintf("search/%s", q)
 	err = client.magicRequestDecoder("GET", fullUrl, nil, &res)
 	return
 }
 
 // DoPartial will execute the search query on the client with partal mapping
 func (q SearchQuery) DoPartial(client *Client, params map[string]interface{}) (res SearchResult, err error) {
-	fullUrl := fmt.Sprintf("/search/%s", q)
+	fullUrl := fmt.Sprintf("search/%s", q)
 
 	body, err := JSONReader(params)
 	if err != nil {
@@ -114,7 +114,7 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 		Rows:   1000,
 	}
 
-	fullUrl := fmt.Sprintf("/search/%s", query)
+	fullUrl := fmt.Sprintf("search/%s", query)
 
 	body, err := JSONReader(params)
 	if err != nil {

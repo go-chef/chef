@@ -95,12 +95,11 @@ func (e *EnvironmentService) Put(environment *Environment) (data *Environment, e
 // Get the versions of a cookbook for this environment from the Chef server.
 //
 // Chef API docs: http://docs.getchef.com/api_chef_server.html#id19
-func (e *EnvironmentService) ListCookbooks(name string) (data EnvironmentCookbookResult, err error) {
-  path := fmt.Sprintf("environments/%s/cookbooks", name)
+func (e *EnvironmentService) ListCookbooks(name string, numVersions string) (data EnvironmentCookbookResult, err error) {
+  path := versionParams(fmt.Sprintf("environments/%s/cookbooks", name), numVersions)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)
 	return
 }
-
 
 // Get a hash of cookbooks and cookbook versions (including all dependencies) that
 // are required by the run_list array. Version constraints may be specified using

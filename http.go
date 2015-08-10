@@ -311,17 +311,14 @@ func (c *Client) Download(requestUrl, destination string) (error) {
 	}
 
 	resp,err := c.client.Do(req)
-
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(destination)
+  
 	out, err := os.Create(destination)
 	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
-
 	if err != nil {
 		return err
 	}

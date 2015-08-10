@@ -1,6 +1,8 @@
 package chef
 
 import "fmt"
+import "os"
+import "path/filepath"
 
 // CookbookService  is the service for interacting with chef server cookbooks endpoint
 type CookbookService struct {
@@ -62,15 +64,15 @@ type Cookbook struct {
 	Frozen       bool           `json:"frozen?,omitempty"`
 	JsonClass    string         `json:"json_class,omitempty"`
 	Files        []CookbookItem `json:"files,omitempty"`
-	Templates    []CookbookItem `json:"Templates,omitempty"`
+	Templates    []CookbookItem `json:"templates,omitempty"`
 	Attributes   []CookbookItem `json:"attributes,omitempty"`
 	Recipes      []CookbookItem `json:"recipes,omitempty"`
 	Definitions  []CookbookItem `json:"definitions,omitempty"`
 	Libraries    []CookbookItem `json:"libraries,omitempty"`
-	Providers    []CookbookItem `json:"Providers,omitempty"`
-	Resources    []CookbookItem `json:"Resources,omitempty"`
-	RootFiles    []CookbookItem `json:"Templates,omitempty"`
-	Metadata     CookbookMeta   `json:"Metadata,omitempty"`
+	Providers    []CookbookItem `json:"providers,omitempty"`
+	Resources    []CookbookItem `json:"resources,omitempty"`
+	RootFiles    []CookbookItem `json:"root_files,omitempty"`
+	Metadata     CookbookMeta   `json:"metadata,omitempty"`
 }
 
 // String makes CookbookListResult implement the string result
@@ -142,3 +144,46 @@ func (c *CookbookService) Delete(name, version string) (err error) {
 	err = c.client.magicRequestDecoder("DELETE", path, nil, nil)
 	return
 }
+
+// Download a version of a cookbook from a server
+func (c *CookbookService) Download(name, version, destination string) (err error) {
+	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
+	var data Cookbook
+	err = c.client.magicRequestDecoder("GET", url, nil, &data)
+
+	basedir := filepath.Join(destination, name + "-" + version)
+
+	c.DownloadCookbookItems(data.Attributes,basedir)
+	c.DownloadCookbookItems(data.Recipes,basedir)
+	c.DownloadCookbookItems(data.Providers,basedir)
+	c.DownloadCookbookItems(data.Definitions,basedir)
+	c.DownloadCookbookItems(data.Libraries,basedir)
+	c.DownloadCookbookItems(data.Files,basedir)
+	c.DownloadCookbookItems(data.Templates,basedir)
+	c.DownloadCookbookItems(data.RootFiles,basedir)
+	c.DownloadCookbookItems(data.Resources,basedir)
+	return
+}
+
+func (c *CookbookService) DownloadCookbookItems(object []CookbookItem, destination string) (err error){
+	for _,cbitems := range object{
+		err = os.MkdirAll(filepath.Dir(filepath.Join(destination, cbitems.Path)),0777)
+		if err != nil {
+<<<<<<< HEAD
+=======
+			fmt.Println(err)
+>>>>>>> be50eb3d0cb00099276b4cbed3041e4cbb0d8383
+			return err
+		}
+		err := c.client.Download(cbitems.Url, filepath.Join(destination, cbitems.Path))
+		if err != nil {
+<<<<<<< HEAD
+=======
+			fmt.Println(err)
+>>>>>>> be50eb3d0cb00099276b4cbed3041e4cbb0d8383
+			return err
+		}
+	}
+	return
+}
+

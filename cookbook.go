@@ -169,10 +169,18 @@ func (c *CookbookService) DownloadCookbookItems(object []CookbookItem, destinati
 	for _,cbitems := range object{
 		err = os.MkdirAll(filepath.Dir(filepath.Join(destination, cbitems.Path)),0777)
 		if err != nil {
+<<<<<<< HEAD
+=======
+			fmt.Println(err)
+>>>>>>> be50eb3d0cb00099276b4cbed3041e4cbb0d8383
 			return err
 		}
 		err := c.client.Download(cbitems.Url, filepath.Join(destination, cbitems.Path))
 		if err != nil {
+<<<<<<< HEAD
+=======
+			fmt.Println(err)
+>>>>>>> be50eb3d0cb00099276b4cbed3041e4cbb0d8383
 			return err
 		}
 	}

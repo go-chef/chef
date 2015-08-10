@@ -16,6 +16,7 @@ import (
 	"path"
 	"strings"
 	"time"
+	"os"
 )
 
 // ChefVersion that we pretend to emulate
@@ -300,4 +301,30 @@ func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 	return rsaKey, nil
+}
+
+// Download component to the requested destination
+func (c *Client) Download(requestUrl, destination string) (error) {
+	req, err := http.NewRequest("GET", requestUrl, nil)
+	if err != nil {
+		return err
+	}
+
+	resp,err := c.client.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(destination)
+	out, err := os.Create(destination)
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	return err
 }

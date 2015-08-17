@@ -62,15 +62,15 @@ type Cookbook struct {
 	Frozen       bool           `json:"frozen?,omitempty"`
 	JsonClass    string         `json:"json_class,omitempty"`
 	Files        []CookbookItem `json:"files,omitempty"`
-	Templates    []CookbookItem `json:"Templates,omitempty"`
+	Templates    []CookbookItem `json:"templates,omitempty"`
 	Attributes   []CookbookItem `json:"attributes,omitempty"`
 	Recipes      []CookbookItem `json:"recipes,omitempty"`
 	Definitions  []CookbookItem `json:"definitions,omitempty"`
 	Libraries    []CookbookItem `json:"libraries,omitempty"`
-	Providers    []CookbookItem `json:"Providers,omitempty"`
-	Resources    []CookbookItem `json:"Resources,omitempty"`
-	RootFiles    []CookbookItem `json:"Templates,omitempty"`
-	Metadata     CookbookMeta   `json:"Metadata,omitempty"`
+	Providers    []CookbookItem `json:"providers,omitempty"`
+	Resources    []CookbookItem `json:"resources,omitempty"`
+	RootFiles    []CookbookItem `json:"templates,omitempty"`
+	Metadata     CookbookMeta   `json:"metadata,omitempty"`
 }
 
 // String makes CookbookListResult implement the string result

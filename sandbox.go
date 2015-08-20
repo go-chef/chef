@@ -2,7 +2,6 @@ package chef
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -58,7 +57,9 @@ func (s SandboxService) Post(sums []string) (data SandboxPostResponse, err error
 
 // Put is used to commit a sandbox ID to the chef server. To singal that the sandox you have Posted is now uploaded.
 func (s SandboxService) Put(id string) (box Sandbox, err error) {
-	body := strings.NewReader(`{"is_completed":true}"}`)
+	answer := make(map[string]bool)
+	answer["is_completed"] = true
+	body, err := JSONReader(answer)
 
 	if id == "" {
 		return box, fmt.Errorf("must supply sandbox id to PUT request.")

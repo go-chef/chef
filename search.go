@@ -81,7 +81,7 @@ func (e SearchService) NewQuery(idx, statement string) (query SearchQuery, err e
 	return
 }
 
-// Exec runs the query on the index passed in. This is a helper method. If you wnat more controll over the query  use NewQuery and its Do() method.
+// Exec runs the query on the index passed in. This is a helper method. If you want more controll over the query  use NewQuery and its Do() method.
 // BUG(spheromak): Should we use exec or SearchQuery.Do() or have both ?
 func (e SearchService) Exec(idx, statement string) (res SearchResult, err error) {
 	//  Copy-paste here till We decide which way to go with exec vs Do
@@ -100,6 +100,16 @@ func (e SearchService) Exec(idx, statement string) (res SearchResult, err error)
 	}
 
 	res, err = query.Do(e.client)
+	start := res.Start
+	inc := 1000
+	total := res.Total
+
+	for start + inc <= total {
+		query.Start = query.Start + 1000
+		start = query.Start
+		ares, _ := query.Do(e.client)
+		res.Rows = append(res.Rows, ares.Rows...)
+	}
 	return
 }
 

@@ -162,12 +162,12 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 	}
 
 	debug("Request: %+v \n", req)
-	res, err := c.Do(req, v)
-	debug("Response: %+v \n", res)
-	if err != nil {
-		return err
+	err2 := c.Do(req, v)
+	debug("Response: %+v \n", v)
+	if err2 != nil {
+		return err2
 	}
-	return err
+	return err2
 }
 
 // NewRequest returns a signed request  suitable for the chef server
@@ -218,16 +218,18 @@ func CheckResponse(r *http.Response) error {
 }
 
 // Do is used either internally via our magic request shite or a user may use it
-func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *Client) Do(req *http.Request, v interface{}) error {
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	defer res.Body.Close()
 
 	// BUG(fujin) tightly coupled
 	err = CheckResponse(res) // <--
 	if err != nil {
-		return res, err
+		return err
 	}
 
 	if v != nil {
@@ -236,11 +238,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		} else {
 			err = json.NewDecoder(res.Body).Decode(v)
 			if err != nil {
-				return res, err
+				return err
 			}
 		}
 	}
-	return res, nil
+	return nil
 }
 
 // SignRequest modifies headers of an http.Request

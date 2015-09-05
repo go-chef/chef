@@ -163,6 +163,9 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 
 	debug("Request: %+v \n", req)
 	res, err := c.Do(req, v)
+	if res != nil {
+		defer res.Body.Close()
+	}
 	debug("Response: %+v \n", res)
 	if err != nil {
 		return err

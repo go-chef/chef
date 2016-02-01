@@ -135,5 +135,27 @@ func TestCookBookGetAvailableVersions(t *testing.T) {
 		t.Error(err)
 	}
 	fmt.Println(data)
+}
 
+func TestCookBookListAllRecipes(t *testing.T) {
+	setup()
+	defer teardown()
+
+	cookbookRecipesJSON := `
+	[
+	  "apache2",
+	  "apache2::mod_access_compat",
+	  "apache2::mod_actions",
+	  "apache2::mod_alias"
+	]`
+
+	mux.HandleFunc("/cookbooks/_recipes", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, cookbookRecipesJSON)
+	})
+
+	data, err := client.Cookbooks.ListAllRecipes()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(data)
 }

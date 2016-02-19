@@ -258,18 +258,25 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		endpoint = request.URL.Path
 	}
 
-	request.Header.Set("Method", request.Method)
-	request.Header.Set("Hashed Path", HashStr(endpoint))
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set("X-Chef-Version", ChefVersion)
-	request.Header.Set("X-Ops-Timestamp", time.Now().UTC().Format(time.RFC3339))
-	request.Header.Set("X-Ops-UserId", ac.ClientName)
-	request.Header.Set("X-Ops-Sign", "algorithm=sha1;version=1.0")
+	vals := map[string]string{
+		"Method":             request.Method,
+		"Hashed Path":        HashStr(endpoint),
+		"Accept":             "application/json",
+		"X-Chef-Version":     ChefVersion,
+		"X-Ops-Timestamp":    time.Now().UTC().Format(time.RFC3339),
+		"X-Ops-UserId":       ac.ClientName,
+		"X-Ops-Sign":         "algorithm=sha1;version=1.0",
+		"X-Ops-Content-Hash": request.Header.Get("X-Ops-Content-Hash"),
+	}
+
+	for _, key := range []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"} {
+		request.Header.Set(key, vals[key])
+	}
 
 	// To validate the signature it seems to be very particular
 	var content string
 	for _, key := range []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"} {
-		content += fmt.Sprintf("%s:%s\n", key, request.Header.Get(key))
+		content += fmt.Sprintf("%s:%s\n", key, vals[key])
 	}
 	content = strings.TrimSuffix(content, "\n")
 	// generate signed string of headers

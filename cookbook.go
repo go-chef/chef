@@ -150,7 +150,7 @@ func (c *CookbookService) List() (CookbookListResult, error) {
 
 // DeleteVersion removes a version of a cook from a server
 func (c *CookbookService) Delete(name, version string) (err error) {
-	path := fmt.Sprintf("cookbooks/%s", name)
+	path := fmt.Sprintf("cookbooks/%s/%s", name, version)
 	err = c.client.magicRequestDecoder("DELETE", path, nil, nil)
 	return
 }

@@ -63,10 +63,10 @@ func TestCookBookDelete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/cookbooks/good", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/cookbooks/good/1.1.1", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "")
 	})
-	mux.HandleFunc("/cookbooks/bad", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/cookbooks/bad/1.1.1", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", 404)
 	})
 

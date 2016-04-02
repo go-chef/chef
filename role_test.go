@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -188,5 +189,26 @@ func TestRolesService_RoleCreateResultString(t *testing.T) {
 	want := "uri => http://localhost:4000/roles/webserver\n"
 	if r.String() != want {
 		t.Errorf("RoleCreateResult.String returned %+v, want %+v", r.String(), want)
+	}
+}
+
+func TestRolesService_Delete(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles/webserver", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "webserver",
+		  "chef_type": "role",
+		  "json_class": "Chef::Role",
+		  "description": "A webserver",
+		  "run_list": [
+		    "recipe[apache2]"
+		  ]
+		}`)
+	})
+	err := client.Roles.Delete("webserver")
+	if err != nil {
+		t.Errorf("Roles.Delete returned error: %v", err)
 	}
 }

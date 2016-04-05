@@ -45,6 +45,7 @@ type Client struct {
 	DataBags     *DataBagService
 	Environments *EnvironmentService
 	Nodes        *NodeService
+	Principals   *PrincipalService
 	Roles        *RoleService
 	Sandboxes    *SandboxService
 	Search       *SearchService
@@ -148,6 +149,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}
 	c.Nodes = &NodeService{client: c}
+	c.Principals = &PrincipalService{client: c}
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}

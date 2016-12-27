@@ -45,6 +45,7 @@ type Client struct {
 	Cookbooks    *CookbookService
 	DataBags     *DataBagService
 	Environments *EnvironmentService
+	Groups       *GroupService
 	Nodes        *NodeService
 	Principals   *PrincipalService
 	Roles        *RoleService
@@ -155,6 +156,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}
+	c.Groups = &GroupService{client: c}
 	c.Nodes = &NodeService{client: c}
 	c.Principals = &PrincipalService{client: c}
 	c.Roles = &RoleService{client: c}

@@ -12,6 +12,13 @@ build:
           go get -u github.com/smartystreets/goconvey/convey
           go get -u github.com/mattn/goveralls
 
+    - script:
+        name: static
+        code: |
+          go fmt
+          test -z "$(git status --porcelain)"
+          # TODO: add metalinter
+
     # Using the gocov tool to test the exact package we want to test from GOPATH
     - script:
         name: Test

@@ -25,7 +25,7 @@ func NewPrincipal(name, typ, publicKey string) Principal {
 
 // Get gets a principal from the Chef server.
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id64
+// Chef API docs: https://docs.chef.io/api_chef_server.html#principals-name
 func (e *PrincipalService) Get(name string) (principal Principal, err error) {
 	url := fmt.Sprintf("principals/%s", name)
 	err = e.client.magicRequestDecoder("GET", url, nil, &principal)

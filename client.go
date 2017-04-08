@@ -43,7 +43,7 @@ func (c ApiClientListResult) String() (out string) {
 
 // List lists the clients in the Chef server.
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id13
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients
 func (e *ApiClientService) List() (data ApiClientListResult, err error) {
 	err = e.client.magicRequestDecoder("GET", "clients", nil, &data)
 	return
@@ -51,7 +51,7 @@ func (e *ApiClientService) List() (data ApiClientListResult, err error) {
 
 // Get gets a client from the Chef server.
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id16
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 func (e *ApiClientService) Get(name string) (client ApiClient, err error) {
 	url := fmt.Sprintf("clients/%s", name)
 	err = e.client.magicRequestDecoder("GET", url, nil, &client)
@@ -60,7 +60,7 @@ func (e *ApiClientService) Get(name string) (client ApiClient, err error) {
 
 // Create makes a Client on the chef server
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id14
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients
 func (e *ApiClientService) Create(clientName string, admin bool) (data *ApiClientCreateResult, err error) {
 	post := ApiNewClient{
 		Name:  clientName,
@@ -77,11 +77,11 @@ func (e *ApiClientService) Create(clientName string, admin bool) (data *ApiClien
 
 // Put updates a client on the Chef server.
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id17
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 
 // Delete removes a client on the Chef server
 //
-// Chef API docs: https://docs.chef.io/api_chef_server.html#id15
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 func (e *ApiClientService) Delete(name string) (err error) {
 	err = e.client.magicRequestDecoder("DELETE", "clients/"+name, nil, nil)
 	return

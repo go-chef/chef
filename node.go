@@ -36,7 +36,7 @@ func NewNode(name string) (node Node) {
 
 // List lists the nodes in the Chef server.
 //
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id25
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes
 func (e *NodeService) List() (data map[string]string, err error) {
 	err = e.client.magicRequestDecoder("GET", "nodes", nil, &data)
 	return
@@ -44,7 +44,7 @@ func (e *NodeService) List() (data map[string]string, err error) {
 
 // Get gets a node from the Chef server.
 //
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id28
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Get(name string) (node Node, err error) {
 	url := fmt.Sprintf("nodes/%s", name)
 	err = e.client.magicRequestDecoder("GET", url, nil, &node)
@@ -53,7 +53,7 @@ func (e *NodeService) Get(name string) (node Node, err error) {
 
 // Post creates a Node on the chef server
 //
-// Chef API docs: https://docs.getchef.com/api_chef_server.html#id39
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes
 func (e *NodeService) Post(node Node) (data *NodeResult, err error) {
 	body, err := JSONReader(node)
 	if err != nil {
@@ -66,7 +66,7 @@ func (e *NodeService) Post(node Node) (data *NodeResult, err error) {
 
 // Put updates a node on the Chef server.
 //
-// Chef API docs: http://docs.getchef.com/api_chef_server.html#id42
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Put(n Node) (node Node, err error) {
 	url := fmt.Sprintf("nodes/%s", n.Name)
 	body, err := JSONReader(n)
@@ -80,7 +80,7 @@ func (e *NodeService) Put(n Node) (node Node, err error) {
 
 // Delete removes a node on the Chef server
 //
-// Chef API docs: https://docs.getchef.com/api_chef_server.html#id40
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Delete(name string) (err error) {
 	err = e.client.magicRequestDecoder("DELETE", "nodes/"+name, nil, nil)
 	return

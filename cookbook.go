@@ -120,7 +120,7 @@ func (c *CookbookService) GetAvailableVersions(name, numVersions string) (data C
 // GetVersion fetches a specific version of a cookbooks data from the server api
 //   GET /cookbook/foo/1.2.3
 //   GET /cookbook/foo/_latest
-//   Chef API docs: http://docs.opscode.com/api_chef_server.html#id5
+//   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-name-version
 func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err error) {
 	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
 	c.client.magicRequestDecoder("GET", url, nil, &data)
@@ -128,7 +128,7 @@ func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err e
 }
 
 // ListVersions lists the cookbooks available on the server limited to numVersions
-//   Chef API docs: http://docs.opscode.com/api_chef_server.html#id2
+//   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-name
 func (c *CookbookService) ListAvailableVersions(numVersions string) (data CookbookListResult, err error) {
 	path := versionParams("cookbooks", numVersions)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
@@ -136,7 +136,7 @@ func (c *CookbookService) ListAvailableVersions(numVersions string) (data Cookbo
 }
 
 // ListAllRecipes lists the names of all recipes in the most recent cookbook versions
-//   Chef API docs: https://docs.chef.io/api_chef_server.html#id31
+//   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-recipes
 func (c *CookbookService) ListAllRecipes() (data CookbookRecipesResult, err error) {
 	path := "cookbooks/_recipes"
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)

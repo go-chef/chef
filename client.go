@@ -33,6 +33,19 @@ type ApiClientCreateResult struct {
 
 type ApiClientListResult map[string]string
 
+type ApiClientKey struct {
+	Name           string `json:"name"`
+	PublicKey      string `json:"public_key"`
+	ExpirationDate string `json:"expiration_date"`
+}
+
+type ApiClientKeyListResultItem struct {
+	Name    string `json:"name"`
+	Expired bool   `json:"expired"`
+}
+
+type ApiClientKeyListResult []ApiClientKeyListResultItem
+
 // String makes ApiClientListResult implement the string result
 func (c ApiClientListResult) String() (out string) {
 	for k, v := range c {
@@ -84,5 +97,23 @@ func (e *ApiClientService) Create(clientName string, admin bool) (data *ApiClien
 // Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 func (e *ApiClientService) Delete(name string) (err error) {
 	err = e.client.magicRequestDecoder("DELETE", "clients/"+name, nil, nil)
+	return
+}
+
+// ListKeys lists the keys associated with a client on the Chef server.
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients-client-keys
+func (e *ApiClientService) ListKeys(clientName string) (data *ApiClientKeyListResult, err error) {
+	url := fmt.Sprintf("clients/%s/keys", clientName)
+	err = e.client.magicRequestDecoder("GET", url, nil, &data)
+	return
+}
+
+// GetKey gets a client key from the Chef server.
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#clients-client-keys-key
+func (e *ApiClientService) GetKey(clientName string, keyName string) (data *ApiClientKey, err error) {
+	url := fmt.Sprintf("clients/%s/keys/%s", clientName, keyName)
+	err = e.client.magicRequestDecoder("GET", url, nil, &data)
 	return
 }

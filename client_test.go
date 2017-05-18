@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
 )
+
+const clientKeyListResponseFile = "test/client_keys_response.json"
+const clientKeyTestFile = "test/client_key.json"
 
 var (
 	testClientJSON = "test/client.json"
@@ -98,5 +102,51 @@ func TestClientsService_Delete(t *testing.T) {
 	err := client.Clients.Delete("client1")
 	if err != nil {
 		t.Errorf("Clients.Delete returned error: %v", err)
+	}
+}
+
+func TestClientsService_ListKeys(t *testing.T) {
+	setup()
+	defer teardown()
+
+	file, err := ioutil.ReadFile(clientKeyListResponseFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mux.HandleFunc("/clients/client1/keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(file))
+	})
+
+	keys, err := client.Clients.ListKeys("client1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(*keys) != 2 {
+		t.Error("expected len(keys) to be 2")
+	}
+}
+
+func TestClientsService_GetKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	file, err := ioutil.ReadFile(clientKeyTestFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mux.HandleFunc("/clients/client1/keys/default", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(file))
+	})
+
+	key, err := client.Clients.GetKey("client1", "default")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if key.PublicKey != "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----" {
+		t.Error("expected key.PublicKey to match fixture")
 	}
 }

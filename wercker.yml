@@ -30,9 +30,9 @@ build:
   #      code: |
   #        goveralls -service='wercker.com' -repotoken=$COVERALLS_TOKEN -coverprofile=profile.cov
 
-  after-steps:
-    - wouter/irc-notify:
-        server: irc.freenode.net
-        port: 6667
-        nickname: wercker
-        channel: go-chef
+          #  after-steps:
+          #    - wouter/irc-notify:
+          #        server: irc.freenode.net
+          #        port: 6667
+          #        nickname: wercker
+          #        channel: go-chef

@@ -1,0 +1,17 @@
+{
+  "actors": [
+    "tester"
+  ],
+  "users": [
+
+  ],
+  "clients": [
+    "tester"
+  ],
+  "groups": [
+    "nested-group"
+  ],
+  "orgname": "Test Org, LLC",
+  "name": "testgroup",
+  "groupname": "testgroup"
+}

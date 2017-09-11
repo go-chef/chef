@@ -312,7 +312,7 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
-		return nil, fmt.Errorf("block size invalid for '%s'", string(key))
+		return nil, fmt.Errorf("private key block size invalid")
 	}
 	rsaKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {

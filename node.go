@@ -17,6 +17,8 @@ type Node struct {
 	OverrideAttributes  map[string]interface{} `json:"override,omitempty"`
 	JsonClass           string                 `json:"json_class,omitempty"`
 	RunList             []string               `json:"run_list,omitempty"`
+	PolicyName          string                 `json:"policy_name,omitempty"`
+	PolicyGroup         string                 `json:"policy_group,omitempty"`
 }
 
 type NodeResult struct {

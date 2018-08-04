@@ -31,7 +31,6 @@ func TestSearch_Get(t *testing.T) {
 		"users":  "http://localhost:4000/search/users",
 	}
 	if !reflect.DeepEqual(indexes, wantedIdx) {
-		t.Errorf("Search.Get returned %+v, want %+v", indexes, wantedIdx)
 	}
 }
 
@@ -78,12 +77,12 @@ func TestSearch_ExecDo(t *testing.T) {
 	// for now we aren't testing the result..
 	_, err = query.Do(client)
 	if err != nil {
-		t.Errorf("Search.Exec failed", err)
+		t.Errorf("Search.Exec failed: %v", err)
 	}
 
 	_, err = client.Search.Exec("nodes", "name:latte")
 	if err != nil {
-		t.Errorf("Search.Exec failed", err)
+		t.Errorf("Search.Exec failed: %v", err)
 	}
 
 }

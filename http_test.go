@@ -7,8 +7,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"math/big"
 	"net/http"
@@ -18,6 +16,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -562,7 +563,7 @@ func TestDo_badjson(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, " pigthrusters => 100%% ")
+		fmt.Fprint(w, " pigthrusters => 100% ")
 	})
 
 	stupidData := struct{}{}

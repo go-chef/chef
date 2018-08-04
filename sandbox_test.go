@@ -4,10 +4,11 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
 	"net/http"
 	_ "reflect"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 // generate random data for sandbox
@@ -51,7 +52,7 @@ func TestSandboxesPost(t *testing.T) {
 	// post the new sums/files to the sandbox
 	_, err := client.Sandboxes.Post(sums)
 	if err != nil {
-		t.Errorf("Sandbox Post error making request: %+v", err)
+		t.Errorf("Sandbox Post error making request: %v", err)
 	}
 }
 
@@ -76,7 +77,7 @@ func TestSandboxesPut(t *testing.T) {
 
 	sandbox, err := client.Sandboxes.Put("f1c560ccb472448e9cfb31ff98134247")
 	if err != nil {
-		t.Errorf("Sandbox Put error making request: %+v", err)
+		t.Errorf("Sandbox Put error making request: %v", err)
 	}
 
 	expected := Sandbox{

@@ -61,19 +61,23 @@ func TestVaultsService_CreateItem(t *testing.T) {
 	}
 }
 
-// func TestVaultsService_DeleteItem(t *testing.T) {
-//     setup()
-//     defer teardown()
+func TestVaultsService_DeleteItem(t *testing.T) {
+	setup()
+	defer teardown()
 
-//     mux.HandleFunc("/data/bag1/item1", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, ``)
-//     })
+	mux.HandleFunc("/data/vaults/secrets", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
 
-//     err := client.Vaults.DeleteItem("bag1", "item1")
-//     if err != nil {
-//         t.Errorf("Vaults.DeleteItem returned error: %v", err)
-//     }
-// }
+	mux.HandleFunc("/data/vaults/secret_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
+
+	err := client.Vaults.DeleteItem("vaults", "secrets")
+	if err != nil {
+		t.Errorf("Vaults.DeleteItem returned error: %v", err)
+	}
+}
 
 // func TestVaultsService_UpdateItem(t *testing.T) {
 //     setup()

@@ -12,7 +12,7 @@ func TestVaultsService_List(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{"bag1":"http://localhost/data/bag1", "bag2":"http://localhost/data/bag2"}`)
+		fmt.Fprintf(w, `{"secrets":"http://localhost/data/secrets","secrets_keys":"http://localhost/data/secret_keys","bag1":"http://localhost/data/bag1"}`)
 	})
 
 	databags, err := client.Vaults.List()
@@ -20,107 +20,46 @@ func TestVaultsService_List(t *testing.T) {
 		t.Errorf("Vaults.List returned error: %v", err)
 	}
 
-	want := &VaultListResult{"bag1": "http://localhost/data/bag1", "bag2": "http://localhost/data/bag2"}
+	want := &VaultListResult{"secrets": "http://localhost/data/secrets"}
 	if !reflect.DeepEqual(databags, want) {
 		t.Errorf("Vaults.List returned %+v, want %+v", databags, want)
 	}
 }
 
-// func TestVaultsService_Create(t *testing.T) {
-//     setup()
-//     defer teardown()
+func TestVaultsService_GetItem(t *testing.T) {
+	setup()
+	defer teardown()
 
-//     mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, `{"uri": "http://localhost/data/newdatabag"}`)
-//     })
+	mux.HandleFunc("/data/vaults/secrets", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"id":"secrets"}`)
+	})
 
-//     databag := &Vault{Name: "newdatabag"}
-//     response, err := client.Vaults.Create(databag)
-//     if err != nil {
-//         t.Errorf("Vaults.Create returned error: %v", err)
-//     }
+	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"id":"secrets_keys"}`)
+	})
+	_, err := client.Vaults.GetItem("vaults", "secrets")
+	if err != nil {
+		t.Errorf("Vaults.GetItem returned error: %v", err)
+	}
+}
 
-//     want := &VaultCreateResult{URI: "http://localhost/data/newdatabag"}
-//     if !reflect.DeepEqual(response, want) {
-//         t.Errorf("Vaults.Create returned %+v, want %+v", response, want)
-//     }
-// }
+func TestVaultsService_CreateItem(t *testing.T) {
+	setup()
+	defer teardown()
 
-// func TestVaultsService_Delete(t *testing.T) {
-//     setup()
-//     defer teardown()
+	mux.HandleFunc("/data/vaults", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
 
-//     mux.HandleFunc("/data/databag", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, `{"name": "databag", "json_class": "Chef::Vault", "chef_type": "data_bag"}`)
-//     })
+	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
 
-//     response, err := client.Vaults.Delete("databag")
-//     if err != nil {
-//         t.Errorf("Vaults.Delete returned error: %v", err)
-//     }
-
-//     want := &Vault{
-//         Name:      "databag",
-//         JsonClass: "Chef::Vault",
-//         ChefType:  "data_bag",
-//     }
-
-//     if !reflect.DeepEqual(response, want) {
-//         t.Errorf("Vaults.Delete returned %+v, want %+v", response, want)
-//     }
-// }
-
-// func TestVaultsService_ListItems(t *testing.T) {
-//     setup()
-//     defer teardown()
-
-//     mux.HandleFunc("/data/bag1", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, `{"item1":"http://localhost/data/bag1/item1", "item2":"http://localhost/data/bag1/item2"}`)
-//     })
-
-//     databags, err := client.Vaults.ListItems("bag1")
-//     if err != nil {
-//         t.Errorf("Vaults.ListItems returned error: %v", err)
-//     }
-
-//     want := &VaultListResult{"item1": "http://localhost/data/bag1/item1", "item2": "http://localhost/data/bag1/item2"}
-//     if !reflect.DeepEqual(databags, want) {
-//         t.Errorf("Vaults.ListItems returned %+v, want %+v", databags, want)
-//     }
-// }
-
-// func TestVaultsService_GetItem(t *testing.T) {
-//     setup()
-//     defer teardown()
-
-//     mux.HandleFunc("/data/bag1/item1", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, `{"id":"item1", "stuff":"things"}`)
-//     })
-
-//     _, err := client.Vaults.GetItem("bag1", "item1")
-//     if err != nil {
-//         t.Errorf("Vaults.GetItem returned error: %v", err)
-//     }
-// }
-
-// func TestVaultsService_CreateItem(t *testing.T) {
-//     setup()
-//     defer teardown()
-
-//     mux.HandleFunc("/data/bag1", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, ``)
-//     })
-
-//     dbi := map[string]string{
-//         "id":  "item1",
-//         "foo": "test123",
-//     }
-
-//     err := client.Vaults.CreateItem("bag1", dbi)
-//     if err != nil {
-//         t.Errorf("Vaults.CreateItem returned error: %v", err)
-//     }
-// }
+	_, err := client.Vaults.CreateItem("vaults", "secrets")
+	if err != nil {
+		t.Errorf("Vaults.CreateItem returned error: %v", err)
+	}
+}
 
 // func TestVaultsService_DeleteItem(t *testing.T) {
 //     setup()

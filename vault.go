@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 const algorithm string = "aes-256-gcm"
@@ -18,17 +19,11 @@ type VaultService struct {
 	client *Client
 }
 
-// Vault is an encrypted data bag
-type Vault struct {
-	DataBag
-}
-
 // VaultItem wraps a vault databag and it's keys
 type VaultItem struct {
 	DataBagItem  *DataBagItem
-	Name         string
 	Keys         *VaultItemKeys
-	Secret       string
+	Name         string
 	Vault        string
 	VaultService *VaultService
 }
@@ -39,90 +34,88 @@ type VaultItemKeys struct {
 	Name        string
 }
 
-// VaultListResult is the list of data bags returned by chef-api when listing
+// VaultListResult is the list of vaults returned by chef-api when listing
 // http://docs.getchef.com/api_chef_server.html#data
 type VaultListResult map[string]string
 
 // String makes VaultListResult implement the string result
-func (d VaultListResult) String() (out string) {
-	for k, v := range d {
+func (vlr VaultListResult) String() (out string) {
+	for k, v := range vlr {
 		out += fmt.Sprintf("%s => %s\n", k, v)
 	}
 	return out
 }
 
-// List returns a list of databags on the server
-//   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id18
-func (d *VaultService) List() (data *VaultListResult, err error) {
-	path := fmt.Sprintf("data")
-	err = d.client.magicRequestDecoder("GET", path, nil, &data)
-	return
-}
-
-// Create adds a data bag to the server
-//   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id19
-func (d *VaultService) Create(databag *DataBag) (result *DataBagCreateResult, err error) {
-	body, err := JSONReader(databag)
+// List returns a list of vaults on the server.  The official implementation of this method loads each databag and makes some assumptions based on the number of keys and their names.
+// See https://sourcegraph.com/github.com/chef/chef-vault@0d008c3/-/blob/lib/chef/knife/vault_list.rb#L38-51
+func (vs *VaultService) List() (*VaultListResult, error) {
+	databags, err := vs.client.DataBags.List()
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	err = d.client.magicRequestDecoder("POST", "data", body, &result)
-	return
-}
+	keys := map[string]bool{}
 
-// Delete removes a data bag from the server
-//   Chef API Docs: ????????????????
-func (d *VaultService) Delete(name string) (result *DataBag, err error) {
-	path := fmt.Sprintf("data/%s", name)
-	err = d.client.magicRequestDecoder("DELETE", path, nil, &result)
-	return
-}
+	for name := range *databags {
+		if vaultName := strings.TrimSuffix(name, "_keys"); vaultName != name {
+			keys[vaultName] = true
+		}
+	}
 
-// ListItems gets a list of the items in a data bag.
-//   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id20
-func (d *VaultService) ListItems(name string) (data *DataBagListResult, err error) {
-	path := fmt.Sprintf("data/%s", name)
-	err = d.client.magicRequestDecoder("GET", path, nil, &data)
-	return
+	vaults := VaultListResult{}
+
+	for k := range keys {
+		if v, ok := (*databags)[k]; ok {
+			vaults[k] = v
+		}
+	}
+
+	return &vaults, nil
 }
 
 // CreateItem creates a vault item and keys databag
-func (d *VaultService) CreateItem(vaultName, vaultItem string) (*VaultItem, error) {
+func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, error) {
 	sharedSecret := *generateSecret()
-	userEncodedSecret, err := EncodeSharedSecret(d.client.Auth.PrivateKey, sharedSecret)
+	userEncodedSecret, err := EncodeSharedSecret(vs.client.Auth.PrivateKey, sharedSecret)
 	if err != nil {
 		return nil, err
 	}
 
 	keysItem := map[string]interface{}{
-		"admins":                 []string{d.client.Auth.ClientName},
-		"clients":                []string{},
-		"id":                     keysItemName(vaultItem),
-		"mode":                   "default",
-		"search_query":           []string{},
-		d.client.Auth.ClientName: userEncodedSecret,
+		"admins":                  []string{vs.client.Auth.ClientName},
+		"clients":                 []string{},
+		"id":                      keysItemName(itemName),
+		"mode":                    "default",
+		"search_query":            []string{},
+		vs.client.Auth.ClientName: userEncodedSecret,
 	}
 	primaryItem := map[string]interface{}{
-		"id": vaultItem,
+		"id": itemName,
 	}
 
 	// Create client keys databag
-	if err := d.client.DataBags.CreateItem(vaultName, keysItem); err != nil {
+	if err := vs.client.DataBags.CreateItem(vaultName, keysItem); err != nil {
 		return nil, err
 	}
 
 	// Create primary databag
-	if err := d.client.DataBags.CreateItem(vaultName, primaryItem); err != nil {
+	if err := vs.client.DataBags.CreateItem(vaultName, primaryItem); err != nil {
 		return nil, err
 	}
 
-	return &VaultItem{}, nil
+	databagItem := DataBagItem(primaryItem)
+
+	return &VaultItem{
+		DataBagItem:  &databagItem,
+		Name:         itemName,
+		Vault:        vaultName,
+		VaultService: vs,
+	}, nil
 }
 
 // DeleteItem deletes an item from a data bag
 //   Chef API Docs: http://docs.getchef.com/api_chef_server.html#id22
-func (d *VaultService) DeleteItem(vaultName, vaultItem string) error {
+func (vs *VaultService) DeleteItem(vaultName, vaultItem string) error {
 	notFound := func(err error) error {
 		if err != nil {
 			if errRes, ok := err.(*ErrorResponse); ok {
@@ -137,13 +130,13 @@ func (d *VaultService) DeleteItem(vaultName, vaultItem string) error {
 	}
 
 	// Delete item keys databag item
-	err := d.client.DataBags.DeleteItem(vaultName, keysItemName(vaultItem))
+	err := vs.client.DataBags.DeleteItem(vaultName, keysItemName(vaultItem))
 	if re := notFound(err); re != nil {
 		return re
 	}
 
 	// Delete primary databag item
-	err = d.client.DataBags.DeleteItem(vaultName, vaultItem)
+	err = vs.client.DataBags.DeleteItem(vaultName, vaultItem)
 	if re := notFound(err); re != nil {
 		return re
 	}
@@ -152,20 +145,20 @@ func (d *VaultService) DeleteItem(vaultName, vaultItem string) error {
 }
 
 // GetItem fetches a VaultItem and loads client keys
-func (d *VaultService) GetItem(vaultName, itemName string) (*VaultItem, error) {
-	databagItem, err := d.client.DataBags.GetItem(vaultName, itemName)
+func (vs *VaultService) GetItem(vaultName, itemName string) (*VaultItem, error) {
+	databagItem, err := vs.client.DataBags.GetItem(vaultName, itemName)
 	if err != nil {
 		return nil, err
 	}
 
 	item := &VaultItem{
 		Name:         itemName,
-		VaultService: d,
+		VaultService: vs,
 		DataBagItem:  &databagItem,
 		Vault:        vaultName,
 	}
 
-	vaultKeys, err := item.loadKeys(d.client, vaultName, itemName)
+	vaultKeys, err := item.loadKeys(vs.client, vaultName, itemName)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +169,7 @@ func (d *VaultService) GetItem(vaultName, itemName string) (*VaultItem, error) {
 }
 
 // UpdateItem sets the item data, encrypts with a shared key, and then encrypts the shared key with each authorized client key in the <item>_keys data bag
-func (d *VaultService) UpdateItem(item *VaultItem, data map[string]interface{}) error {
+func (vs *VaultService) UpdateItem(item *VaultItem, data map[string]interface{}) error {
 	itemData := map[string]interface{}{}
 	sharedSecret, err := item.sharedSecret()
 	if err != nil {
@@ -197,7 +190,7 @@ func (d *VaultService) UpdateItem(item *VaultItem, data map[string]interface{}) 
 	}
 	itemData["id"] = item.Name
 
-	err = d.client.DataBags.UpdateItem(item.Vault, item.Name, itemData)
+	err = vs.client.DataBags.UpdateItem(item.Vault, item.Name, itemData)
 	if err != nil {
 		return err
 	}

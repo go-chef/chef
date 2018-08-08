@@ -129,8 +129,6 @@ func TestVaultsService_UpdateItem(t *testing.T) {
 		t.Fatalf("Vaults.UpdateItem did not update the data bag: %v", err)
 	}
 
-	fmt.Printf("Vaults.ItemData: %+v\n", *(item.DataBagItem))
-
 	updatedData, err := item.Decrypt()
 	if err != nil {
 		t.Fatalf("Vaults.Decrypt returned an error: %v", err)

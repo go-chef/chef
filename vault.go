@@ -104,12 +104,17 @@ func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, erro
 	}
 
 	databagItem := DataBagItem(primaryItem)
+	databagKeysItem := DataBagItem(keysItem)
 
 	return &VaultItem{
 		DataBagItem:  &databagItem,
 		Name:         itemName,
 		Vault:        vaultName,
 		VaultService: vs,
+		Keys: &VaultItemKeys{
+			DataBagItem: &databagKeysItem,
+			Name:        keysItemName(itemName),
+		},
 	}, nil
 }
 
@@ -194,6 +199,10 @@ func (vs *VaultService) UpdateItem(item *VaultItem, data map[string]interface{})
 	if err != nil {
 		return err
 	}
+
+	databagData := DataBagItem(itemData)
+
+	item.DataBagItem = &databagData
 
 	return nil
 }
@@ -305,7 +314,7 @@ func encryptItemValue(plaintext, secret []byte) (map[string]interface{}, error) 
 		"encrypted_data": base64.StdEncoding.EncodeToString(encryptedBytes),
 		"iv":             base64.StdEncoding.EncodeToString(nonce[:]),
 		"auth_tag":       base64.StdEncoding.EncodeToString(authTag),
-		"version":        supportedVersion,
+		"version":        float64(supportedVersion),
 		"cipher":         algorithm,
 	}, nil
 }

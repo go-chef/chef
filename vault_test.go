@@ -1,6 +1,7 @@
 package chef
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -79,29 +80,63 @@ func TestVaultsService_DeleteItem(t *testing.T) {
 	}
 }
 
-// func TestVaultsService_UpdateItem(t *testing.T) {
-//     setup()
-//     defer teardown()
+func TestVaultsService_UpdateItem(t *testing.T) {
+	setup()
+	defer teardown()
+	var secretsData string
 
-//     mux.HandleFunc("/data/bag1/item1", func(w http.ResponseWriter, r *http.Request) {
-//         fmt.Fprintf(w, ``)
-//     })
+	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
 
-//     dbi := map[string]string{
-//         "id":  "item1",
-//         "foo": "test123",
-//     }
+	mux.HandleFunc("/data/vaults/secrets", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			fmt.Fprint(w, secretsData)
+		case "PUT":
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(r.Body)
+			secretsData = buf.String()
+			fmt.Fprintf(w, ``)
+		default:
+			fmt.Fprintf(w, ``)
+		}
+	})
 
-//     err := client.Vaults.UpdateItem("bag1", "item1", dbi)
-//     if err != nil {
-//         t.Errorf("Vaults.UpdateItem returned error: %v", err)
-//     }
-// }
+	mux.HandleFunc("/data/vaults", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
 
-// func TestVaultsService_VaultListResultString(t *testing.T) {
-//     e := &VaultListResult{"bag1": "http://localhost/data/bag1", "bag2": "http://localhost/data/bag2"}
-//     want := "bag1 => http://localhost/data/bag1\nbag2 => http://localhost/data/bag2\n"
-//     if e.String() != want {
-//         t.Errorf("VaultListResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
-//     }
-// }
+	data := map[string]interface{}{
+		"id":  "secrets",
+		"foo": "bar",
+	}
+
+	item, err := client.Vaults.CreateItem("vaults", "secrets")
+	if err != nil {
+		t.Fatalf("Vaults.CreateItem returned an error: %v", err)
+	}
+	if item == nil {
+		t.Fatalf("Vaults.CreateItem returned nothing: %q", err)
+	}
+
+	err = client.Vaults.UpdateItem(item, data)
+	if err != nil {
+		t.Fatalf("Vaults.UpdateItem returned an error: %v", err)
+	}
+
+	if secretsData == "" {
+		t.Fatalf("Vaults.UpdateItem did not update the data bag: %v", err)
+	}
+
+	fmt.Printf("Vaults.ItemData: %+v\n", *(item.DataBagItem))
+
+	updatedData, err := item.Decrypt()
+	if err != nil {
+		t.Fatalf("Vaults.Decrypt returned an error: %v", err)
+	}
+
+	if !reflect.DeepEqual(*updatedData, data) {
+		t.Fatalf("Updated data did not match: %v != %v", updatedData, data)
+	}
+}

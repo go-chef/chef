@@ -136,6 +136,27 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 	}
 
 	err = e.client.magicRequestDecoder("POST", fullUrl, body, &res)
+	if err != nil {
+		return
+	}
+
+	// the total rows available for this query across all pages
+	total := res.Total
+	// the maximum number of rows in each page
+	inc := query.Rows
+	paged_res := SearchResult{}
+
+	for start := res.Start; start+inc <= total; start += inc {
+		query.Start = start + inc
+		fullUrl = fmt.Sprintf("search/%s", query)
+
+		err = e.client.magicRequestDecoder("POST", fullUrl, body, &paged_res)
+		if err != nil {
+			return
+		}
+		// accumulate this page of results into the primary SearchResult instance
+		res.Rows = append(res.Rows, paged_res.Rows...)
+	}
 	return
 }
 

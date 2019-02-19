@@ -60,30 +60,30 @@ func TestSearch_ExecDo(t *testing.T) {
 	// test the fail case
 	_, err := client.Search.NewQuery("foo", "failsauce")
 	if err == nil {
-		t.Errorf("Bad query wasn't caught")
+		t.Error("Bad query wasn't caught")
 	}
 
 	// test the fail case
 	_, err = client.Search.Exec("foo", "failsauce")
 	if err == nil {
-		t.Errorf("Bad query wasn't caught")
+		t.Error("Bad query wasn't caught")
 	}
 
 	// test the positive case
 	query, err := client.Search.NewQuery("nodes", "name:latte")
 	if err != nil {
-		t.Errorf("failed to create query")
+		t.Error("failed to create query")
 	}
 
 	// for now we aren't testing the result..
 	_, err = query.Do(client)
 	if err != nil {
-		t.Errorf("Search.Exec failed", err)
+		t.Error("Search.Exec failed", err)
 	}
 
 	_, err = client.Search.Exec("nodes", "name:latte")
 	if err != nil {
-		t.Errorf("Search.Exec failed", err)
+		t.Error("Search.Exec failed", err)
 	}
 
 }

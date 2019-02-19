@@ -51,7 +51,7 @@ func TestSandboxesPost(t *testing.T) {
 	// post the new sums/files to the sandbox
 	_, err := client.Sandboxes.Post(sums)
 	if err != nil {
-		t.Errorf("Snadbox Post error making request: ", err)
+		t.Error("Snadbox Post error making request: ", err)
 	}
 }
 
@@ -76,7 +76,7 @@ func TestSandboxesPut(t *testing.T) {
 
 	sandbox, err := client.Sandboxes.Put("f1c560ccb472448e9cfb31ff98134247")
 	if err != nil {
-		t.Errorf("Snadbox Put error making request: ", err)
+		t.Error("Snadbox Put error making request: ", err)
 	}
 
 	expected := Sandbox{

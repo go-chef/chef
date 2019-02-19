@@ -558,7 +558,7 @@ func TestDo_badjson(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, " pigthrusters => 100% ")
+		fmt.Fprintf(w, " pigthrusters => 100%% ")
 	})
 
 	stupidData := struct{}{}

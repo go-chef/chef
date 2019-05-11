@@ -107,7 +107,7 @@ func TestNodesService_Methods(t *testing.T) {
 	// test Put
 	putRes, err := client.Nodes.Put(node)
 	if err != nil {
-		t.Errorf("Nodes.Put returned error", err)
+		t.Error("Nodes.Put returned error", err)
 	}
 
 	if !reflect.DeepEqual(putRes, node) {
@@ -117,6 +117,6 @@ func TestNodesService_Methods(t *testing.T) {
 	// test Delete
 	err = client.Nodes.Delete(node.Name)
 	if err != nil {
-		t.Errorf("Nodes.Delete returned error", err)
+		t.Error("Nodes.Delete returned error", err)
 	}
 }

@@ -39,7 +39,7 @@ func TestGroupsService_Methods(t *testing.T) {
     mux.HandleFunc("/groups", func(w http.ResponseWriter, r *http.Request) {
         switch {
         case r.Method == "GET":
-            fmt.Fprintf(w, `["group1", "group2"]`)
+            fmt.Fprintf(w, `{"group1": "https://url/for/group1", "group2": "https://url/for/group2"}`)
         case r.Method == "POST":
             fmt.Fprintf(w, `{ "uri": "http://localhost:4545/groups/group3" }`)
         }
@@ -67,7 +67,7 @@ func TestGroupsService_Methods(t *testing.T) {
         t.Errorf("Groups.List returned error: %v", err)
     }
 
-    listWant := []string{"group1", "group2"}
+    listWant := map[string]string{ "group1": "https://url/for/group1", "group2": "https://url/for/group2"}
 
     if !reflect.DeepEqual(groups, listWant) {
         t.Errorf("Groups.List returned %+v, want %+v", groups, listWant)
@@ -104,7 +104,7 @@ func TestGroupsService_Methods(t *testing.T) {
     // test Update
     updateRes, err := client.Groups.Update(group)
     if err != nil {
-        t.Errorf("Groups.Update returned error", err)
+        t.Errorf("Groups.Update returned error: %v", err)
     }
 
     if !reflect.DeepEqual(updateRes, group) {
@@ -114,6 +114,6 @@ func TestGroupsService_Methods(t *testing.T) {
     // test Delete
     err = client.Groups.Delete(group.Name)
     if err != nil {
-        t.Errorf("Groups.Delete returned error", err)
+        t.Errorf("Groups.Delete returned error: %v", err)
     }
 }

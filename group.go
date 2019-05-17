@@ -24,7 +24,7 @@ type GroupResult struct {
 // List lists the groups in the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#groups
-func (e *GroupService) List() (grouplist []string, err error) {
+func (e *GroupService) List() (grouplist map[string]string, err error) {
     err = e.client.magicRequestDecoder("GET", "groups", nil, &grouplist)
     return
 }

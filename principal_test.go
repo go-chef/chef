@@ -21,17 +21,17 @@ func TestPrincipalsGet(t *testing.T) {
 
 	p, err := client.Principals.Get("client_node")
 	if err != nil {
-		t.Error("GET principal error making request: ", err)
+		t.Errorf("GET principal error %+v making request: ", err)
 		return
 	}
 
 	if p.Name != "client_node" {
-		t.Error("Unexpected principal name: ", p.Name)
+		t.Errorf("Unexpected principal name: %+v", p.Name)
 	}
 	if p.Type != "client" {
-		t.Error("Unexpected principal type: ", p.Type)
+		t.Errorf("Unexpected principal type: %+v", p.Type)
 	}
 	if p.PublicKey != "-----BEGIN PUBLIC KEY-----No, not really-----END PUBLIC KEY-----" {
-		t.Error("Unexpected principal public key: ", p.PublicKey)
+		t.Errorf("Unexpected principal public key: %+v", p.PublicKey)
 	}
 }

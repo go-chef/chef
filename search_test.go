@@ -78,12 +78,12 @@ func TestSearch_ExecDo(t *testing.T) {
 	// for now we aren't testing the result..
 	_, err = query.Do(client)
 	if err != nil {
-		t.Error("Search.Exec failed", err)
+		t.Errorf("Search.Exec failed err: %+v", err)
 	}
 
 	_, err = client.Search.Exec("nodes", "name:latte")
 	if err != nil {
-		t.Error("Search.Exec failed", err)
+		t.Errorf("Search.Exec failed err: %+v", err)
 	}
 
 }

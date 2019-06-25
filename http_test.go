@@ -507,7 +507,7 @@ func TestNewClient(t *testing.T) {
 	if c.Auth.ClientName != "testclient" {
 		t.Error("unexpected client name: ", c.Auth.ClientName)
 	}
-	if c.client.Timeout != time.Duration(1) * time.Second {
+	if c.client.Timeout != time.Duration(1)*time.Second {
 		t.Error("unexpected timeout value: ", c.client.Timeout)
 	}
 

@@ -68,7 +68,7 @@ type Config struct {
 	SkipSSL bool
 
 	// Time to wait in seconds before giving up on a request to the server
-	Timeout time.Duration
+	Timeout int
 }
 
 /*
@@ -147,7 +147,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		},
 		client: &http.Client{
 			Transport: tr,
-			Timeout:   cfg.Timeout * time.Second,
+			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		},
 		BaseURL: baseUrl,
 	}

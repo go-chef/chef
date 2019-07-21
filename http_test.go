@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -497,14 +498,17 @@ func TestRequestError(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
+	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false, Timeout: 1}
 	c, err := NewClient(cfg)
 	if err != nil {
 		t.Error("Couldn't make a valid client...\n", err)
 	}
-	// simple validation on the created client
+	// simple validations on the created client
 	if c.Auth.ClientName != "testclient" {
 		t.Error("unexpected client name: ", c.Auth.ClientName)
+	}
+	if c.client.Timeout != time.Duration(1) * time.Second {
+		t.Error("unexpected timeout value: ", c.client.Timeout)
 	}
 
 	// Bad PEM should be an error

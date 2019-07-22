@@ -52,6 +52,7 @@ type Client struct {
 	Roles         *RoleService
 	Sandboxes     *SandboxService
 	Search        *SearchService
+	Users         *UserService
 }
 
 // Config contains the configuration options for a chef client. This is Used primarily in the NewClient() constructor in order to setup a proper client object
@@ -62,7 +63,7 @@ type Config struct {
 	// This is the plain text private Key for the user
 	Key string
 
-	// BaseURL is the chef server URL used to connect too. Is using orgs you should include your org in the url
+	// BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url
 	BaseURL string
 
 	// When set to false (default) this will enable SSL Cert Verification. If you need to disable Cert Verification set to true
@@ -164,6 +165,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}
+	c.Users = &UserService{client: c}
 	return c, nil
 }
 

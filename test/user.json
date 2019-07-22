@@ -1,0 +1,13 @@
+{
+  "username": "user1",
+  "display_name": "User1 Name",
+  "external_authentication_uid": "user2id",
+  "email": "user1@mail.com",
+  "first_name": "User1",
+  "full_name": "User1 S. Name",
+  "last_name": "Name",
+  "middle_name": "S",
+  "password": "dummypass",
+  "public_key": "-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----",
+  "recovery_authentication_enabled": false
+}

@@ -1,55 +1,55 @@
 package chef
 
 import (
-    "encoding/json"
-    "fmt"
-    "io"
-    "log"
-    "net/http"
-    "os"
-    "reflect"
-    "testing"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"reflect"
+	"testing"
 )
 
 var (
-    testGroupJSON = "test/group.json"
+	testGroupJSON = "test/group.json"
 )
 
 func TestGroupFromJSONDecoder(t *testing.T) {
-    if file, err := os.Open(testGroupJSON); err != nil {
-        t.Error("Unexpected error '", err, "' during os.Open on", testGroupJSON)
-    } else {
-        dec := json.NewDecoder(file)
-        var g Group
-        if err := dec.Decode(&g); err == io.EOF {
-            log.Println(g)
-        } else if err != nil {
-            log.Fatal(err)
-        }
-    }
+	if file, err := os.Open(testGroupJSON); err != nil {
+		t.Error("Unexpected error '", err, "' during os.Open on", testGroupJSON)
+	} else {
+		dec := json.NewDecoder(file)
+		var g Group
+		if err := dec.Decode(&g); err == io.EOF {
+			log.Println(g)
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 // TODO: Break out these method tests into separate test functions.
 func TestGroupsService_Methods(t *testing.T) {
-    setup()
-    defer teardown()
+	setup()
+	defer teardown()
 
-    // Set up our HTTP routes.
-    // FIXME: We should return HTTP response codes as defined by the Chef API so we can test for them.
-    mux.HandleFunc("/groups", func(w http.ResponseWriter, r *http.Request) {
-        switch {
-        case r.Method == "GET":
-            fmt.Fprintf(w, `{"group1": "https://url/for/group1", "group2": "https://url/for/group2"}`)
-        case r.Method == "POST":
-            fmt.Fprintf(w, `{ "uri": "http://localhost:4545/groups/group3" }`)
-        }
-    })
+	// Set up our HTTP routes.
+	// FIXME: We should return HTTP response codes as defined by the Chef API so we can test for them.
+	mux.HandleFunc("/groups", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET":
+			fmt.Fprintf(w, `{"group1": "https://url/for/group1", "group2": "https://url/for/group2"}`)
+		case r.Method == "POST":
+			fmt.Fprintf(w, `{ "uri": "http://localhost:4545/groups/group3" }`)
+		}
+	})
 
-    mux.HandleFunc("/groups/group3", func(w http.ResponseWriter, r *http.Request) {
-        switch {
-        // TODO: Add true test for PUT, updating an existing value.
-        case r.Method == "GET" || r.Method == "PUT":
-            fmt.Fprintf(w, `{
+	mux.HandleFunc("/groups/group3", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		// TODO: Add true test for PUT, updating an existing value.
+		case r.Method == "GET" || r.Method == "PUT":
+			fmt.Fprintf(w, `{
                 "name": "group3",
                 "groupname": "group3",
                 "orgname": "Test Org, LLC",
@@ -57,63 +57,63 @@ func TestGroupsService_Methods(t *testing.T) {
                 "clients": ["tester"],
                 "groups": ["nested-group"]
             }`)
-        case r.Method == "DELETE":
-        }
-    })
+		case r.Method == "DELETE":
+		}
+	})
 
-    // Test list
-    groups, err := client.Groups.List()
-    if err != nil {
-        t.Errorf("Groups.List returned error: %v", err)
-    }
+	// Test list
+	groups, err := client.Groups.List()
+	if err != nil {
+		t.Errorf("Groups.List returned error: %v", err)
+	}
 
-    listWant := map[string]string{ "group1": "https://url/for/group1", "group2": "https://url/for/group2"}
+	listWant := map[string]string{"group1": "https://url/for/group1", "group2": "https://url/for/group2"}
 
-    if !reflect.DeepEqual(groups, listWant) {
-        t.Errorf("Groups.List returned %+v, want %+v", groups, listWant)
-    }
+	if !reflect.DeepEqual(groups, listWant) {
+		t.Errorf("Groups.List returned %+v, want %+v", groups, listWant)
+	}
 
-    // test Get
-    group, err := client.Groups.Get("group3")
-    if err != nil {
-        t.Errorf("Groups.Get returned error: %v", err)
-    }
+	// test Get
+	group, err := client.Groups.Get("group3")
+	if err != nil {
+		t.Errorf("Groups.Get returned error: %v", err)
+	}
 
-    var wantGroup Group
-    wantGroup.Name =  "group3"
-    wantGroup.GroupName = "group3"
-    wantGroup.OrgName = "Test Org, LLC"
-    wantGroup.Actors = []string{"tester"}
-    wantGroup.Clients = []string{"tester"}
-    wantGroup.Groups = []string{"nested-group"}
-    if !reflect.DeepEqual(group, wantGroup) {
-        t.Errorf("Groups.Get returned %+v, want %+v", group, wantGroup)
-    }
+	var wantGroup Group
+	wantGroup.Name = "group3"
+	wantGroup.GroupName = "group3"
+	wantGroup.OrgName = "Test Org, LLC"
+	wantGroup.Actors = []string{"tester"}
+	wantGroup.Clients = []string{"tester"}
+	wantGroup.Groups = []string{"nested-group"}
+	if !reflect.DeepEqual(group, wantGroup) {
+		t.Errorf("Groups.Get returned %+v, want %+v", group, wantGroup)
+	}
 
-    // test Create
-    res, err := client.Groups.Create(wantGroup)
-    if err != nil {
-        t.Errorf("Groups.Create returned error: %s", err.Error())
-    }
+	// test Create
+	res, err := client.Groups.Create(wantGroup)
+	if err != nil {
+		t.Errorf("Groups.Create returned error: %s", err.Error())
+	}
 
-    createResult := &GroupResult{"http://localhost:4545/groups/group3"}
-    if !reflect.DeepEqual(createResult, res) {
-        t.Errorf("Groups.Post returned %+v, want %+v", res, createResult)
-    }
+	createResult := &GroupResult{"http://localhost:4545/groups/group3"}
+	if !reflect.DeepEqual(createResult, res) {
+		t.Errorf("Groups.Post returned %+v, want %+v", res, createResult)
+	}
 
-    // test Update
-    updateRes, err := client.Groups.Update(group)
-    if err != nil {
-        t.Errorf("Groups.Update returned error: %v", err)
-    }
+	// test Update
+	updateRes, err := client.Groups.Update(group)
+	if err != nil {
+		t.Errorf("Groups.Update returned error: %v", err)
+	}
 
-    if !reflect.DeepEqual(updateRes, group) {
-        t.Errorf("Groups.Update returned %+v, want %+v", updateRes, group)
-    }
+	if !reflect.DeepEqual(updateRes, group) {
+		t.Errorf("Groups.Update returned %+v, want %+v", updateRes, group)
+	}
 
-    // test Delete
-    err = client.Groups.Delete(group.Name)
-    if err != nil {
-        t.Errorf("Groups.Delete returned error: %v", err)
-    }
+	// test Delete
+	err = client.Groups.Delete(group.Name)
+	if err != nil {
+		t.Errorf("Groups.Delete returned error: %v", err)
+	}
 }

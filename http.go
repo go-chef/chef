@@ -40,17 +40,18 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
-	ACLs         *ACLService
-	Clients      *ApiClientService
-	Cookbooks    *CookbookService
-	DataBags     *DataBagService
-	Environments *EnvironmentService
-	Groups       *GroupService
-	Nodes        *NodeService
-	Principals   *PrincipalService
-	Roles        *RoleService
-	Sandboxes    *SandboxService
-	Search       *SearchService
+	ACLs          *ACLService
+	Clients       *ApiClientService
+	Cookbooks     *CookbookService
+	DataBags      *DataBagService
+	Environments  *EnvironmentService
+	Groups        *GroupService
+	Nodes         *NodeService
+	Organizations *OrganizationService
+	Principals    *PrincipalService
+	Roles         *RoleService
+	Sandboxes     *SandboxService
+	Search        *SearchService
 }
 
 // Config contains the configuration options for a chef client. This is Used primarily in the NewClient() constructor in order to setup a proper client object
@@ -158,6 +159,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Environments = &EnvironmentService{client: c}
 	c.Groups = &GroupService{client: c}
 	c.Nodes = &NodeService{client: c}
+	c.Organizations = &OrganizationService{client: c}
 	c.Principals = &PrincipalService{client: c}
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}

@@ -1,0 +1,112 @@
+{
+  "version": "0.3.0",
+  "name": "foo-0.3.0",
+  "cookbook_name": "foo",
+  "frozen?": false,
+  "chef_type": "cookbook_version",
+  "json_class": "Chef::CookbookVersion",
+  "attributes": [],
+  "definitions": [],
+  "files": [],
+  "libraries": [],
+  "providers": [],
+  "recipes": [
+    {
+      "name": "default.rb",
+      "path": "recipes/default.rb",
+      "checksum": "4e855dcab35b481ee56518db164b501d",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-4e855dcab35b481ee56518db164b501d?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=aUPZX5RNetuwRr0/NwU/Ff%2BjsBs%3D"
+    }
+  ],
+  "resources": [],
+  "root_files": [
+    {
+      "name": "chefignore",
+      "path": "chefignore",
+      "checksum": "95380a40cfe5c346d5e63c52539d17e7",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-95380a40cfe5c346d5e63c52539d17e7?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=SXstnyZZxi%2BmKbLNUOzUsQXzCFw%3D"
+    },
+    {
+      "name": "metadata.rb",
+      "path": "metadata.rb",
+      "checksum": "14963c5b685f3a15ea90ae51bd5454b6",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-14963c5b685f3a15ea90ae51bd5454b6?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=dI/kWu7EZ2YPHu2wF3mhUu8rbUA%3D"
+    },
+    {
+      "name": "Policyfile.rb",
+      "path": "Policyfile.rb",
+      "checksum": "e9d0e18f4363f64e3b87ca5801791911",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-e9d0e18f4363f64e3b87ca5801791911?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=/bgm9VDzFPHBuPovkMNPwman9Ko%3D"
+    },
+    {
+      "name": ".gitignore",
+      "path": ".gitignore",
+      "checksum": "8e1ff55846e9b28df348982ccfe339b3",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-8e1ff55846e9b28df348982ccfe339b3?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=T8UxfOjSj2zrzI6pwOXRSHhK%2B8M%3D"
+    },
+    {
+      "name": "README.md",
+      "path": "README.md",
+      "checksum": "07c8684d1b1699563e073c17e6ee262f",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-07c8684d1b1699563e073c17e6ee262f?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=oPoa0y0RS34mWSyW8lXKRxge9NQ%3D"
+    },
+    {
+      "name": "CHANGELOG.md",
+      "path": "CHANGELOG.md",
+      "checksum": "c28291df54b7be08bfe62a80c7dd5411",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-c28291df54b7be08bfe62a80c7dd5411?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=LQCb8adfjW6cVG7pfidMPg2pV5w%3D"
+    },
+    {
+      "name": "LICENSE",
+      "path": "LICENSE",
+      "checksum": "1d1c9ae2289377a52e9dcec0a6d255b6",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-1d1c9ae2289377a52e9dcec0a6d255b6?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=etSoITthatLm9SemngewSDpCMnc%3D"
+    },
+    {
+      "name": "kitchen.yml",
+      "path": "kitchen.yml",
+      "checksum": "c11edf11bc858c9aa3bfa7079cd52c9a",
+      "specificity": "default",
+      "url": "https://localhost:443/bookshelf/organization-cbf02f18c7f4ccd75ff967163d1a4398/checksum-c11edf11bc858c9aa3bfa7079cd52c9a?AWSAccessKeyId=5aa3ab740748068af204e3206eca77a1ea0be108&Expires=1570944408&Signature=ExbQ3O/3%2B/n5y/hd%2BDVd%2BViWCsM%3D"
+    }
+  ],
+  "templates": [],
+  "metadata": {
+    "name": "foo",
+    "description": "Installs/Configures foo",
+    "long_description": "Installs/Configures foo",
+    "maintainer": "The Authors",
+    "maintainer_email": "you@example.com",
+    "license": "All Rights Reserved",
+    "platforms": {},
+    "dependencies": {},
+    "recommendations": {},
+    "suggestions": {},
+    "conflicting": {},
+    "providing": {
+      "foo": ">= 0.0.0"
+    },
+    "replacing": {},
+    "attributes": {},
+    "groupings": {},
+    "recipes": {
+      "foo": ""
+    },
+    "version": "0.3.0"
+  },
+  "access": {
+    "read": true,
+    "create": true,
+    "grant": true,
+    "update": true,
+    "delete": true
+  }
+}

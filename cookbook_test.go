@@ -6,10 +6,67 @@ import (
 	"net/http"
 	//"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const cookbookListResponseFile = "test/cookbooks_response.json"
-const cookbookTestFile = "test/cookbook.json"
+const cookbookResponseFile = "test/cookbook.json"
+
+func TestGetVersion(t *testing.T) {
+	setup()
+	defer teardown()
+
+	cbookResp, err := ioutil.ReadFile(cookbookResponseFile)
+	if err != nil {
+		t.Error(err)
+	}
+
+	mux.HandleFunc("/cookbooks/foo/_latest", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(cbookResp))
+	})
+
+	cookbook, err := client.Cookbooks.GetVersion("foo", "_latest")
+	assert.Nil(t, err)
+	if assert.NotNil(t, cookbook) {
+		assert.Equal(t, "foo", cookbook.CookbookName)
+		assert.Equal(t, "0.3.0", cookbook.Version)
+		assert.Equal(t, "foo-0.3.0", cookbook.Name)
+		assert.Equal(t, "cookbook_version", cookbook.ChefType)
+		assert.Equal(t, false, cookbook.Frozen)
+		assert.Equal(t, "Chef::CookbookVersion", cookbook.JsonClass)
+		assert.Equal(t, 0, len(cookbook.Files))
+		assert.Equal(t, 0, len(cookbook.Templates))
+		assert.Equal(t, 0, len(cookbook.Attributes))
+		assert.Equal(t, 0, len(cookbook.Definitions))
+		assert.Equal(t, 0, len(cookbook.Libraries))
+		assert.Equal(t, 0, len(cookbook.Providers))
+		assert.Equal(t, 0, len(cookbook.Resources))
+		// Assert Recipes (verify only one field)
+		assert.Equal(t, 1, len(cookbook.Recipes))
+		assert.Equal(t, "default.rb", cookbook.Recipes[0].Name)
+		assert.Equal(t, "recipes/default.rb", cookbook.Recipes[0].Path)
+		assert.Equal(t, "4e855dcab35b481ee56518db164b501d", cookbook.Recipes[0].Checksum)
+		assert.Equal(t, "default", cookbook.Recipes[0].Specificity)
+		// Check partial string just for convenience
+		assert.Contains(t, cookbook.Recipes[0].Url, "https://localhost:443/bookshelf/organization-")
+		// Assert RootFiles
+		assert.Equal(t, 8, len(cookbook.RootFiles))
+		// Assert CookbookMeta struct
+		assert.Equal(t, "foo", cookbook.Metadata.Name)
+		assert.Equal(t, "0.3.0", cookbook.Metadata.Version)
+		assert.Equal(t, "The Authors", cookbook.Metadata.Maintainer)
+		assert.Equal(t, "you@example.com", cookbook.Metadata.MaintainerEmail)
+		assert.Equal(t, "Installs/Configures foo", cookbook.Metadata.Description)
+		assert.Equal(t, "All Rights Reserved", cookbook.Metadata.License)
+		// Assert CookbookAccess struct
+		assert.Equal(t, true, cookbook.Access.Read)
+		assert.Equal(t, true, cookbook.Access.Create)
+		assert.Equal(t, true, cookbook.Access.Grant)
+		assert.Equal(t, true, cookbook.Access.Update)
+		assert.Equal(t, true, cookbook.Access.Delete)
+	}
+}
 
 func TestCookbookList(t *testing.T) {
 	setup()

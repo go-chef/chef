@@ -38,7 +38,7 @@ type CookbookVersion struct {
 
 // CookbookMeta represents a Golang version of cookbook metadata
 type CookbookMeta struct {
-	Name            string                 `json:"cookbook_name,omitempty"`
+	Name            string                 `json:"name,omitempty"`
 	Version         string                 `json:"version,omitempty"`
 	Description     string                 `json:"description,omitempty"`
 	LongDescription string                 `json:"long_description,omitempty"`
@@ -57,6 +57,15 @@ type CookbookMeta struct {
 	Recipes         map[string]string      `json:"recipes,omitempty"`
 }
 
+// CookbookAccess represents the permissions on a Cookbook
+type CookbookAccess struct {
+	Read   bool `json:"read,omitempty"`
+	Create bool `json:"create,omitempty"`
+	Grant  bool `json:"grant,omitempty"`
+	Update bool `json:"update,omitempty"`
+	Delete bool `json:"delete,omitempty"`
+}
+
 // Cookbook represents the native Go version of the deserialized api cookbook
 type Cookbook struct {
 	CookbookName string         `json:"cookbook_name"`
@@ -73,8 +82,9 @@ type Cookbook struct {
 	Libraries    []CookbookItem `json:"libraries,omitempty"`
 	Providers    []CookbookItem `json:"providers,omitempty"`
 	Resources    []CookbookItem `json:"resources,omitempty"`
-	RootFiles    []CookbookItem `json:"templates,omitempty"`
+	RootFiles    []CookbookItem `json:"root_files,omitempty"`
 	Metadata     CookbookMeta   `json:"metadata,omitempty"`
+	Access       CookbookAccess `json:"access,omitempty"`
 }
 
 // String makes CookbookListResult implement the string result

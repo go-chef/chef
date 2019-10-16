@@ -5,7 +5,6 @@
 package chef
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -34,7 +33,7 @@ func (c *CookbookService) DownloadCookbookAt(name, version, localDir string) err
 		return err
 	}
 
-	fmt.Printf("Downloading %s cookbook version %s\n", cookbook.CookbookName, cookbook.Version)
+	debug("Downloading %s cookbook version %s\n", cookbook.CookbookName, cookbook.Version)
 
 	// We use 'cookbook.Name' since it returns the string '{NAME}-{VERSION}'. Ex: 'apache-0.1.0'
 	cookbookPath := path.Join(localDir, cookbook.Name)
@@ -57,7 +56,7 @@ func (c *CookbookService) DownloadCookbookAt(name, version, localDir string) err
 		}
 	}
 
-	fmt.Printf("Cookbook downloaded to %s\n", cookbookPath)
+	debug("Cookbook downloaded to %s\n", cookbookPath)
 	return nil
 }
 
@@ -68,7 +67,7 @@ func (c *CookbookService) downloadCookbookItems(items []CookbookItem, itemType, 
 		return nil
 	}
 
-	fmt.Printf("Downloading %s\n", itemType)
+	debug("Downloading %s\n", itemType)
 	if err := os.MkdirAll(localPath, 0755); err != nil {
 		return err
 	}

@@ -17,7 +17,7 @@ import (
 
 const emptyCookbookResponseFile = "test/empty_cookbook.json"
 
-func TestDownloadCookbookThatDoesNotExist(t *testing.T) {
+func TestCookbooksDownloadThatDoesNotExist(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -25,13 +25,13 @@ func TestDownloadCookbookThatDoesNotExist(t *testing.T) {
 		http.Error(w, "Not Found", 404)
 	})
 
-	err := client.Cookbooks.DownloadCookbook("foo", "2.1.0")
+	err := client.Cookbooks.Download("foo", "2.1.0")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "404")
 	}
 }
 
-func TestDownloadCookbookCorrectsLatestVersion(t *testing.T) {
+func TestCookbooksDownloadCorrectsLatestVersion(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -39,23 +39,23 @@ func TestDownloadCookbookCorrectsLatestVersion(t *testing.T) {
 		http.Error(w, "Not Found", 404)
 	})
 
-	err := client.Cookbooks.DownloadCookbook("foo", "")
+	err := client.Cookbooks.Download("foo", "")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "404")
 	}
 
-	err = client.Cookbooks.DownloadCookbook("foo", "latest")
+	err = client.Cookbooks.Download("foo", "latest")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "404")
 	}
 
-	err = client.Cookbooks.DownloadCookbook("foo", "_latest")
+	err = client.Cookbooks.Download("foo", "_latest")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "404")
 	}
 }
 
-func TestDownloadCookbookEmptyWithVersion(t *testing.T) {
+func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -68,11 +68,11 @@ func TestDownloadCookbookEmptyWithVersion(t *testing.T) {
 		fmt.Fprintf(w, string(cbookResp))
 	})
 
-	err = client.Cookbooks.DownloadCookbook("foo", "0.2.0")
+	err = client.Cookbooks.Download("foo", "0.2.0")
 	assert.Nil(t, err)
 }
 
-func TestDownloadCookbookAt(t *testing.T) {
+func TestCookbooksDownloadAt(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -130,7 +130,7 @@ func TestDownloadCookbookAt(t *testing.T) {
 		fmt.Fprintf(w, "log 'this is a resource'")
 	})
 
-	err = client.Cookbooks.DownloadCookbookAt("foo", "0.2.1", tempDir)
+	err = client.Cookbooks.DownloadAt("foo", "0.2.1", tempDir)
 	assert.Nil(t, err)
 
 	var (

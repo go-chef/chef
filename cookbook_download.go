@@ -10,18 +10,18 @@ import (
 	"path"
 )
 
-// DownloadCookbook downloads a cookbook to the current directory on disk
-func (c *CookbookService) DownloadCookbook(name, version string) error {
+// Download downloads a cookbook to the current directory on disk
+func (c *CookbookService) Download(name, version string) error {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
-	return c.DownloadCookbookAt(name, version, cwd)
+	return c.DownloadAt(name, version, cwd)
 }
 
-// DownloadCookbookAt downloads a cookbook to the specified local directory on disk
-func (c *CookbookService) DownloadCookbookAt(name, version, localDir string) error {
+// DownloadAt downloads a cookbook to the specified local directory on disk
+func (c *CookbookService) DownloadAt(name, version, localDir string) error {
 	// If the version is set to 'latest' or it is empty ("") then,
 	// we will set the version to '_latest' which is the default endpoint
 	if version == "" || version == "latest" {

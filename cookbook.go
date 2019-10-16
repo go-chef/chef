@@ -133,7 +133,7 @@ func (c *CookbookService) GetAvailableVersions(name, numVersions string) (data C
 //   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-name-version
 func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err error) {
 	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
-	c.client.magicRequestDecoder("GET", url, nil, &data)
+	err = c.client.magicRequestDecoder("GET", url, nil, &data)
 	return
 }
 

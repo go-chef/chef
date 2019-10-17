@@ -72,7 +72,7 @@ func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestCookbooksDownloadAt(t *testing.T) {
+func TestCookbooksDownloadTo(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -130,7 +130,7 @@ func TestCookbooksDownloadAt(t *testing.T) {
 		fmt.Fprintf(w, "log 'this is a resource'")
 	})
 
-	err = client.Cookbooks.DownloadAt("foo", "0.2.1", tempDir)
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
 	assert.Nil(t, err)
 
 	var (

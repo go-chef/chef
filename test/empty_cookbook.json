@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "name": "foo-0.2.0",
+  "cookbook_name": "foo",
+  "frozen?": false,
+  "chef_type": "cookbook_version",
+  "json_class": "Chef::CookbookVersion",
+  "attributes": [],
+  "definitions": [],
+  "files": [],
+  "libraries": [],
+  "providers": [],
+  "recipes": [],
+  "resources": [],
+  "root_files": [],
+  "templates": [],
+  "metadata": {
+    "name": "foo",
+    "description": "Installs/Configures foo",
+    "long_description": "Installs/Configures foo",
+    "maintainer": "The Authors",
+    "maintainer_email": "you@example.com",
+    "license": "All Rights Reserved",
+    "platforms": {},
+    "dependencies": {},
+    "recommendations": {},
+    "suggestions": {},
+    "conflicting": {},
+    "providing": {
+      "foo": ">= 0.0.0"
+    },
+    "replacing": {},
+    "attributes": {},
+    "groupings": {},
+    "recipes": {
+      "foo": ""
+    },
+    "version": "0.2.0"
+  },
+  "access": {
+    "read": true,
+    "create": true,
+    "grant": true,
+    "update": true,
+    "delete": true
+  }
+}

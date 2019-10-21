@@ -93,7 +93,7 @@ func TestCookbooksDownloadAt(t *testing.T) {
     {
       "name": "default.rb",
       "path": "recipes/default.rb",
-      "checksum": "320sdk2w38020827kdlsdkasbd5454b6",
+      "checksum": "8e751ed8663cb9b97499956b6a20b0de",
       "specificity": "default",
       "url": "` + server.URL + `/bookshelf/foo/default_rb"
     }
@@ -103,7 +103,7 @@ func TestCookbooksDownloadAt(t *testing.T) {
     {
       "name": "metadata.rb",
       "path": "metadata.rb",
-      "checksum": "14963c5b685f3a15ea90ae51bd5454b6",
+      "checksum": "6607f3131919e82dc4ba4c026fcfee9f",
       "specificity": "default",
       "url": "` + server.URL + `/bookshelf/foo/metadata_rb"
     }
@@ -151,4 +151,22 @@ func TestCookbooksDownloadAt(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
 	}
+}
+
+func TestVerifyMD5Checksum(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "md5-test")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll(tempDir) // clean up
+
+	var (
+		// if someone changes the test data,
+		// you have to also update the below md5 sum
+		testData = []byte("hello\nchef\n")
+		filePath = path.Join(tempDir, "dat")
+	)
+	err = ioutil.WriteFile(filePath, testData, 0644)
+	assert.Nil(t, err)
+	assert.True(t, verifyMD5Checksum(filePath, "70bda176ac4db06f1f66f96ae0693be1"))
 }

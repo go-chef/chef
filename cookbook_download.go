@@ -6,7 +6,6 @@ package chef
 
 import (
 	"crypto/md5"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -115,7 +114,11 @@ func (c *CookbookService) downloadCookbookFile(item CookbookItem, localPath stri
 		return nil
 	}
 
-	return errors.New("wrong checksum")
+	return fmt.Errorf(
+		"cookbook file '%s' checksum mismatch. (expected:%s)",
+		filePath,
+		item.Checksum,
+	)
 }
 
 func verifyMD5Checksum(filePath, checksum string) bool {

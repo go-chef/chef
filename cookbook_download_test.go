@@ -72,11 +72,8 @@ func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestCookbooksDownloadTo(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mockedCookbookResponseFile := `
+func cookbookData() string {
+	return `
 {
   "version": "0.2.1",
   "name": "foo-0.2.1",
@@ -111,9 +108,14 @@ func TestCookbooksDownloadTo(t *testing.T) {
   "templates": [],
   "metadata": {},
   "access": {}
+} `
 }
-`
 
+func TestCookbooksDownloadTo(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mockedCookbookResponseFile := cookbookData()
 	tempDir, err := ioutil.TempDir("", "foo-cookbook")
 	if err != nil {
 		t.Error(err)
@@ -150,6 +152,99 @@ func TestCookbooksDownloadTo(t *testing.T) {
 		recipeBytes, err := ioutil.ReadFile(defaultPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
+	}
+
+}
+
+func TestCookbooksDownloadTo_caching(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mockedCookbookResponseFile := cookbookData()
+	tempDir, err := ioutil.TempDir("", "foo-cookbook")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll(tempDir) // clean up
+
+	mux.HandleFunc("/cookbooks/foo/0.2.1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(mockedCookbookResponseFile))
+	})
+	mux.HandleFunc("/bookshelf/foo/metadata_rb", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "name 'foo'")
+	})
+	mux.HandleFunc("/bookshelf/foo/default_rb", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "log 'this is a resource'")
+	})
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	var (
+		cookbookPath = path.Join(tempDir, "foo-0.2.1")
+		metadataPath = path.Join(cookbookPath, "metadata.rb")
+		recipesPath  = path.Join(cookbookPath, "recipes")
+		defaultPath  = path.Join(recipesPath, "default.rb")
+	)
+	assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
+	assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
+	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
+		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "name 'foo'", string(metadataBytes))
+	}
+	if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
+		recipeBytes, err := ioutil.ReadFile(defaultPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
+	}
+
+	// Capture the timestamps to ensure that on-redownload of unchanged cookook,
+	// they show no modification (using this as a proxy to determine whether
+	// the file has been re-downloaded).
+	defaultPathInfo, err := os.Stat(defaultPath)
+	assert.Nil(t, err)
+
+	metaDataInfo, err := os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	defaultPathNewInfo, err := os.Stat(defaultPath)
+	assert.Nil(t, err)
+
+	metaDataNewInfo, err := os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	// If the file was not re-downloaded, we would expect the timestamp
+	// to remain unchanged.
+	assert.Equal(t, defaultPathInfo.ModTime(), defaultPathNewInfo.ModTime())
+	assert.Equal(t, metaDataInfo.ModTime(), metaDataNewInfo.ModTime())
+
+	err = os.Truncate(metadataPath, 1)
+	assert.Nil(t, err)
+
+	err = os.Chtimes(metadataPath, metaDataInfo.ModTime(), metaDataInfo.ModTime())
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	metaDataNewInfo, err = os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	assert.NotEqual(t, metaDataInfo.ModTime(), metaDataNewInfo.ModTime())
+
+	// Finally, make sure the modified-and-replaced metadata.rb is matching
+	// what we expect after we have redownloaded the cookbook:
+	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
+		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
 }
 

@@ -87,6 +87,12 @@ func (c *CookbookService) downloadCookbookItems(items []CookbookItem, itemType, 
 func (c *CookbookService) downloadCookbookFile(item CookbookItem, localPath string) error {
 	filePath := path.Join(localPath, item.Name)
 
+	// First check and see if the file is already there - if it is and the checksum
+	// matches, there's no need to redownload it.
+	if verifyMD5Checksum(filePath, item.Checksum) {
+		return nil
+	}
+
 	request, err := c.client.NewRequest("GET", item.Url, nil)
 	if err != nil {
 		return err

@@ -5,6 +5,8 @@
 package chef
 
 import (
+	"crypto/md5"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -17,11 +19,11 @@ func (c *CookbookService) Download(name, version string) error {
 		return err
 	}
 
-	return c.DownloadAt(name, version, cwd)
+	return c.DownloadTo(name, version, cwd)
 }
 
-// DownloadAt downloads a cookbook to the specified local directory on disk
-func (c *CookbookService) DownloadAt(name, version, localDir string) error {
+// DownloadTo downloads a cookbook to the specified local directory on disk
+func (c *CookbookService) DownloadTo(name, version, localDir string) error {
 	// If the version is set to 'latest' or it is empty ("") then,
 	// we will set the version to '_latest' which is the default endpoint
 	if version == "" || version == "latest" {
@@ -60,6 +62,12 @@ func (c *CookbookService) DownloadAt(name, version, localDir string) error {
 	return nil
 }
 
+// DownloadAt is a deprecated alias for DownloadTo
+func (c *CookbookService) DownloadAt(name, version, localDir string) error {
+	err := c.DownloadTo(name, version, localDir)
+        return err
+}
+
 // downloadCookbookItems downloads all the provided cookbook items into the provided
 // local path, it also ensures that the provided directory exists by creating it
 func (c *CookbookService) downloadCookbookItems(items []CookbookItem, itemType, localPath string) error {
@@ -73,8 +81,7 @@ func (c *CookbookService) downloadCookbookItems(items []CookbookItem, itemType, 
 	}
 
 	for _, item := range items {
-		itemPath := path.Join(localPath, item.Name)
-		if err := c.downloadCookbookFile(item.Url, itemPath); err != nil {
+		if err := c.downloadCookbookFile(item, localPath); err != nil {
 			return err
 		}
 	}
@@ -83,11 +90,14 @@ func (c *CookbookService) downloadCookbookItems(items []CookbookItem, itemType, 
 }
 
 // downloadCookbookFile downloads a single cookbook file to disk
-func (c *CookbookService) downloadCookbookFile(url, file string) error {
-	request, err := c.client.NewRequest("GET", url, nil)
+func (c *CookbookService) downloadCookbookFile(item CookbookItem, localPath string) error {
+	filePath := path.Join(localPath, item.Name)
+
+	request, err := c.client.NewRequest("GET", item.Url, nil)
 	if err != nil {
 		return err
 	}
+
 	response, err := c.client.Do(request, nil)
 	if response != nil {
 		defer response.Body.Close()
@@ -96,13 +106,42 @@ func (c *CookbookService) downloadCookbookFile(url, file string) error {
 		return err
 	}
 
-	f, err := os.Create(file)
+	f, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	if _, err := io.Copy(f, response.Body); err != nil {
 		return err
 	}
-	return nil
+
+	if verifyMD5Checksum(filePath, item.Checksum) {
+		return nil
+	}
+
+	return fmt.Errorf(
+		"cookbook file '%s' checksum mismatch. (expected:%s)",
+		filePath,
+		item.Checksum,
+	)
+}
+
+func verifyMD5Checksum(filePath, checksum string) bool {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return false
+	}
+
+	md5String := fmt.Sprintf("%x", hash.Sum(nil))
+	if md5String == checksum {
+		return true
+	}
+	return false
 }

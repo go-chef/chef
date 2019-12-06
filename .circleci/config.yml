@@ -21,7 +21,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - 35:45:41:ba:cf:3f:7f:d5:00:0f:11:6b:4d:c0:a1:90
+            - ${TAG_TOKEN}
       - checkout
       - run: curl -s https://api.github.com/repos/pantheon-systems/autotag/releases/latest | grep browser_download | grep Linux | cut -d '"' -f 4 | xargs curl -o ./autotag -L && chmod 755 ./autotag
       - run: ./autotag

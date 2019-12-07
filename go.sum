@@ -2,6 +2,8 @@ github.com/cenkalti/backoff v2.1.1+incompatible h1:tKJnvO2kl0zmb/jA5UKAt4VoEVw1q
 github.com/cenkalti/backoff v2.1.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/ctdk/goiardi v0.11.9 h1:OkrfamLJkktXQGc6buUvg+VMd2L3F/63zrhJCINZE8s=
 github.com/ctdk/goiardi v0.11.9/go.mod h1:Pr6Cj6Wsahw45myttaOEZeZ0LE7p1qzWmzgsBISkrNI=
+github.com/ctdk/goiardi v0.11.10 h1:IB/3Afl1pC2Q4KGwzmhHPAoJfe8VtU51wZ2V0QkvsL0=
+github.com/ctdk/goiardi v0.11.10/go.mod h1:Pr6Cj6Wsahw45myttaOEZeZ0LE7p1qzWmzgsBISkrNI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

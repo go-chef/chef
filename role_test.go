@@ -178,17 +178,19 @@ func TestRolesService_Put(t *testing.T) {
 
 func TestRolesService_RoleListResultString(t *testing.T) {
 	r := &RoleListResult{"foo": "http://localhost:4000/roles/foo"}
+	rstr := r.String()
 	want := "foo => http://localhost:4000/roles/foo\n"
-	if r.String() != want {
-		t.Errorf("RoleListResult.String returned %+v, want %+v", r.String(), want)
+	if rstr != want {
+		t.Errorf("RoleListResult.String returned %+v, want %+v", rstr, want)
 	}
 }
 
 func TestRolesService_RoleCreateResultString(t *testing.T) {
 	r := &RoleCreateResult{"uri": "http://localhost:4000/roles/webserver"}
+	rstr := r.String()
 	want := "uri => http://localhost:4000/roles/webserver\n"
-	if r.String() != want {
-		t.Errorf("RoleCreateResult.String returned %+v, want %+v", r.String(), want)
+	if rstr != want {
+		t.Errorf("RoleCreateResult.String returned %+v, want %+v", rstr, want)
 	}
 }
 

@@ -40,15 +40,17 @@ func TestClientsService_List(t *testing.T) {
 	mux.HandleFunc("/clients", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"client1": "http://localhost/clients/client1", "client2": "http://localhost/clients/client2"}`)
 	})
-
 	response, err := client.Clients.List()
 	if err != nil {
 		t.Errorf("Clients.List returned error: %v", err)
 	}
 
+	// The order printed by the String function is not defined
 	want := "client1 => http://localhost/clients/client1\nclient2 => http://localhost/clients/client2\n"
-	if response.String() != want {
-		t.Errorf("Clients.List returned:\n%+v\nwant:\n%+v\n", response.String(), want)
+	want2 := "client2 => http://localhost/clients/client2\nclient1 => http://localhost/clients/client1\n"
+	rstr := response.String()
+	if rstr != want && rstr != want2 {
+		t.Errorf("Clients.List returned:\n%+v\nwant:\n%+v\n", rstr, want)
 	}
 }
 

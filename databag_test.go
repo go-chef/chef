@@ -157,8 +157,11 @@ func TestDataBagsService_UpdateItem(t *testing.T) {
 
 func TestDataBagsService_DataBagListResultString(t *testing.T) {
 	e := &DataBagListResult{"bag1": "http://localhost/data/bag1", "bag2": "http://localhost/data/bag2"}
+	// The output order is not guarenteed by the String function, check for either order
 	want := "bag1 => http://localhost/data/bag1\nbag2 => http://localhost/data/bag2\n"
-	if e.String() != want {
-		t.Errorf("DataBagListResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
+	want2 := "bag2 => http://localhost/data/bag2\nbag1 => http://localhost/data/bag1\n"
+	ebag := e.String()
+	if ebag != want && ebag != want2 {
+		t.Errorf("DataBagListResult.String returned:\n%+v\nwant:\n%+v\n", ebag, want)
 	}
 }

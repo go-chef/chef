@@ -42,3 +42,5 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: env
       - run: ls && pwd
+      - run: go get
+      - run: go fmt

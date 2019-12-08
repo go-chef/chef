@@ -46,6 +46,5 @@ jobs:
       - run: go get github.com/ctdk/goiardi/chefcrypto
       - run: go get github.com/smartystreets/goconvey/convey 
       - run: go get github.com/stretchr/testify/assert
-      - run: # gofmt -l -d *.go && test -z $(go fmt ./....)
       - run: go vet ./...
       - run: go test ./...

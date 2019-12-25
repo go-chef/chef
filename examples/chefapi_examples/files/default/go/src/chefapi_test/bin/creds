@@ -1,0 +1,4 @@
+CHEFUSER='pivotal'
+KEYFILE='/etc/opscode/pivotal.pem'
+CHEFGLOBALURL='https://localhost'
+CHEFORGURL='https://localhost'

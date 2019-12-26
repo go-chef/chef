@@ -7,29 +7,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 
-	chef "github.com/go-chef/chef"
+	"github.com/go-chef/chef"
+	"chefapi_test/testapi"
 )
 
 
 // main Exercise the chef server api
 func main() {
-	// Pass in the database and chef-server api credentials.
-	org1 := "org1"
-	org2 := "org2"
-	user := os.Args[1]
-	keyfile := os.Args[2]
-	chefurl := os.Args[3]
-	skipssl, err := strconv.ParseBool(os.Args[4])
-	if err != nil {
-	   skipssl = true
-        }
-
         // Create a client for access
-	client := buildClient(user, keyfile, chefurl, skipssl)
+	client := testapi.Client()
 
 	// Organization tests
+	org1 := "org1"
+	org2 := "org2"
+
 	orgList := listOrganizations(client)
 	fmt.Println("List initial organizations", orgList)
 

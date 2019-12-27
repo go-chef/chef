@@ -1,4 +1,5 @@
 CHEFUSER='pivotal'
 KEYFILE='/etc/opscode/pivotal.pem'
-CHEFGLOBALURL='https://localhost'
-CHEFORGURL='https://localhost'
+CHEFGLOBALURL='https://localhost/'
+# The trailing / on the url is critically important.  The api does not work without it.
+CHEFORGANIZATIONURL='https://localhost/organizations/test/'

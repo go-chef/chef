@@ -15,7 +15,7 @@ git '/go/src/github.com/go-chef/chef' do
 end
 
 remote_directory 'local_go' do
-  files_backup      false
+  files_backup false
   path        '/go'
   purge       false
   recursive   true

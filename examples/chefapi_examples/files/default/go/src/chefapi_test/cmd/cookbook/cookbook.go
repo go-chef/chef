@@ -15,12 +15,6 @@ import (
 
 // main Exercise the chef server api
 func main() {
-	#  values passed in and client are common code, use struct and shared
-	user := os.Args[1]
-	keyfile := os.Args[2]
-	chefurl := os.Args[3]
-	ssl
-
         // Create a client for user access
 	client := buildClient(user, keyfile, chefurl)
 

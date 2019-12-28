@@ -51,8 +51,16 @@ cookbook_file '/fixtures/bin/chef_objects.sh' do
   mode '0755'
 end
 
-remote_directory '/fixtures/chef/cookbooks/test_book' do
-  source 'test_book'
+remote_directory '/fixtures/chef/cb' do
+  source 'cb'
+end
+
+# Cookbook upload all 4 books
+bash 'upload testbook 0.1.0' do
+  code <<-EOH
+    knife cookbook upload sampbook testbook -s https://testhost/organizations/test -u pivotal -k /etc/opscode/pivotal.pem -o /fixtures/chef/cb/0.1.0
+    knife cookbook upload sampbook testbook -s https://testhost/organizations/test -u pivotal -k /etc/opscode/pivotal.pem -o /fixtures/chef/cb/0.2.0
+EOH
 end
 
 directory '/var/log/chef' do

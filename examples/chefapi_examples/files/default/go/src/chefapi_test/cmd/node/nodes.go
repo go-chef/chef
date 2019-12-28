@@ -11,7 +11,6 @@ import (
 func main() {
 	// Use the default test org
 	client := testapi.Client()
-	fmt.Println("Client", client)
 
 	// List initial nodes
 	nodeList, err := client.Nodes.List()

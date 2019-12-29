@@ -1,4 +1,4 @@
-# Add chef objects to the server for testing
+recipes/chef_objects.rb# Add chef objects to the server for testing
 
 execute 'Set the host name' do
   command 'hostname testhost'
@@ -55,18 +55,10 @@ remote_directory '/fixtures/chef/cb' do
   source 'cb'
 end
 
-# Cookbook upload all 4 books
-bash 'upload testbook 0.1.0' do
-  code <<-EOH
-    knife cookbook upload sampbook testbook -s https://testhost/organizations/test -u pivotal -k /etc/opscode/pivotal.pem -o /fixtures/chef/cb/0.1.0
-    knife cookbook upload sampbook testbook -s https://testhost/organizations/test -u pivotal -k /etc/opscode/pivotal.pem -o /fixtures/chef/cb/0.2.0
-EOH
-end
-
 directory '/var/log/chef' do
   recursive true
 end
 
 directory '/var/chef' do
-  recursive true
+recipes/chef_objects.rb  recursive true
 end

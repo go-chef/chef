@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	// chef "github.com/go-chef/chef"
 	"chefapi_test/testapi"
@@ -18,6 +19,7 @@ func main() {
 	client := testapi.Client()
 
 	// Prep by adding a couple versions of some cookbooks before running this code
+	err := addSampleCookbooks()
 	// testbook version 0.1.0 and 0.2.0
 	// sampbook version 0.1.0 and 0.2.0
 
@@ -98,4 +100,20 @@ func main() {
                 fmt.Fprintln(os.Stderr, "Issue getting cookbook versions for sampbook:", err)
         }
 	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
+}
+
+func addSampleCookbooks() (err error) {
+	cmd := exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-s", "https://testhost/organizations/test", "-u", "pivotal", "-k", "/etc/opscode/pivotal.pem", "-o", "/fixtures/chef/cb/0.1.0")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+	        fmt.Println(os.Stderr, "Issue loading cookbook:", err)
+	}
+	fmt.Printf("Load 0.1.0 cookbook versions: %+v", string(out))
+	cmd = exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-s", "https://testhost/organizations/test", "-u", "pivotal", "-k", "/etc/opscode/pivotal.pem", "-o", "/fixtures/chef/cb/0.2.0")
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+	        fmt.Println(os.Stderr, "Issue loading cookbook:", err)
+	}
+	fmt.Printf("Load 0.2.0 cookbook versions: %+v", string(out))
+	return
 }

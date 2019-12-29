@@ -53,7 +53,7 @@ func (q SearchQuery) DoPartial(client *Client, params map[string]interface{}) (r
 
 	body, err := JSONReader(params)
 	if err != nil {
-		debug("Problem encoding params for body", err.Error())
+		debug("Problem encoding params for body %v", err.Error())
 		return
 	}
 

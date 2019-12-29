@@ -1,4 +1,4 @@
-recipes/chef_objects.rb# Add chef objects to the server for testing
+# Add chef objects to the server for testing
 
 execute 'Set the host name' do
   command 'hostname testhost'
@@ -60,5 +60,5 @@ directory '/var/log/chef' do
 end
 
 directory '/var/chef' do
-recipes/chef_objects.rb  recursive true
+  recursive true
 end

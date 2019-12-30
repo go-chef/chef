@@ -2,7 +2,10 @@
 * Flag for ssl verify, figure out how not to turn of ssl authentication
 
 * live testing
-* grou
 * search
 * sandbox
-* user
+
+Missing api stuff
+* user authentication
+* user update
+* user verbose output

@@ -81,10 +81,10 @@ func (e SearchService) NewQuery(idx, statement string) (query SearchQuery, err e
 	return
 }
 
-// Exec runs the query on the index passed in. This is a helper method. If you want more controll over the query  use NewQuery and its Do() method.
-// BUG(spheromak): Should we use exec or SearchQuery.Do() or have both ?
+// Exec runs the query on the index passed in. This is a helper method. If you want more control over the query  use NewQuery and its Do() method.
+// BUG(spheromak): Should we use Exec or SearchQuery.Do() or have both ?
 func (e SearchService) Exec(idx, statement string) (res SearchResult, err error) {
-	//  Copy-paste here till We decide which way to go with exec vs Do
+	//  Copy-paste here till We decide which way to go with Exec vs Do
 	if !strings.Contains(statement, ":") {
 		err = errors.New("statement is malformed")
 		return

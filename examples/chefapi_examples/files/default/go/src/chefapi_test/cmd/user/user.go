@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/go-chef/chef"
 	"chefapi_test/testapi"
 	"os"

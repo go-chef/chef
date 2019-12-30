@@ -195,43 +195,43 @@ func TestCookbooksDownloadAt(t *testing.T) {
 }
 `
 
-        tempDir, err := ioutil.TempDir("", "foo-cookbook")
-        if err != nil {
-                t.Error(err)
-        }
-        defer os.RemoveAll(tempDir) // clean up
+	tempDir, err := ioutil.TempDir("", "foo-cookbook")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll(tempDir) // clean up
 
-        mux.HandleFunc("/cookbooks/foo/0.2.1", func(w http.ResponseWriter, r *http.Request) {
-                fmt.Fprintf(w, string(mockedCookbookResponseFile))
-        })
-        mux.HandleFunc("/bookshelf/foo/metadata_rb", func(w http.ResponseWriter, r *http.Request) {
-                fmt.Fprintf(w, "name 'foo'")
-        })
-        mux.HandleFunc("/bookshelf/foo/default_rb", func(w http.ResponseWriter, r *http.Request) {
-                fmt.Fprintf(w, "log 'this is a resource'")
-        })
+	mux.HandleFunc("/cookbooks/foo/0.2.1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(mockedCookbookResponseFile))
+	})
+	mux.HandleFunc("/bookshelf/foo/metadata_rb", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "name 'foo'")
+	})
+	mux.HandleFunc("/bookshelf/foo/default_rb", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "log 'this is a resource'")
+	})
 
-        err = client.Cookbooks.DownloadAt("foo", "0.2.1", tempDir)
-        assert.Nil(t, err)
+	err = client.Cookbooks.DownloadAt("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
 
-        var (
-                cookbookPath = path.Join(tempDir, "foo-0.2.1")
-                metadataPath = path.Join(cookbookPath, "metadata.rb")
-                recipesPath  = path.Join(cookbookPath, "recipes")
-                defaultPath  = path.Join(recipesPath, "default.rb")
-        )
-        assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
-        assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
-        if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
-                metadataBytes, err := ioutil.ReadFile(metadataPath)
-                assert.Nil(t, err)
-                assert.Equal(t, "name 'foo'", string(metadataBytes))
-        }
-        if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
-                recipeBytes, err := ioutil.ReadFile(defaultPath)
-                assert.Nil(t, err)
-                assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
-        }
+	var (
+		cookbookPath = path.Join(tempDir, "foo-0.2.1")
+		metadataPath = path.Join(cookbookPath, "metadata.rb")
+		recipesPath  = path.Join(cookbookPath, "recipes")
+		defaultPath  = path.Join(recipesPath, "default.rb")
+	)
+	assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
+	assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
+	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
+		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "name 'foo'", string(metadataBytes))
+	}
+	if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
+		recipeBytes, err := ioutil.ReadFile(defaultPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
+	}
 }
 
 func TestVerifyMD5Checksum(t *testing.T) {

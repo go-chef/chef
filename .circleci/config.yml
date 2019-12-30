@@ -43,9 +43,9 @@ jobs:
       - run: pwd
       - run: env
       - run: ls -Rl
-      - run: go get -v  *.go
+      - run: go get 
       - run: go get github.com/ctdk/goiardi/chefcrypto
       - run: go get github.com/smartystreets/goconvey/convey 
       - run: go get github.com/stretchr/testify/assert
-      - run: go vet *.go
-      - run: go test *.go
+      - run: go vet
+      - run: go test

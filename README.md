@@ -13,13 +13,14 @@ This is a Library that you can use to write tools to interact with the chef serv
   
     go get -t github.com/go-chef/chef
     go test -v github.com/go-chef/chef
+    examples::chefapi_tester kitchen verify 
 
 ## SSL
 
   If you run into an SSL verification problem when trying to connect to a ssl server with self signed certs setup your config object with `SkipSSL: true`
 
 ## Usage
-This example is setting up a basic client that you can use to interact with all the service endpoints (clients, nodes, cookbooks, etc.)
+This example is setting up a basic client that you can use to interact with all the service endpoints (clients, nodes, cookbooks, etc. At [@chefapi](https://docs.chef.io/api_chef_server.html))
 More usage examples can be found in the [examples](examples) directory.
 
 ```go
@@ -79,6 +80,7 @@ improved, but is still an ongoing concern.
 |AJ Christensen |[@fujin](https://github.com/fujin)
 |Brad Beam      |[@bradbeam](https://github.com/bradbeam)
 |Kraig Amador   |[@bigkraig](https://github.com/bigkraig)
+|Mark Gibbons   |[@mark](https://github.com/markgibbons)
 
 ## COPYRIGHT
 

@@ -2,6 +2,7 @@
 #
 describe command('/go/src/chefapi_test/bin/cookbook') do
   its('stderr') { should match(%r{^Issue getting cookbook nothere: GET https://localhost/organizations/test/cookbooks/nothere: 404}) }
+  its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stderr') { should_not match(/testbook/) }
   its('stderr') { should_not match(/sampbook/) }
   its('stderr') { should_not match(/Issue loading/) }

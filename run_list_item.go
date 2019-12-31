@@ -19,7 +19,8 @@ var (
 	falseFriendRegexp                *regexp.Regexp = regexp.MustCompile(falseFriend)
 )
 
-// This is a direct port of the Chef::RunList::RunListItem class
+// RunListItem external representation of a run list
+// This module is a direct port of the Chef::RunList::RunListItem class
 // see: https://github.com/chef/chef/blob/master/lib/chef/run_list/run_list_item.rb
 type RunListItem struct {
 	Name    string
@@ -27,6 +28,7 @@ type RunListItem struct {
 	Version string
 }
 
+// NewRunListItem parses a single item from a run list and returns a structure
 func NewRunListItem(item string) (rli RunListItem, err error) {
 	switch {
 	case qualifiedRecipeRegexp.MatchString(item):
@@ -69,6 +71,7 @@ func NewRunListItem(item string) (rli RunListItem, err error) {
 	return rli, nil
 }
 
+// String implements the String interface function
 func (r RunListItem) String() (s string) {
 	if r.Version != "" {
 		s = fmt.Sprintf("%s[%s@%s]", r.Type, r.Name, r.Version)
@@ -79,10 +82,12 @@ func (r RunListItem) String() (s string) {
 	return s
 }
 
+// IsRecipe Determines if the runlist item is a recipe
 func (r RunListItem) IsRecipe() bool {
 	return r.Type == "recipe"
 }
 
+// IsRole Determines if the runlist item is a role
 func (r RunListItem) IsRole() bool {
 	return r.Type == "role"
 }

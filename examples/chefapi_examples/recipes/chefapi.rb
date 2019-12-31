@@ -9,9 +9,17 @@ directory '/go/src/github.com/go-chef' do
   recursive true
 end
 
+directory '/go/src/github.com/cenkalti' do
+  recursive true
+end
+
 #  TODO: allow for testing a branch or the version of the api this cookbook is embedded in
 git '/go/src/github.com/go-chef/chef' do
   repository 'https://github.com/go-chef/chef.git'
+end
+
+git '/go/src/github.com/cenkalti/backoff' do
+  repository 'https://github.com/cenkalti/backoff'
 end
 
 remote_directory 'local_go' do

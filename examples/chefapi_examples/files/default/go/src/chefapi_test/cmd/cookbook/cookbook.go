@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 
-	// chef "github.com/go-chef/chef"
 	"chefapi_test/testapi"
 )
 

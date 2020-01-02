@@ -18,27 +18,30 @@ func main() {
 	client := testapi.Client()
 
 	// Create a user
-        var usr1 chef.User
-        usr1 = chef.User{ UserName: "usr1",
-                           Email: "user1@domain.io",
-                           FirstName: "user1",
+        var usr chef.User
+        usr = chef.User{ UserName: "usrauth",
+                           Email: "usrauth@domain.io",
+                           FirstName: "usrauth",
                            LastName: "fullname",
-                           DisplayName: "User1 Fullname",
+                           DisplayName: "Userauth Fullname",
                            Password: "Logn12ComplexPwd#",
                    }
-        userResult := createUser(client, usr1)
+        createUser(client, usr)
 
-	var ar Authenticate
+	var ar chef.Authenticate
 	// Authenticate with a valid password
-	ar.UserName =  "usr1"
+	ar.UserName =  "usrauth"
 	ar.Password =  "Logn12ComplexPwd#"
 	err := client.AuthenticateUser.Authenticate(ar)
-	fmt.Printf("Authenticate with a valid password %+v", err)
+	fmt.Printf("Authenticate with a valid password %+vauthenticate\n", err)
 
 	// Authenticate with an invalid password
-	ar.Password =  "Logn12ComplexPwd#"
+	ar.Password =  "badpassword"
 	err = client.AuthenticateUser.Authenticate(ar)
-	fmt.Printf("Authenticate with an invalid password %+v", err)
+	fmt.Printf("Authenticate with an invalid password %+v\n", err)
+
+	// Cleanup
+	deleteUser(client, "usrauth")
 }
 
 // createUser uses the chef server api to create a single user
@@ -48,4 +51,12 @@ func createUser(client *chef.Client, user chef.User) chef.UserResult {
                 fmt.Fprintln(os.Stderr, "Issue creating user:", err)
         }
         return usrResult
+}
+// deleteUser uses the chef server api to delete a single user
+func deleteUser(client *chef.Client, name string) (err error) {
+        err = client.Users.Delete(name)
+        if err != nil {
+                fmt.Fprintln(os.Stderr, "Issue deleting org:", err)
+        }
+        return
 }

@@ -266,21 +266,3 @@ func TestVerifyMD5Checksum(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, verifyMD5Checksum(filePath, "70bda176ac4db06f1f66f96ae0693be1"))
 }
-
-func TestVerifyMD5Checksum(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "md5-test")
-	if err != nil {
-		t.Error(err)
-	}
-	defer os.RemoveAll(tempDir) // clean up
-
-	var (
-		// if someone changes the test data,
-		// you have to also update the below md5 sum
-		testData = []byte("hello\nchef\n")
-		filePath = path.Join(tempDir, "dat")
-	)
-	err = ioutil.WriteFile(filePath, testData, 0644)
-	assert.Nil(t, err)
-	assert.True(t, verifyMD5Checksum(filePath, "70bda176ac4db06f1f66f96ae0693be1"))
-}

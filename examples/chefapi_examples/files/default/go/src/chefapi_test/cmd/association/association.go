@@ -26,6 +26,9 @@ func main() {
         invitemissing := chef.Request {
 		User: "nouser",
 	}
+        add1 := chef.AddNow {
+		Username: "usradd",
+	}
 
 	// Invite the user to the test org
 	out, err := client.Associations.Invite(invite)
@@ -45,7 +48,7 @@ func main() {
 	}
 	fmt.Printf("Invited user %+v %+v\n", invitemissing, out)
 
-	// Find the pending invitation by user name
+	// Find a pending invitation by user name
 	id, err :=  client.Associations.InviteId("usr2invite")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue finding an invitation for usr2invite %+v\n", err)
@@ -60,6 +63,7 @@ func main() {
 	// fmt.Printf("Accept invitation %+v\n", outa)
 
 	// List the invites
+
 	outl, err := client.Associations.ListInvites()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue listing the invitations %+v\n", err)
@@ -74,4 +78,29 @@ func main() {
                 }
                 fmt.Printf("Deleted invitation %s for %s %+v\n", in.Id, in.UserName, outd)
         }
+
+        // Add a user to the test organization
+	err = client.Associations.Add(add1)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue adding user usradd: %+v\n", err)
+	}
+	fmt.Printf("User added: %+v\n", add1)
+        // List the users
+	ulist, err := client.Associations.List()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue listing the users: %+v\n", err)
+	}
+	fmt.Printf("Users list: %+v\n", ulist)
+        // Get the user details
+	uget, err := client.Associations.Get("usradd")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue getting user details: %+v\n", err)
+	}
+	fmt.Printf("User details: %+v\n", uget)
+        // Delete a user for the organization
+	udel, err := client.Associations.Get("usradd")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue deleting usradd: %+v\n", err)
+	}
+	fmt.Printf("User deleted: %+v\n", udel)
 }

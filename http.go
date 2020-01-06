@@ -253,7 +253,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	var resbuf bytes.Buffer
-        restee := io.TeeReader(res.Body, &resbuf)
+	restee := io.TeeReader(res.Body, &resbuf)
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, restee)
@@ -261,14 +261,13 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			err = json.NewDecoder(restee).Decode(v)
 			if err != nil {
 				resbody, _ := ioutil.ReadAll(&resbuf)
-                                debug("Response body: %+v\n", string(resbody))
+				debug("Response body: %+v\n", string(resbody))
 				return res, err
 			}
 		}
 	}
 	return res, nil
 }
-
 
 // SignRequest modifies headers of an http.Request
 func (ac AuthConfig) SignRequest(request *http.Request) error {

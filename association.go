@@ -7,36 +7,46 @@ type AssociationService struct {
 	client *Client
 }
 
-// Association represents the native Go version of the deserialized Association type
 // Chef API docs: https://docs.chef.io/api_chef_server.html#association-requests
 // https://github.com/chef/chef-server/blob/master/src/oc_erchef/apps/oc_chef_wm/src/oc_chef_wm_org_invites.erl  Invitation implementation
 // https://github.com/chef/chef-server/blob/master/src/oc_erchef/apps/oc_chef_wm/src/oc_chef_wm_org_associations.erl user org associations
 type Association struct {
-	Uri string `json:"uri"` // the last part of the uri is the invitation id
-	OrganizationUser struct { 
+	Uri              string `json:"uri"` // the last part of the uri is the invitation id
+	OrganizationUser struct {
 		UserName string `json:"username,omitempty"`
 	} `json:"organization_user"`
-	Organization  struct {
-	        Name string `json:"name,omitempty"`
+	Organization struct {
+		Name string `json:"name,omitempty"`
 	} `json:"organization"`
 	User struct {
-		Email string `json:"email,omitempty"`
+		Email     string `json:"email,omitempty"`
 		FirstName string `json:"first_name,omitempty"`
-	}  `json:"user"`
+	} `json:"user"`
+}
+
+type OrgUserListEntry struct {
+	User struct {
+		Username string `json:"username,omitempty"`
+	} `json:"user,omitempty"`
+}
+
+type OrgUser struct {
+	Username    string `json:"username,omitempty"`
+	Email       string `json:"email,omitempty"`
+	DisplayName string `json:"display_name,omitempty"`
+	FirstName   string `json:"first_name,omitempty"`
+	LastName    string `json:"last_name,omitempty"`
+	PublicKey   string `json:"public_key,omitempty"`
 }
 
 type RescindInvite struct {
-       Id string `json:"id,omitempty"`
-       Orgname string  `json:"orgname,omitempty"`
-       Username string `json:"username,omitempty"`
+	Id       string `json:"id,omitempty"`
+	Orgname  string `json:"orgname,omitempty"`
+	Username string `json:"username,omitempty"`
 }
 
-// type InviteList struct {
-	// Invites []Invite
-// }
-
 type Invite struct {
-	Id   string `json:"id,omitempty"`
+	Id       string `json:"id,omitempty"`
 	UserName string `json:"username,omitempty"`
 }
 
@@ -44,21 +54,9 @@ type Request struct {
 	User string `json:"user"`
 }
 
-// Need return info for all of these requests
-
-// GET    /organizations/:orgname/association_requests     association::ListInvites
-// POST   /organizations/:orgname/association_requests     association::Invite need body format
-// DELETE /organizations/:orgname/association_requests/:id association:DeleteInvite
-
-// PUT chef_rest.put "users/#{username}/association_requests/#{association_id}", { response: "accept" } AcceptInvite
-// rest.get_rest("association_requests").each { |i| @invites[i['username']] = i['id'] }  find the id based on the name
-
-// /organization/:orgname/users  no doc at all for this
-//  Get - list                               association::List
-//  Post - Add user immediately              association::add need body format
-// /organization/:orgname/users/:username
-//  Get - user details                       association::get
-//  Delete - remove user                     association::delete
+type AddNow struct {
+	Username string `json:"username"`
+}
 
 // Get gets a list of the pending invitations for an organization.
 func (e *AssociationService) ListInvites() (invitelist []Invite, err error) {
@@ -113,29 +111,29 @@ func (e *AssociationService) AcceptInvite(id string) (data string, err error) {
 }
 
 // Get a list of the users in an organization
-func (e *AssociationService) List() (data string, err error) {
+func (e *AssociationService) List() (data []OrgUserListEntry, err error) {
 	err = e.client.magicRequestDecoder("GET", "users", nil, &data)
 	return
 }
 
 // Add a user immediately
-func (e *AssociationService) Add(invite Invite) (data string, err error) {
-	body, err := JSONReader(invite)
+func (e *AssociationService) Add(addme AddNow) (err error) {
+	body, err := JSONReader(addme)
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("POST", "users", body, &data)
+	err = e.client.magicRequestDecoder("POST", "users", body, nil)
 	return
 }
 
 // Get the details of a user in an organization
-func (e *AssociationService) Get(name string) (data string, err error) {
+func (e *AssociationService) Get(name string) (data OrgUser, err error) {
 	err = e.client.magicRequestDecoder("GET", "users/"+name, nil, &data)
 	return
 }
 
 // Delete removes a user from an organization
-func (e *AssociationService) Delete(name string) (data map[string]string, err error) {
+func (e *AssociationService) Delete(name string) (data OrgUser, err error) {
 	err = e.client.magicRequestDecoder("DELETE", "users/"+name, nil, &data)
 	return
 }

@@ -17,6 +17,7 @@ func main() {
 	client := testapi.Client()
         deleteUser(client, "usrinvite")
         deleteUser(client, "usr2invite")
+        deleteUser(client, "usradd")
 
 }
 

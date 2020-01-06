@@ -36,6 +36,15 @@ func main() {
          }
          createUser(client, usr)
 
+	 usr = chef.User{   UserName: "usradd",
+                    Email: "usradd@domain.io",
+                    FirstName: "usr",
+                    LastName: "add",
+                    DisplayName: "UserAdd Fullname",
+                    Password: "Logn12ComplexPwd#",
+         }
+         createUser(client, usr)
+
 }
 
 // createUser uses the chef server api to create a single user

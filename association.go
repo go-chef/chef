@@ -10,6 +10,9 @@ type AssociationService struct {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#association-requests
 // https://github.com/chef/chef-server/blob/master/src/oc_erchef/apps/oc_chef_wm/src/oc_chef_wm_org_invites.erl  Invitation implementation
 // https://github.com/chef/chef-server/blob/master/src/oc_erchef/apps/oc_chef_wm/src/oc_chef_wm_org_associations.erl user org associations
+
+// Association represents the response from creating an invitation to join an organization
+// POST /organization/NAME/association_requests
 type Association struct {
 	Uri              string `json:"uri"` // the last part of the uri is the invitation id
 	OrganizationUser struct {
@@ -24,12 +27,44 @@ type Association struct {
 	} `json:"user"`
 }
 
+// RescindInvite respresents the response from deleting an invitation
+// DELETE /organization/NAME/association_requests/ID
+type RescindInvite struct {
+	Id       string `json:"id,omitempty"`
+	Orgname  string `json:"orgname,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
+// Invite represents an entry in the array of responses listing the outstanding invitations
+// GET /organization/NAME/association_requests
+type Invite struct {
+	Id       string `json:"id,omitempty"`
+	UserName string `json:"username,omitempty"`
+}
+
+// Request represents the body of the request to invite a user to an organization
+// POST /organization/NAME/association_requests
+type Request struct {
+	User string `json:"user"`
+}
+
+// AddNow represents the body of the request to add a user to an organization
+// POST /organization/NAME/users
+type AddNow struct {
+	Username string `json:"username"`
+}
+
+// Invite represents an entry in the array of responses listing the users in an organization
+// GET /organization/NAME/association_requests
 type OrgUserListEntry struct {
 	User struct {
 		Username string `json:"username,omitempty"`
 	} `json:"user,omitempty"`
 }
 
+// OrgUser represents the detailed information about a user in an organization
+// GET /organization/NAME/user/NAME
+// DELETE /organization/NAME/user/NAME
 type OrgUser struct {
 	Username    string `json:"username,omitempty"`
 	Email       string `json:"email,omitempty"`
@@ -39,32 +74,13 @@ type OrgUser struct {
 	PublicKey   string `json:"public_key,omitempty"`
 }
 
-type RescindInvite struct {
-	Id       string `json:"id,omitempty"`
-	Orgname  string `json:"orgname,omitempty"`
-	Username string `json:"username,omitempty"`
-}
-
-type Invite struct {
-	Id       string `json:"id,omitempty"`
-	UserName string `json:"username,omitempty"`
-}
-
-type Request struct {
-	User string `json:"user"`
-}
-
-type AddNow struct {
-	Username string `json:"username"`
-}
-
-// Get gets a list of the pending invitations for an organization.
+// ListInvites gets a list of the pending invitations for an organization.
 func (e *AssociationService) ListInvites() (invitelist []Invite, err error) {
 	err = e.client.magicRequestDecoder("GET", "association_requests", nil, &invitelist)
 	return
 }
 
-// Creates an invitation for a user to join an organization on the chef server
+// Invite creates an invitation for a user to join an organization on the chef server
 func (e *AssociationService) Invite(invite Request) (data Association, err error) {
 	body, err := JSONReader(invite)
 	if err != nil {
@@ -74,7 +90,7 @@ func (e *AssociationService) Invite(invite Request) (data Association, err error
 	return
 }
 
-// Delete removes a pending invitation to an organization
+// DeleteInvite removes a pending invitation to an organization
 func (e *AssociationService) DeleteInvite(id string) (rescind RescindInvite, err error) {
 	err = e.client.magicRequestDecoder("DELETE", "association_requests/"+id, nil, &rescind)
 	return
@@ -110,7 +126,7 @@ func (e *AssociationService) AcceptInvite(id string) (data string, err error) {
 	return
 }
 
-// Get a list of the users in an organization
+// List gets a list of the users in an organization
 func (e *AssociationService) List() (data []OrgUserListEntry, err error) {
 	err = e.client.magicRequestDecoder("GET", "users", nil, &data)
 	return

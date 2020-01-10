@@ -40,20 +40,21 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
-	ACLs             *ACLService
+	ACLs          *ACLService
+	Associations  *AssociationService
 	AuthenticateUser *AuthenticateUserService
-	Clients          *ApiClientService
-	Cookbooks        *CookbookService
-	DataBags         *DataBagService
-	Environments     *EnvironmentService
-	Groups           *GroupService
-	Nodes            *NodeService
-	Organizations    *OrganizationService
-	Principals       *PrincipalService
-	Roles            *RoleService
-	Sandboxes        *SandboxService
-	Search           *SearchService
-	Users            *UserService
+	Clients       *ApiClientService
+	Cookbooks     *CookbookService
+	DataBags      *DataBagService
+	Environments  *EnvironmentService
+	Groups        *GroupService
+	Nodes         *NodeService
+	Organizations *OrganizationService
+	Principals    *PrincipalService
+	Roles         *RoleService
+	Sandboxes     *SandboxService
+	Search        *SearchService
+	Users         *UserService
 }
 
 // Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object
@@ -156,6 +157,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	}
 	c.ACLs = &ACLService{client: c}
 	c.AuthenticateUser = &AuthenticateUserService{client: c}
+	c.Associations = &AssociationService{client: c}
 	c.Clients = &ApiClientService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
@@ -183,7 +185,7 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 	if res != nil {
 		defer res.Body.Close()
 	}
-	debug("Response: %+v \n", res)
+	debug("Response: %+v\n", res)
 	if err != nil {
 		return err
 	}
@@ -245,17 +247,21 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	// BUG(fujin) tightly coupled
-	err = CheckResponse(res) // <--
+	err = CheckResponse(res)
 	if err != nil {
 		return res, err
 	}
 
+	var resbuf bytes.Buffer
+	restee := io.TeeReader(res.Body, &resbuf)
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, res.Body)
+			io.Copy(w, restee)
 		} else {
-			err = json.NewDecoder(res.Body).Decode(v)
+			err = json.NewDecoder(restee).Decode(v)
 			if err != nil {
+				resbody, _ := ioutil.ReadAll(&resbuf)
+				debug("Response body: %+v\n", string(resbody))
 				return res, err
 			}
 		}

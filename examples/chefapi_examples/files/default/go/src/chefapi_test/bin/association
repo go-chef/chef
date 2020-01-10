@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Group testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+go run ${BASE}/../cmd/association/association_setup.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} true
+go run ${BASE}/../cmd/association/association.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} true 
+go run ${BASE}/../cmd/association/association_cleanup.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} true

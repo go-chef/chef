@@ -72,11 +72,9 @@ func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestCookbooksDownloadTo(t *testing.T) {
-	setup()
-	defer teardown()
+func cookbookData() string {
+	return `
 
-	mockedCookbookResponseFile := `
 {
   "version": "0.2.1",
   "name": "foo-0.2.1",
@@ -111,9 +109,14 @@ func TestCookbooksDownloadTo(t *testing.T) {
   "templates": [],
   "metadata": {},
   "access": {}
+} `
 }
-`
 
+func TestCookbooksDownloadTo(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mockedCookbookResponseFile := cookbookData()
 	tempDir, err := ioutil.TempDir("", "foo-cookbook")
 	if err != nil {
 		t.Error(err)
@@ -151,50 +154,14 @@ func TestCookbooksDownloadTo(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
 	}
+
 }
 
-func TestCookbooksDownloadAt(t *testing.T) {
+func TestCookbooksDownloadTo_caching(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mockedCookbookResponseFile := `
-{
-  "version": "0.2.1",
-  "name": "foo-0.2.1",
-  "cookbook_name": "foo",
-  "frozen?": false,
-  "chef_type": "cookbook_version",
-  "json_class": "Chef::CookbookVersion",
-  "attributes": [],
-  "definitions": [],
-  "files": [],
-  "libraries": [],
-  "providers": [],
-  "recipes": [
-    {
-      "name": "default.rb",
-      "path": "recipes/default.rb",
-      "checksum": "8e751ed8663cb9b97499956b6a20b0de",
-      "specificity": "default",
-      "url": "` + server.URL + `/bookshelf/foo/default_rb"
-    }
-  ],
-  "resources": [],
-  "root_files": [
-    {
-      "name": "metadata.rb",
-      "path": "metadata.rb",
-      "checksum": "6607f3131919e82dc4ba4c026fcfee9f",
-      "specificity": "default",
-      "url": "` + server.URL + `/bookshelf/foo/metadata_rb"
-    }
-  ],
-  "templates": [],
-  "metadata": {},
-  "access": {}
-}
-`
-
+	mockedCookbookResponseFile := cookbookData()
 	tempDir, err := ioutil.TempDir("", "foo-cookbook")
 	if err != nil {
 		t.Error(err)
@@ -211,7 +178,7 @@ func TestCookbooksDownloadAt(t *testing.T) {
 		fmt.Fprintf(w, "log 'this is a resource'")
 	})
 
-	err = client.Cookbooks.DownloadAt("foo", "0.2.1", tempDir)
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
 	assert.Nil(t, err)
 
 	var (
@@ -231,6 +198,54 @@ func TestCookbooksDownloadAt(t *testing.T) {
 		recipeBytes, err := ioutil.ReadFile(defaultPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
+	}
+
+	// Capture the timestamps to ensure that on-redownload of unchanged cookook,
+	// they show no modification (using this as a proxy to determine whether
+	// the file has been re-downloaded).
+	defaultPathInfo, err := os.Stat(defaultPath)
+	assert.Nil(t, err)
+
+	metaDataInfo, err := os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	defaultPathNewInfo, err := os.Stat(defaultPath)
+	assert.Nil(t, err)
+
+	metaDataNewInfo, err := os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	// If the file was not re-downloaded, we would expect the timestamp
+	// to remain unchanged.
+	assert.Equal(t, defaultPathInfo.ModTime(), defaultPathNewInfo.ModTime())
+	assert.Equal(t, metaDataInfo.ModTime(), metaDataNewInfo.ModTime())
+
+	err = os.Truncate(metadataPath, 1)
+	assert.Nil(t, err)
+
+	err = os.Chtimes(metadataPath, metaDataInfo.ModTime(), metaDataInfo.ModTime())
+	assert.Nil(t, err)
+
+	err = client.Cookbooks.DownloadTo("foo", "0.2.1", tempDir)
+	assert.Nil(t, err)
+
+	metaDataNewInfo, err = os.Stat(metadataPath)
+	assert.Nil(t, err)
+
+	assert.NotEqual(t, metaDataInfo.ModTime(), metaDataNewInfo.ModTime())
+
+	// Finally, make sure the modified-and-replaced metadata.rb is matching
+	// what we expect after we have redownloaded the cookbook:
+	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
+		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		assert.Nil(t, err)
+		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
 }
 

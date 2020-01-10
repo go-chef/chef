@@ -102,6 +102,7 @@ func (e *UserService) Get(name string) (user User, err error) {
 
 // TODO:
 // API /users/USERNAME GET external_authentication_uid and email filters
+// note that the combination of verbose and filters is not supported
 // API /users/USERNAME GET verbose parameter
 // API /users/USERNAME PUT
 // API /users/USERNAME/keys GET

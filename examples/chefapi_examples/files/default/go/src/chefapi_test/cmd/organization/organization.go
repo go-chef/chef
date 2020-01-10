@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/go-chef/chef"
@@ -61,33 +60,6 @@ func main() {
 
 }
 
-// buildClient creates a connection to a chef server using the chef api.
-func buildClient(user string, keyfile string, baseurl string, skipssl bool) *chef.Client {
-	key := clientKey(keyfile)
-	client, err := chef.NewClient(&chef.Config{
-		Name:    user,
-		Key:     string(key),
-		BaseURL: baseurl,
-		SkipSSL: skipssl,
-		// goiardi is on port 4545 by default, chef-zero is 8889, chef-server is on 443
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue setting up client:", err)
-		os.Exit(1)
-	}
-	return client
-}
-
-// clientKey reads the pem file containing the credentials needed to use the chef client.
-func clientKey(filepath string) string {
-	key, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Couldn't read key.pem:", err)
-		os.Exit(1)
-	}
-	return string(key)
-}
-
 // createOrganization uses the chef server api to create a single organization
 func createOrganization(client *chef.Client, org chef.Organization) chef.OrganizationResult {
 	orgResult, err := client.Organizations.Create(org)
@@ -108,7 +80,6 @@ func deleteOrganization(client *chef.Client, name string) error {
 
 // getOrganization uses the chef server api to get information for a single organization
 func getOrganization(client *chef.Client, name string) chef.Organization {
-        // todo: everything
 	orgList, err := client.Organizations.Get(name)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue listing org:", name, err)

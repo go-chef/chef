@@ -40,22 +40,23 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
-	ACLs          *ACLService
-	Clients       *ApiClientService
-	Cookbooks     *CookbookService
-	DataBags      *DataBagService
-	Environments  *EnvironmentService
-	Groups        *GroupService
-	Nodes         *NodeService
-	Organizations *OrganizationService
-	Principals    *PrincipalService
-	Roles         *RoleService
-	Sandboxes     *SandboxService
-	Search        *SearchService
-	Users         *UserService
+	ACLs             *ACLService
+	AuthenticateUser *AuthenticateUserService
+	Clients          *ApiClientService
+	Cookbooks        *CookbookService
+	DataBags         *DataBagService
+	Environments     *EnvironmentService
+	Groups           *GroupService
+	Nodes            *NodeService
+	Organizations    *OrganizationService
+	Principals       *PrincipalService
+	Roles            *RoleService
+	Sandboxes        *SandboxService
+	Search           *SearchService
+	Users            *UserService
 }
 
-// Config contains the configuration options for a chef client. This is Used primarily in the NewClient() constructor in order to setup a proper client object
+// Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object
 type Config struct {
 	// This should be the user ID on the chef server
 	Name string
@@ -63,7 +64,7 @@ type Config struct {
 	// This is the plain text private Key for the user
 	Key string
 
-	// BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url
+	// BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
 	BaseURL string
 
 	// When set to false (default) this will enable SSL Cert Verification. If you need to disable Cert Verification set to true
@@ -154,6 +155,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		BaseURL: baseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
+	c.AuthenticateUser = &AuthenticateUserService{client: c}
 	c.Clients = &ApiClientService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}

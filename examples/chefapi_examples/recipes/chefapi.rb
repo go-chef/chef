@@ -13,7 +13,7 @@ directory '/go/src/github.com/cenkalti' do
   recursive true
 end
 
-#  TODO: allow for testing a branch or the version of the api this cookbook is embedded in
+puts "BRANCH #{node['chefapi_examples']['go_chef_branch']}"
 git '/go/src/github.com/go-chef/chef' do
   repository 'https://github.com/go-chef/chef.git'
 end

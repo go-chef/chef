@@ -66,7 +66,7 @@ func main() {
 	fmt.Printf("List after cleanup %+v EndCleanupList\n", userList)
 }
 
-// createUser uses the chef server api to create a single organization
+// createUser uses the chef server api to create a single user
 func createUser(client *chef.Client, user chef.User) chef.UserResult {
 	usrResult, err := client.Users.Create(user)
 	if err != nil {
@@ -75,7 +75,7 @@ func createUser(client *chef.Client, user chef.User) chef.UserResult {
 	return usrResult
 }
 
-// deleteUser uses the chef server api to delete a single organization
+// deleteUser uses the chef server api to delete a single user
 func deleteUser(client *chef.Client, name string) (err error) {
 	err = client.Users.Delete(name)
 	if err != nil {

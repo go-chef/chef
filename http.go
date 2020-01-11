@@ -170,11 +170,8 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}
-<<<<<<< HEAD
 	c.Users = &UserService{client: c}
-=======
 	c.Vaults = &VaultService{client: c}
->>>>>>> 9c42d9aef8c11135f98498234ee2973656aac83e
 	return c, nil
 }
 

@@ -55,6 +55,7 @@ type Client struct {
 	Sandboxes     *SandboxService
 	Search        *SearchService
 	Users         *UserService
+	Vaults       *VaultService
 }
 
 // Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object
@@ -169,7 +170,11 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}
+<<<<<<< HEAD
 	c.Users = &UserService{client: c}
+=======
+	c.Vaults = &VaultService{client: c}
+>>>>>>> 9c42d9aef8c11135f98498234ee2973656aac83e
 	return c, nil
 }
 

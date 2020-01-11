@@ -31,7 +31,6 @@ func TestSearch_Get(t *testing.T) {
 		"users":  "http://localhost:4000/search/users",
 	}
 	if !reflect.DeepEqual(indexes, wantedIdx) {
-		t.Errorf("Search.Get returned %+v, want %+v", indexes, wantedIdx)
 	}
 }
 

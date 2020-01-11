@@ -4,10 +4,11 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
 	"net/http"
 	_ "reflect"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 // generate random data for sandbox

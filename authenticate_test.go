@@ -2,12 +2,12 @@ package chef
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"testing"
-        "github.com/stretchr/testify/assert"
 )
 
 var (
@@ -50,8 +50,8 @@ func TestAuthenticatesCreate(t *testing.T) {
 	request.Password = "invalid"
 	err := client.AuthenticateUser.Authenticate(request)
 	if assert.NotNil(t, err) {
-               assert.Contains(t, err.Error(), "401")
-        }
+		assert.Contains(t, err.Error(), "401")
+	}
 
 	request.UserName = "user1"
 	request.Password = "password"

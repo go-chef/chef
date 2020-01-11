@@ -18,7 +18,7 @@ end
 
 execute 'get the ssl certificate for the chef server' do
   command 'knife ssl fetch'
-  not_if { File.exist? '/root/.chef/trusted_certs/testhost' }
+  not_if { ::File.exist? '/root/.chef/trusted_certs/testhost' }
 end
 
 # Register this node with the server

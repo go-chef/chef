@@ -12,23 +12,24 @@ import (
 const algorithm string = "aes-256-gcm"
 const supportedVersion int = 3
 
-var errUnsupportedVersion = errors.New("Only Version 3 encrypted values are supported")
+var errUnsupportedVersion = errors.New("Only Version 3 of the encrypted databag item format is supported")
 
 // VaultService is the service for interacting with the chef server data endpoint
 type VaultService struct {
 	client *Client
 }
 
-// VaultItem wraps a vault databag and it's keys
+// VaultItem wraps a vault databag and its keys
 type VaultItem struct {
 	DataBagItem  *DataBagItem
 	Keys         *VaultItemKeys
 	Name         string
 	Vault        string
+	// TODO: Why is vault service here
 	VaultService *VaultService
 }
 
-// VaultItemKeys contains the client keys associated with a
+// VaultItemKeys contains the client keys associated with a VaultItem
 type VaultItemKeys struct {
 	DataBagItem *DataBagItem
 	Name        string
@@ -65,6 +66,7 @@ func (vs *VaultService) List() (*VaultListResult, error) {
 	vaults := VaultListResult{}
 
 	for k := range keys {
+		// TODO: What does this code do.
 		if v, ok := (*databags)[k]; ok {
 			vaults[k] = v
 		}
@@ -81,6 +83,7 @@ func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, erro
 		return nil, err
 	}
 
+	// TODO: how do we add clients, admins. How is search_quuery used?t vauvalr
 	keysItem := map[string]interface{}{
 		"admins":                  []string{vs.client.Auth.ClientName},
 		"clients":                 []string{},
@@ -174,6 +177,7 @@ func (vs *VaultService) GetItem(vaultName, itemName string) (*VaultItem, error) 
 }
 
 // UpdateItem sets the item data, encrypts with a shared key, and then encrypts the shared key with each authorized client key in the <item>_keys data bag
+// TODO: data should probably be some sort of struct
 func (vs *VaultService) UpdateItem(item *VaultItem, data map[string]interface{}) error {
 	itemData := map[string]interface{}{}
 	sharedSecret, err := item.sharedSecret()

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Group testing
+# Search pagination testing
 
 BASE=$(dirname $0)
 

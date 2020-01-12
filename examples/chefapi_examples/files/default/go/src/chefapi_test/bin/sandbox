@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Group testing
+# Sandbox testing
 
 BASE=$(dirname $0)
 

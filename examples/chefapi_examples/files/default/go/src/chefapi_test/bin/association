@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Group testing
+# Association testing, add users to an organiation
 
 BASE=$(dirname $0)
 

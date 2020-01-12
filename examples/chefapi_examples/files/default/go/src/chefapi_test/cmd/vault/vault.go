@@ -28,14 +28,18 @@ func main() {
 	fmt.Printf("List vaults before creation %+v\n", vaultList)
 
 	// Create a vault item
-	item, err := client.Vaults.Create('testv', 'secrets')
+	item, err := client.Vaults.CreateItem('testv', 'secrets')
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue creating testv secrets vault item %+v\n", err)
 	}
 	fmt.Printf("Created testv secrets vault item %+v\n", item)
 
 	// Add content to the vault item
-	item, err = client.Vaults.Update(item, data)
+	data := map[string]interface{}{
+                "id":  "secrets",
+                "foo": "bar",
+        }
+	item, err = client.Vaults.UpdateItem(item, data)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue updating testv secrets vault item %+v\n", err)
 	}
@@ -79,5 +83,3 @@ Vaults.GetItem(vaultName, itemName)  (*VaultItem, error)
 // Change a value
 // Do things using usrv id - admin
 // Do things using usrv2 id
-Vaults.DeleteItem(vaultName, vaultItem)  (error)
-Vaults.List() *VaultListResult, err error

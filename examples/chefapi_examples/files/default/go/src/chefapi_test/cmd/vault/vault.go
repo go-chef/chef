@@ -1,4 +1,4 @@
-//
+chefapi_test//
 // Test the go-chef/chef chef vault support against a live server
 //
 package main
@@ -29,20 +29,28 @@ func main() {
 	}
 	fmt.Printf("List vaults before creation %+v\n", vaultList)
 
+        // Create a data bag to hold the vault items
+        databag := &chef.DataBag{Name: "testv"}
+        response, err := client.DataBags.Create(databag)
+        if err != nil {
+                fmt.Fprintf(os.Stderr, "Issue creating data bag testv %+v\n",err)
+        }
+        fmt.Printf("Data bag created %+v\n", response)
+
 	// Create a vault item
 	item, err := client.Vaults.CreateItem("testv", "secrets")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue creating testv secrets vault item %+v\n", err)
-	} else {
-	 	fmt.Printf("Created testv secrets vault item %+v\n", item)
-	}
+	} 
+	fmt.Printf("Created testv secrets vault item %+v\n", item)
 
 	// Add content to the vault item
+	// The vault item has pointers and must not be nil
 	data := map[string]interface{}{
                 "id":  "secrets",
                 "foo": "bar",
         }
-	err = client.Vaults.UpdateItem(&item, data)
+	err = client.Vaults.UpdateItem(item, data)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue updating testv secrets vault item %+v\n", err)
 	}
@@ -64,6 +72,19 @@ func main() {
 	}
 	fmt.Printf("Delete testv secrets vault item%+v\n", vaultItem)
 
+	// Add content to the vault item after we get it
+	// The vault item has pointers and must not be nil
+	data := map[string]interface{}{
+                "id":  "secrets",
+                "foo": "bar",
+                "jellico": "bats",
+        }
+	err = client.Vaults.UpdateItem(vaultItem, data)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue updating based on get of testv secrets vault item %+v\n", err)
+	}
+	fmt.Println("Updated based on get of testv secrets vault item")
+
 	// Delete vault contents
 	err = client.Vaults.DeleteItem("testv", "secrets")
 	if err != nil {
@@ -78,6 +99,13 @@ func main() {
 	}
 	fmt.Printf("List vaults after creation %+v\n", vaultList)
 
+        // Delete the data bag
+        outBag, err := client.DataBags.Delete("testv")
+        if err != nil {
+                fmt.Fprintf(os.Stderr, "Issue deleting data bag testv %+v\n",err)
+        }
+        fmt.Printf("Data bag deleted %+v\n", outBag)
+
 }
 
 // add user and node to the admin and client list
@@ -85,4 +113,9 @@ func main() {
 // Add user2
 // Change a value
 // Do things using usrv id - admin
-// Do things using usrv2 id
+// Do things using usrv2 id - client only
+// Show key value
+// Show encrypted values
+// Show admins
+// Show clients
+// Show search

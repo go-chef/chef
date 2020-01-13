@@ -47,7 +47,8 @@ func (vlr VaultListResult) String() (out string) {
 	return out
 }
 
-// List returns a list of vaults on the server.  The official implementation of this method loads each databag and makes some assumptions based on the number of keys and their names.
+// List returns a list of vaults on the server.  The official implementation of this method loads each databag
+// and makes some assumptions based on the number of keys and their names.
 // See https://sourcegraph.com/github.com/chef/chef-vault@0d008c3/-/blob/lib/chef/knife/vault_list.rb#L38-51
 func (vs *VaultService) List() (*VaultListResult, error) {
 	databags, err := vs.client.DataBags.List()

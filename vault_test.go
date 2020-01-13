@@ -120,6 +120,7 @@ func TestVaultsService_UpdateItem(t *testing.T) {
 		t.Fatalf("Vaults.CreateItem returned nothing: %q", err)
 	}
 
+	fmt.Printf("ITEM %+v \n", item)
 	err = client.Vaults.UpdateItem(item, data)
 	if err != nil {
 		t.Fatalf("Vaults.UpdateItem returned an error: %v", err)

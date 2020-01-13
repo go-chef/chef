@@ -82,7 +82,7 @@ func TestVaultsService_DeleteItem(t *testing.T) {
 
 func TestVaultsService_UpdateItem(t *testing.T) {
 	setup()
-	defer teardown()f
+	defer teardown()
 	var secretsData string
 
 	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {

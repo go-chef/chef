@@ -15,9 +15,8 @@ import (
 // main Exercise the chef server api
 func main() {
 	client := testapi.Client()
-        deleteUser(client, "usrinvite")
-        deleteUser(client, "usr2invite")
-        deleteUser(client, "usradd")
+        deleteUser(client, "usrv")
+        deleteUser(client, "usrv2")
 
 }
 
@@ -25,7 +24,7 @@ func main() {
  func deleteUser(client *chef.Client, name string) (err error) {
          err = client.Users.Delete(name)
          if err != nil {
-                 fmt.Fprintln(os.Stderr, "Issue deleting org:", err)
+                 fmt.Fprintln(os.Stderr, "Issue deleting user:", err)
          }
          return
  }

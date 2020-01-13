@@ -16,8 +16,10 @@ func main() {
 	client := testapi.Client()
 
 	// Add users to the test organizations
-        invite := chef.AddNow { User: "usrv", }
-        invite2 := chef.AddNow { User: "usrv2", }
+        addv := chef.AddNow { Username: "usrv", }
+        addv2 := chef.AddNow { Username: "usrv2", }
+        client.Associations.Add(addv)
+        client.Associations.Add(addv2)
 	// TODO: Add a node
 
 	// List vaults before an item is created
@@ -28,22 +30,23 @@ func main() {
 	fmt.Printf("List vaults before creation %+v\n", vaultList)
 
 	// Create a vault item
-	item, err := client.Vaults.CreateItem('testv', 'secrets')
+	item, err := client.Vaults.CreateItem("testv", "secrets")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue creating testv secrets vault item %+v\n", err)
+	} else {
+	 	fmt.Printf("Created testv secrets vault item %+v\n", item)
 	}
-	fmt.Printf("Created testv secrets vault item %+v\n", item)
 
 	// Add content to the vault item
 	data := map[string]interface{}{
                 "id":  "secrets",
                 "foo": "bar",
         }
-	item, err = client.Vaults.UpdateItem(item, data)
+	err = client.Vaults.UpdateItem(&item, data)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue updating testv secrets vault item %+v\n", err)
 	}
-	fmt.Printf("Updated testv secrets vault item %+v\n", item)
+	fmt.Println("Updated testv secrets vault item")
 
 	// List vaults after an item is created
 	vaultList, err = client.Vaults.List()
@@ -55,14 +58,14 @@ func main() {
 	// TODO:  List items in a vault
 
 	// Get vault item
-	vaultItem, err = client.Vaults.Get("testv", "secrets")
+	vaultItem, err := client.Vaults.GetItem("testv", "secrets")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue getting vault item testv secrets %+v\n",err)
 	}
-	fmt.Printf("Delete testv secrets vault item%+v\n", vaultList)
+	fmt.Printf("Delete testv secrets vault item%+v\n", vaultItem)
 
 	// Delete vault contents
-	err = client.Vaults.Delete("testv", "secrets")
+	err = client.Vaults.DeleteItem("testv", "secrets")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue deleting vault item testv secrets %+v\n",err)
 	}
@@ -78,7 +81,7 @@ func main() {
 }
 
 // add user and node to the admin and client list
-Vaults.GetItem(vaultName, itemName)  (*VaultItem, error)
+// Vaults.GetItem(vaultName, itemName)  (*VaultItem, error)
 // Add user2
 // Change a value
 // Do things using usrv id - admin

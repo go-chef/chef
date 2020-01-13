@@ -6,4 +6,6 @@ BASE=$(dirname $0)
 
 . ${BASE}/setup
 . ${BASE}/creds
-go run ${BASE}/../cmd/vault/vault.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} true
+go run ${BASE}/../cmd/vault/vault_setup.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} true
+go run ${BASE}/../cmd/vault/vault.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} true
+go run ${BASE}/../cmd/vault/vault_cleanup.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} true

@@ -21,10 +21,10 @@ type VaultService struct {
 
 // VaultItem wraps a vault databag and its keys
 type VaultItem struct {
-	DataBagItem  *DataBagItem
-	Keys         *VaultItemKeys
-	Name         string
-	Vault        string
+	DataBagItem *DataBagItem
+	Keys        *VaultItemKeys
+	Name        string
+	Vault       string
 	// TODO: Why is vault service here
 	VaultService *VaultService
 }

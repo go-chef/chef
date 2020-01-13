@@ -40,22 +40,22 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
-	ACLs          *ACLService
-	Associations  *AssociationService
+	ACLs             *ACLService
+	Associations     *AssociationService
 	AuthenticateUser *AuthenticateUserService
-	Clients       *ApiClientService
-	Cookbooks     *CookbookService
-	DataBags      *DataBagService
-	Environments  *EnvironmentService
-	Groups        *GroupService
-	Nodes         *NodeService
-	Organizations *OrganizationService
-	Principals    *PrincipalService
-	Roles         *RoleService
-	Sandboxes     *SandboxService
-	Search        *SearchService
-	Users         *UserService
-	Vaults       *VaultService
+	Clients          *ApiClientService
+	Cookbooks        *CookbookService
+	DataBags         *DataBagService
+	Environments     *EnvironmentService
+	Groups           *GroupService
+	Nodes            *NodeService
+	Organizations    *OrganizationService
+	Principals       *PrincipalService
+	Roles            *RoleService
+	Sandboxes        *SandboxService
+	Search           *SearchService
+	Users            *UserService
+	Vaults           *VaultService
 }
 
 // Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object

@@ -48,6 +48,10 @@ func TestVaultsService_CreateItem(t *testing.T) {
 	setup()
 	defer teardown()
 
+	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"uri": "http://localhost/data/vaults"}`)
+	})
+
 	mux.HandleFunc("/data/vaults", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, ``)
 	})
@@ -60,6 +64,7 @@ func TestVaultsService_CreateItem(t *testing.T) {
 	if err != nil {
 		t.Errorf("Vaults.CreateItem returned error: %v", err)
 	}
+	// TODO: Test 409 return from create vault
 }
 
 func TestVaultsService_DeleteItem(t *testing.T) {
@@ -80,10 +85,33 @@ func TestVaultsService_DeleteItem(t *testing.T) {
 	}
 }
 
+func TestVaultsService_ListItems(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/data/vault1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"item1":"http://localhost/data/vault1/item1.json", "item1_keys":"http://localhost/data/vault1/item1_keys.json"}`)
+	})
+
+	vaultItems, err := client.Vaults.ListItems("vault1")
+	if err != nil {
+		t.Errorf("Vaults.ListItem returned error: %v", err)
+	}
+
+	want := []string{"item1"}
+	if !reflect.DeepEqual(vaultItems, want) {
+		t.Fatalf("Vault items returned did not match desired: %v != %v", vaultItems, want)
+	}
+}
+
 func TestVaultsService_UpdateItem(t *testing.T) {
 	setup()
 	defer teardown()
 	var secretsData string
+
+	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"uri": "http://localhost/data/vaults"}`)
+	})
 
 	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, ``)
@@ -120,7 +148,6 @@ func TestVaultsService_UpdateItem(t *testing.T) {
 		t.Fatalf("Vaults.CreateItem returned nothing: %q", err)
 	}
 
-	fmt.Printf("ITEM %+v \n", item)
 	err = client.Vaults.UpdateItem(item, data)
 	if err != nil {
 		t.Fatalf("Vaults.UpdateItem returned an error: %v", err)

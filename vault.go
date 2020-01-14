@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// TODO: Method to add admins, users to vault item
+// TODO: Search ??  doesn't look implemented
+
 const algorithm string = "aes-256-gcm"
 const supportedVersion int = 3
 
@@ -21,11 +24,10 @@ type VaultService struct {
 
 // VaultItem wraps a vault databag and its keys
 type VaultItem struct {
-	DataBagItem *DataBagItem
-	Keys        *VaultItemKeys
-	Name        string
-	Vault       string
-	// TODO: Why is vault service here
+	DataBagItem  *DataBagItem
+	Keys         *VaultItemKeys
+	Name         string
+	Vault        string
 	VaultService *VaultService
 }
 
@@ -67,7 +69,6 @@ func (vs *VaultService) List() (*VaultListResult, error) {
 	vaults := VaultListResult{}
 
 	for k := range keys {
-		// TODO: What does this code do.
 		if v, ok := (*databags)[k]; ok {
 			vaults[k] = v
 		}
@@ -95,6 +96,14 @@ func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, erro
 	}
 	primaryItem := map[string]interface{}{
 		"id": itemName,
+	}
+
+	// Create the databag unless it exists
+	databag := &DataBag{Name: vaultName}
+	if _, err := vs.client.DataBags.Create(databag); err != nil {
+		if !strings.Contains(err.Error(), " 409") {
+			return nil, err
+		}
 	}
 
 	// Create client keys databag
@@ -175,6 +184,34 @@ func (vs *VaultService) GetItem(vaultName, itemName string) (*VaultItem, error) 
 	item.Keys = vaultKeys
 
 	return item, nil
+}
+
+// ListItems lists the items in a vault
+func (vs *VaultService) ListItems(vault string) ([]string, error) {
+	bagitems, err := vs.client.DataBags.ListItems(vault)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("BAGITEMS %+v\n", bagitems)
+	itemnames := onlyitemnames(bagitems)
+	return itemnames, err
+}
+
+func onlyitemnames(items *DataBagListResult) []string {
+	var itemnames []string
+	for k, v := range *items {
+		if strings.HasSuffix(v, "_keys.json") {
+			break
+		}
+		if !strings.HasSuffix(v, ".json") {
+			break
+		}
+		if _, ok := (*items)[k+"_keys"]; !ok {
+			break
+		}
+		itemnames = append(itemnames, k)
+	}
+	return itemnames
 }
 
 // UpdateItem sets the item data, encrypts with a shared key, and then encrypts the shared key with each authorized client key in the <item>_keys data bag

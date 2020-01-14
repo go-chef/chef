@@ -56,6 +56,9 @@ func main() {
 	}
 	fmt.Println("Updated testv secrets vault item")
 
+	// TODO:  Listt the items in a vault
+	//  Make sure the item is encrypted
+
 	// List vaults after an item is created
 	vaultList, err = client.Vaults.List()
 	if err != nil {
@@ -63,14 +66,26 @@ func main() {
 	}
 	fmt.Printf("List vaults after creation %+v\n", vaultList)
 
-	// TODO:  List items in a vault
 
 	// Get vault item
 	vaultItem, err := client.Vaults.GetItem("testv", "secrets")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue getting vault item testv secrets %+v\n",err)
 	}
-	fmt.Printf("Delete testv secrets vault item%+v\n", vaultItem)
+	fmt.Printf("Get testv secrets vault item%+v\n", vaultItem)
+	fmt.Printf("Show testv databag item %+v\n", *vaultItem.DataBagItem)
+	fmt.Printf("Show testv keys %+v\n", vaultItem.Keys)
+	fmt.Printf("Show testv keys %+v\n", vaultItem.Keys)
+	fmt.Printf("Show testv keys databagitem %+v\n", *vaultItem.Keys.DataBag.Item)
+	fmt.Printf("Show testv admins %+v\n", *vaultItem.Keys.DataBag.Item.clients)
+
+	// Show contents of the vault item
+	// Must get the item before decrypting
+	contents, err := vaultItem.Decrypt()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue decrypting vault item testv secrets  %+v\n",err)
+	}
+	fmt.Printf("List initial vault item values %+v\n", contents)
 
 	// Add content to the vault item after we get it
 	// The vault item has pointers and must not be nil
@@ -84,6 +99,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Issue updating based on get of testv secrets vault item %+v\n", err)
 	}
 	fmt.Println("Updated based on get of testv secrets vault item")
+
+	// TODO:  List the items in a vault after update
 
 	// Delete vault contents
 	err = client.Vaults.DeleteItem("testv", "secrets")

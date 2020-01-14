@@ -124,6 +124,12 @@ func (r *ErrorResponse) Error() string {
 		r.Response.StatusCode)
 }
 
+// TODO: Add Status to ErrorResponse and return ErrorResponse errors to for api calls.
+// https://blog.golang.org/error-handling-and-go
+func (r *ErrorResponse) Status() string {
+	return fmt.Sprintf("%d", r.Response.StatusCode)
+}
+
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests

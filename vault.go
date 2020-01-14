@@ -192,7 +192,6 @@ func (vs *VaultService) ListItems(vault string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("BAGITEMS %+v\n", bagitems)
 	itemnames := onlyitemnames(bagitems)
 	return itemnames, err
 }

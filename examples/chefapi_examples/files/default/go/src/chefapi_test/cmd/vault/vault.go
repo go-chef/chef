@@ -30,12 +30,12 @@ func main() {
 	fmt.Printf("List vaults before creation %+v\n", vaultList)
 
         // Create a data bag to hold the vault items
-        databag := &chef.DataBag{Name: "testv"}
-        response, err := client.DataBags.Create(databag)
-        if err != nil {
-                fmt.Fprintf(os.Stderr, "Issue creating data bag testv %+v\n",err)
-        }
-        fmt.Printf("Data bag created %+v\n", response)
+        // databag := &chef.DataBag{Name: "testv"}
+        // response, err := client.DataBags.Create(databag)
+        // if err != nil {
+                // fmt.Fprintf(os.Stderr, "Issue creating data bag testv %+v\n",err)
+        // }
+        // fmt.Printf("Data bag created %+v\n", response)
 
 	// Create a vault item
 	item, err := client.Vaults.CreateItem("testv", "secrets")
@@ -56,8 +56,12 @@ func main() {
 	}
 	fmt.Println("Updated testv secrets vault item")
 
-	// TODO:  Listt the items in a vault
-	//  Make sure the item is encrypted
+	// List the items in a vault
+	vaultItems, err = client.Vaults.ListItems("testv")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue listing testv items %+v\n", err)
+	}
+	fmt.Printf("List the vault items %+v\n", vaultItems)
 
 	// List vaults after an item is created
 	vaultList, err = client.Vaults.List()

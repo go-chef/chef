@@ -64,7 +64,29 @@ func TestVaultsService_CreateItem(t *testing.T) {
 	if err != nil {
 		t.Errorf("Vaults.CreateItem returned error: %v", err)
 	}
-	// TODO: Test 409 return from create vault
+}
+
+func TestVaultsService_CreateItem_Existing(t *testing.T) {
+	setup()
+	defer teardown()
+
+	// Return 409 when the attempt is made to create an existing vault
+	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusConflict)
+	})
+
+	mux.HandleFunc("/data/vaults", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
+
+	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
+
+	_, err := client.Vaults.CreateItem("vaults", "secrets")
+	if err != nil {
+		t.Errorf("Vaults.CreateItem returned error: %v", err)
+	}
 }
 
 func TestVaultsService_DeleteItem(t *testing.T) {

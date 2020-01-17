@@ -58,21 +58,32 @@ func (vs *VaultService) List() (*VaultListResult, error) {
 		return nil, err
 	}
 
-	keys := map[string]bool{}
+//	keys := map[string]bool{}
 
-	for name := range *databags {
-		if vaultName := strings.TrimSuffix(name, "_keys"); vaultName != name {
-			keys[vaultName] = true
-		}
-	}
+	// The following method doesn't work 
+	// The _keys entries are items not vaults
+	//for name := range *databags {
+		//if vaultName := strings.TrimSuffix(name, "_keys"); vaultName != name {
+			//keys[vaultName] = true
+		//}
+	//}
 
 	vaults := VaultListResult{}
-
-	for k := range keys {
-		if v, ok := (*databags)[k]; ok {
+	for k, v := range *databags {
+		items,err  := vs.ListItems(k)
+		if err != nil {
+		       return &vaults, err
+		}
+		if len(items) > 0 {
 			vaults[k] = v
 		}
 	}
+
+	//for k := range keys {
+		//if v, ok := (*databags)[k]; ok {
+			//vaults[k] = v
+		//}
+	//}
 
 	return &vaults, nil
 }
@@ -198,15 +209,10 @@ func (vs *VaultService) ListItems(vault string) ([]string, error) {
 
 func onlyitemnames(items *DataBagListResult) []string {
 	var itemnames []string
-	for k, v := range *items {
-		if strings.HasSuffix(v, "_keys.json") {
-			break
-		}
-		if !strings.HasSuffix(v, ".json") {
-			break
-		}
+	for k, _ := range *items {
+		// if we have and item and item_keys assume we have a vault item
 		if _, ok := (*items)[k+"_keys"]; !ok {
-			break
+			continue
 		}
 		itemnames = append(itemnames, k)
 	}

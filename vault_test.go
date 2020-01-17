@@ -13,17 +13,29 @@ func TestVaultsService_List(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{"secrets":"http://localhost/data/secrets","secrets_keys":"http://localhost/data/secret_keys","bag1":"http://localhost/data/bag1"}`)
+		fmt.Fprintf(w, `{"secrets":"http://localhost/data/secrets","more":"http://localhost/data/more","justabag":"http://localhost/data/justabag"}`)
 	})
 
-	databags, err := client.Vaults.List()
+	mux.HandleFunc("/data/secrets", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"item1":"http://localhost/data/secrets/item1", "item1_keys":"http://localhost/data/secrets/item1_keys"}`)
+	})
+
+	mux.HandleFunc("/data/more", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"item1":"http://localhost/data/more/item1", "item1_keys":"http://localhost/data/more/item1_keys"}`)
+	})
+
+	mux.HandleFunc("/data/justabag", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"item1":"http://localhost/data/justabag/item1"}`)
+	})
+
+	vaults, err := client.Vaults.List()
 	if err != nil {
 		t.Errorf("Vaults.List returned error: %v", err)
 	}
 
-	want := &VaultListResult{"secrets": "http://localhost/data/secrets"}
-	if !reflect.DeepEqual(databags, want) {
-		t.Errorf("Vaults.List returned %+v, want %+v", databags, want)
+	want := &VaultListResult{"secrets": "http://localhost/data/secrets", "more": "http://localhost/data/more"}
+	if !reflect.DeepEqual(vaults, want) {
+		t.Errorf("Vaults.List returned %+v, want %+v", vaults, want)
 	}
 }
 
@@ -112,7 +124,7 @@ func TestVaultsService_ListItems(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/data/vault1", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{"item1":"http://localhost/data/vault1/item1.json", "item1_keys":"http://localhost/data/vault1/item1_keys.json"}`)
+		fmt.Fprintf(w, `{"item1":"http://localhost/data/vault1/item1", "item1_keys":"http://localhost/data/vault1/item1_keys"}`)
 	})
 
 	vaultItems, err := client.Vaults.ListItems("vault1")

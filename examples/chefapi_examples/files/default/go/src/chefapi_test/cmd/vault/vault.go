@@ -20,7 +20,6 @@ func main() {
         addv2 := chef.AddNow { Username: "usrv2", }
         client.Associations.Add(addv)
         client.Associations.Add(addv2)
-	// TODO: Add a node
 
 	// List vaults before an item is created
 	vaultList, err := client.Vaults.List()
@@ -79,9 +78,21 @@ func main() {
 	fmt.Printf("Get testv secrets vault item%+v\n", vaultItem)
 	fmt.Printf("Show testv databag item %+v\n", *vaultItem.DataBagItem)
 	fmt.Printf("Show testv keys %+v\n", vaultItem.Keys)
-	// TOOO: Show values
 	fmt.Printf("Show testv keys databagitem %+v\n", *vaultItem.Keys.DataBagItem)
-	// fmt.Printf("Show testv admins %+v\n", *vaultItem.Keys.DataBag.Item.clients)
+
+	admins := client.Vaults.ListItemAdmins(item)
+	clients := client.Vaults.ListItemClients(item)
+	admins = append(admins, "usrv")
+	clients = append(clients, "usrv2")
+
+	client.Vaults.UpdateItemAdmins(item, admins)
+        client.Vaults.UpdateItemClients(item, clients)
+
+	// Show the updated lists
+	admins = client.Vaults.ListItemAdmins(item)
+	clients = client.Vaults.ListItemClients(item)
+	fmt.Printf("Show updated admins %+v\n", admins)
+	fmt.Printf("Show updated clients %+v\n", clients)
 
 	// Show contents of the vault item
 	contents, err := vaultItem.Decrypt()
@@ -136,14 +147,7 @@ func main() {
 }
 
 // TODO:
-// add user and node to the admin and client list
-// Vaults.GetItem(vaultName, itemName)  (*VaultItem, error)
-// Add user2
-// Change a value
 // Do things using usrv id - admin
 // Do things using usrv2 id - client only
-// Show key value
-// Show encrypted values
-// Show admins
-// Show clients
 // Show search
+// Update using search

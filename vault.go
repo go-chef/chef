@@ -9,8 +9,7 @@ import (
 	"strings"
 )
 
-// TODO: Method to add admins, users to vault item
-// TODO: Search ??  doesn't look implemented
+// TODO: Search  doesn't look implemented
 
 const algorithm string = "aes-256-gcm"
 const supportedVersion int = 3
@@ -58,21 +57,21 @@ func (vs *VaultService) List() (*VaultListResult, error) {
 		return nil, err
 	}
 
-//	keys := map[string]bool{}
+	//	keys := map[string]bool{}
 
-	// The following method doesn't work 
+	// The following method doesn't work
 	// The _keys entries are items not vaults
 	//for name := range *databags {
-		//if vaultName := strings.TrimSuffix(name, "_keys"); vaultName != name {
-			//keys[vaultName] = true
-		//}
+	//if vaultName := strings.TrimSuffix(name, "_keys"); vaultName != name {
+	//keys[vaultName] = true
+	//}
 	//}
 
 	vaults := VaultListResult{}
 	for k, v := range *databags {
-		items,err  := vs.ListItems(k)
+		items, err := vs.ListItems(k)
 		if err != nil {
-		       return &vaults, err
+			return &vaults, err
 		}
 		if len(items) > 0 {
 			vaults[k] = v
@@ -80,9 +79,9 @@ func (vs *VaultService) List() (*VaultListResult, error) {
 	}
 
 	//for k := range keys {
-		//if v, ok := (*databags)[k]; ok {
-			//vaults[k] = v
-		//}
+	//if v, ok := (*databags)[k]; ok {
+	//vaults[k] = v
+	//}
 	//}
 
 	return &vaults, nil
@@ -96,7 +95,6 @@ func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, erro
 		return nil, err
 	}
 
-	// TODO: how do we add clients, admins. How is search_quuery used?t vauvalr
 	keysItem := map[string]interface{}{
 		"admins":                  []string{vs.client.Auth.ClientName},
 		"clients":                 []string{},
@@ -109,7 +107,7 @@ func (vs *VaultService) CreateItem(vaultName, itemName string) (*VaultItem, erro
 		"id": itemName,
 	}
 
-	// Create the databag unless it exists
+	// Create the vault's databag unless it exists
 	databag := &DataBag{Name: vaultName}
 	if _, err := vs.client.DataBags.Create(databag); err != nil {
 		if !strings.Contains(err.Error(), " 409") {
@@ -220,7 +218,6 @@ func onlyitemnames(items *DataBagListResult) []string {
 }
 
 // UpdateItem sets the item data, encrypts with a shared key, and then encrypts the shared key with each authorized client key in the <item>_keys data bag
-// TODO: data should probably be some sort of struct
 func (vs *VaultService) UpdateItem(item *VaultItem, data map[string]interface{}) error {
 	itemData := map[string]interface{}{}
 	sharedSecret, err := item.sharedSecret()
@@ -252,6 +249,28 @@ func (vs *VaultService) UpdateItem(item *VaultItem, data map[string]interface{})
 	item.DataBagItem = &databagData
 
 	return nil
+}
+
+// ListItemAdmins return a list of admin users for the item
+func (vs *VaultService) ListItemAdmins(item *VaultItem) []string {
+	return (*(*(*item).Keys).DataBagItem).(map[string]interface{})["admins"].([]string)
+}
+
+// ListItemClients return a list of client users for the item
+func (vs *VaultService) ListItemClients(item *VaultItem) []string {
+	return (*(*(*item).Keys).DataBagItem).(map[string]interface{})["clients"].([]string)
+}
+
+// UpdateItemAdmins sets the list of admin users for the item
+func (vs *VaultService) UpdateItemAdmins(item *VaultItem, admins []string) {
+	(*(*(*item).Keys).DataBagItem).(map[string]interface{})["admins"] = admins
+	return
+}
+
+// UpdateItemClients sets the list of clients for the item
+func (vs *VaultService) UpdateItemClients(item *VaultItem, clients []string) {
+	(*(*(*item).Keys).DataBagItem).(map[string]interface{})["clients"] = clients
+	return
 }
 
 func (i *VaultItem) sharedSecret() ([]byte, error) {

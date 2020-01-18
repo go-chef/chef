@@ -187,6 +187,11 @@ func TestVaultsService_UpdateItem(t *testing.T) {
 		t.Fatalf("Vaults.UpdateItem returned an error: %v", err)
 	}
 
+	fmt.Printf("UPDATEITEM %+v\n", *item)
+	fmt.Printf("DATABAGITEM %+v\n", (*(*item).DataBagItem))
+	fmt.Printf("KEYS %+v\n", (*(*item).Keys))
+	fmt.Printf("KEYSDBI %+v\n", (*(*(*item).Keys).DataBagItem))
+	fmt.Printf("KEYSDBI %+v\n", (*(*(*item).Keys).DataBagItem).(map[string]interface{})["admins"])
 	if secretsData == "" {
 		t.Fatalf("Vaults.UpdateItem did not update the data bag: %v", err)
 	}
@@ -198,5 +203,71 @@ func TestVaultsService_UpdateItem(t *testing.T) {
 
 	if !reflect.DeepEqual(*updatedData, data) {
 		t.Fatalf("Updated data did not match: %v != %v", updatedData, data)
+	}
+}
+
+func TestVaultsService_ItemKeys(t *testing.T) {
+	setup()
+	defer teardown()
+	var secretsData string
+
+	mux.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"uri": "http://localhost/data/vaults"}`)
+	})
+
+	mux.HandleFunc("/data/vaults/secrets_keys", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
+
+	mux.HandleFunc("/data/vaults/secrets", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			fmt.Fprint(w, secretsData)
+		case "PUT":
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(r.Body)
+			secretsData = buf.String()
+			fmt.Fprintf(w, ``)
+		default:
+			fmt.Fprintf(w, ``)
+		}
+	})
+
+	mux.HandleFunc("/data/vaults", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, ``)
+	})
+
+	item, err := client.Vaults.CreateItem("vaults", "secrets")
+	if err != nil {
+		t.Fatalf("Vaults.CreateItem returned an error: %v", err)
+	}
+	if item == nil {
+		t.Fatalf("Vaults.CreateItem returned nothing: %q", err)
+	}
+
+	adminsBefore := client.Vaults.ListItemAdmins(item)
+	clientsBefore := client.Vaults.ListItemClients(item)
+
+	admins := []string{"user1", "users2"}
+	clients := []string{"node1", "node2"}
+	client.Vaults.UpdateItemAdmins(item, admins)
+	client.Vaults.UpdateItemClients(item, clients)
+	adminsAfter := client.Vaults.ListItemAdmins(item)
+	clientsAfter := client.Vaults.ListItemClients(item)
+
+	if !reflect.DeepEqual(adminsBefore, []string{}) {
+		t.Fatalf("Initial admins did not match: %v != %v", adminsBefore[0], "tester")
+	}
+
+	if !reflect.DeepEqual(clientsBefore, []string{}) {
+		t.Fatalf("Initial clients did not match: %v != %v", clientsBefore, []string{})
+	}
+
+	if !reflect.DeepEqual(adminsAfter, []string{}) {
+		t.Fatalf("Set admins did not match: %v != %v", adminsAfter, admins)
+	}
+
+	if !reflect.DeepEqual(clientsAfter, []string{}) {
+		t.Fatalf("Set clients did not match: %v != %v", clientsBefore, clients)
 	}
 }

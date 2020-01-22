@@ -1,4 +1,4 @@
-# Inspec tests for the node chef api go module
+# Inspec tests for the status chef api go module
 #
 
 describe command('/go/src/chefapi_test/bin/node') do

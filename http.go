@@ -55,6 +55,8 @@ type Client struct {
 	Roles            *RoleService
 	Sandboxes        *SandboxService
 	Search           *SearchService
+	Status           *StatusService
+	Universe         *UniverseService
 	Users            *UserService
 }
 
@@ -171,6 +173,8 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}
+	c.Status = &StatusService{client: c}
+	c.Universe = &UniverseService{client: c}
 	c.Users = &UserService{client: c}
 	return c, nil
 }

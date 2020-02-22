@@ -30,7 +30,7 @@ func main() {
 	orgResult = createOrganization(client, chef.Organization{Name: "org1", FullName: "organization1"})
 	fmt.Println("Added org1 again", orgResult)
 
-	orgResult = createOrganization(client, chef.Organization{Name: "org2", FullName: "organization2"})
+	orgResult = createOrganization(client, chef.Organization{Name: "org2", FullName: "organization2", OrgType: "Business"})
 	fmt.Println("Added org2", orgResult)
 
 	orgout := getOrganization(client, org1)
@@ -39,7 +39,7 @@ func main() {
 	orgList = listOrganizations(client)
 	fmt.Println("List organizations After adding org1 and org2", orgList)
 
-	orgresult := updateOrganization(client, chef.Organization{Name: "org1", FullName: "new_organization1"})
+	orgresult := updateOrganization(client, chef.Organization{Name: "org1", FullName: "new_organization1", OrgType: "Automation"})
 	fmt.Println("Update org1", orgresult)
 
 	orgout = getOrganization(client, org1)

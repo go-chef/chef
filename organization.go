@@ -10,6 +10,7 @@ type OrganizationService struct {
 type Organization struct {
 	Name     string `json:"name"`
 	FullName string `json:"full_name"`
+	OrgType  string `json:"org_type"`
 	Guid     string `json:"guid"`
 }
 

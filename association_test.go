@@ -7,24 +7,6 @@ import (
 	"testing"
 )
 
-// var (
-// testNodeJSON = "test/node.json"
-// )
-
-// func TestNodeFromJSONDecoder(t *testing.T) {
-// if file, err := os.Open(testNodeJSON); err != nil {
-// t.Error("unexpected error", err, "during os.Open on", testNodeJSON)
-// } else {
-// dec := json.NewDecoder(file)
-// var n Node
-// if err := dec.Decode(&n); err == io.EOF {
-// log.Println(n)
-// } else if err != nil {
-// log.Fatal(err)
-// }
-// }
-// }
-
 func TestAssociationMethods(t *testing.T) {
 	setup()
 	defer teardown()

@@ -265,9 +265,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			io.Copy(w, restee)
 		} else {
 			err = json.NewDecoder(restee).Decode(v)
-			if err != nil {
+			if debug_on() {
 				resbody, _ := ioutil.ReadAll(&resbuf)
 				debug("Response body: %+v\n", string(resbody))
+			}
+			if err != nil {
 				return res, err
 			}
 		}

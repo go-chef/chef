@@ -70,7 +70,6 @@ func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVe
 	if len(filters) > 0 {
 		url += "?" + strings.Join(filters, "&")
 	}
-        userlist = make(map[string]UserVerboseResult)
 	err = e.client.magicRequestDecoder("GET", url, nil, &userlist)
 	return
 }
@@ -88,7 +87,7 @@ func (e *UserService) Create(user User) (data UserResult, err error) {
 	body, err := JSONReader(user)
 	if err != nil {
 		return
-./hugin_config.go	}
+	}
 
 	err = e.client.magicRequestDecoder("POST", "users", body, &data)
 	return

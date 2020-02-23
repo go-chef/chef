@@ -34,7 +34,7 @@ func main() {
 	userList = listUsers(client, "email=user1@domain.io")
 	fmt.Printf("Filter users %+v\n", userList)
 
-	userVerboseOut := listUsersVerbose(client)
+	userV../cmd/user/user.goerboseOut := listUsersVerbose(client)
 	fmt.Printf("Verbose out %v\n", userVerboseOut)
 
 	userResult = createUser(client, usr1)
@@ -104,9 +104,9 @@ func listUsers(client *chef.Client, filters ...string) map[string]string {
 }
 
 // listUsersVerbose uses the chef server api to list all users and return verbose output
-func listUsersVerbose(client *chef.Client) map[string]chef.UsersVerboseItem {
+func listUsersVerbose(client *chef.Client) map[string]chef.UsersVerboseResult {
 	userList, err := client.Users.ListVerbose()
-        fmt.Println("VERBOSE LIST", userList)
+        fmt.Printf("VERBOSE LIST %+v\n", userList)
 	if err != nil {
 		fmt.Println("Issue listing verbose users:", err)
 	}

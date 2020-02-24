@@ -15,12 +15,35 @@ import (
 func main() {
         client := testapi.Client()
 
-	var usr1 chef.User
-	usr1 = chef.User{ UserName: "usr1",
+	// Create a new private key when adding the user
+	usr1 := chef.User{ UserName: "usr1",
 	                   Email: "user1@domain.io",
 			   FirstName: "user1",
 			   LastName: "fullname",
 			   DisplayName: "User1 Fullname",
+			   Password: "Logn12ComplexPwd#",
+			   CreateKey: true,
+		   }
+
+        // Supply a public key
+        usr2 := chef.User{ UserName: "usr2",
+	                   Email: "user2@domain.io",
+			   FirstName: "user2",
+			   LastName: "lastname",
+			   DisplayName: "User2 Lastname",
+			   Password: "Logn12ComplexPwd#",
+			   PublicKey: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoYyN0AIhUh7Fw1+gQtR+ \n0/HY3625IUlVheoUeUz3WnsTrUGSSS4fHvxUiCJlNni1sQvcJ0xC9Bw3iMz7YVFO\nWz5SeKmajqKEnNywN8/NByZhhlLdBxBX/UN04/7aHZMoZxrrjXGLcyjvXN3uxyCO\nyPY989pa68LJ9jXWyyfKjCYdztSFcRuwF7tWgqnlsc8pve/UaWamNOTXQnyrQ6Dp\ndn+1jiNbEJIdxiza7DJMH/9/i/mLIDEFCLRPQ3RqW4T8QrSbkyzPO/iwaHl9U196\n06Ajv1RNnfyHnBXIM+I5mxJRyJCyDFo/MACc5AgO6M0a7sJ/sdX+WccgcHEVbPAl\n1wIDAQAB \n-----END PUBLIC KEY-----\n\n",
+		   }
+
+	err := deleteUser(client, "usr2")
+	fmt.Println("Delete usr2", err)
+
+        // Neither PublicKey nor CreateKey specified
+        usr3 := chef.User{ UserName: "usr3",
+	                   Email: "user3@domain.io",
+			   FirstName: "user3",
+			   LastName: "lastname",
+			   DisplayName: "User3 Lastname",
 			   Password: "Logn12ComplexPwd#",
 		   }
 
@@ -28,8 +51,23 @@ func main() {
 	userList := listUsers(client)
 	fmt.Printf("List initial users %+v EndInitialList\n", userList)
 
+	userout := getUser(client, "pivotal")
+	fmt.Printf("Pivotal user %+v\n", userout)
+
 	userResult := createUser(client, usr1)
-	fmt.Println("Add usr1", userResult)
+	fmt.Printf("Add usr1 %+v\n", userResult)
+
+	userResult = createUser(client, usr2)
+	fmt.Printf("Add usr2 %+v\n", userResult)
+
+	err = deleteUser(client, "usr2")
+	fmt.Println("Delete usr2", err)
+
+	userResult = createUser(client, usr3)
+	fmt.Printf("Add usr3 %+v\n", userResult)
+
+	err = deleteUser(client, "usr3")
+	fmt.Println("Delete usr3", err)
 
 	userList = listUsers(client, "email=user1@domain.io")
 	fmt.Printf("Filter users %+v\n", userList)
@@ -38,26 +76,47 @@ func main() {
 	fmt.Printf("Verbose out %v\n", userVerboseOut)
 
 	userResult = createUser(client, usr1)
-	fmt.Printf("Add user1 again %+v\n", userResult)
+	fmt.Printf("Add usr1 again %+v\n", userResult)
 
-	userout := getUser(client, "usr1")
+	userout = getUser(client, "usr1")
 	fmt.Printf("Get usr1 %+v\n", userout)
-
-	userout = getUser(client, "pivotal")
-	fmt.Printf("Pivotal user %+v\n", userout)
 
 	userList = listUsers(client)
 	fmt.Printf("List after adding %+v EndAddList\n", userList)
 
-        //userbody := chef.User{ FullName: "usr1new" }
-	//userresult := updateUser(client, "usr1", userbody)
-	//fmt.Printf("Update user1 %+v", userresult)
+	userbody := chef.User{ UserName: "usr1", DisplayName: "usr1",  Email: "myuser@samp.com"}
+	userresult := updateUser(client, "usr1", userbody)
+	fmt.Printf("Update usr1 partial update %+v\n", userresult)
 
 	userout = getUser(client, "usr1")
-	fmt.Println("Get usr1 after update %+v\n", userout)
+	fmt.Printf("Get usr1 after partial update %+v\n", userout)
 
-	err := deleteUser(client, "usr1")
+	userbody = chef.User{ UserName: "usr1", DisplayName: "usr1", FirstName: "user", MiddleName: "mid", LastName: "name", Email: "myuser@samp.com" }
+	userresult = updateUser(client, "usr1", userbody)
+	fmt.Printf("Update usr1 full update %+v\n", userresult)
+
+	userout = getUser(client, "usr1")
+	fmt.Printf("Get usr1 after full update %+v\n", userout)
+
+	userbody = chef.User{ UserName: "usr1new", DisplayName: "usr1", FirstName: "user", MiddleName: "mid", LastName: "name", Email: "myuser@samp.com" }
+	userresult = updateUser(client, "usr1", userbody)
+	fmt.Printf("Update usr1 rename %+v\n", userresult)
+
+	userout = getUser(client, "usr1new")
+	fmt.Printf("Get usr1 after rename %+v\n", userout)
+
+	userbody = chef.User{ UserName: "usr1new", DisplayName: "usr1", FirstName: "user", MiddleName: "mid", LastName: "name", Email: "myuser@samp.com", CreateKey: true}
+	userresult = updateUser(client, "usr1new", userbody)
+	fmt.Printf("Update usr1new create key  %+v\n", userresult)
+
+	userout = getUser(client, "usr1new")
+	fmt.Printf("Get usr1new after create key %+v\n", userout)
+
+	err = deleteUser(client, "usr1")
 	fmt.Println("Delete usr1", err)
+
+	err = deleteUser(client, "usr1new")
+	fmt.Println("Delete usr1new", err)
 
 	userList = listUsers(client)
 	fmt.Printf("List after cleanup %+v EndCleanupList\n", userList)
@@ -113,12 +172,11 @@ func listUsersVerbose(client *chef.Client) map[string]chef.UserVerboseResult {
 	return userList
 }
 
-
 // updateUser uses the chef server api to update information for a single user
-//func updateUser(client *chef.Client, username string, user chef.User) chef.User {
-	//user_update, err := client.Users.Update(username, user)
-	//if err != nil {
-		//fmt.Println("Issue updating user:", err)
-	//}
-	//return user_update
-//}
+func updateUser(client *chef.Client, username string, user chef.User) chef.UserResult {
+	user_update, err := client.Users.Update(username, user)
+	if err != nil {
+		fmt.Println("Issue updating user:", err)
+	}
+	return user_update
+}

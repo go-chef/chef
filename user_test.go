@@ -3,6 +3,7 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/r3labs/diff"
 	"io"
 	"log"
 	"net/http"
@@ -102,8 +103,14 @@ func TestUserCreate(t *testing.T) {
 		switch {
 		case r.Method == "POST":
 			fmt.Fprintf(w, `{
-                                "uri": "https://url/for/user_name1",
-                                "private_key": "-----BEGIN RSA PRIVATE KEY-----"
+                                "uri": "https://chefserver/users/user_name1",
+				"chef_key": {
+					"name": "default",
+					"public_key": "-----BEGIN RSA PUBLIC KEY-----",
+					"expiration_date": "infinity",
+					"uri": "https://chefserver/users/user_name1/keys/default",
+					"private_key": "-----BEGIN RSA PRIVATE KEY-----"
+				}
                          }`)
 		}
 	})
@@ -114,7 +121,15 @@ func TestUserCreate(t *testing.T) {
 	if err != nil {
 		t.Errorf("Users.Create returned error: %v", err)
 	}
-	Want := UserResult{Uri: "https://url/for/user_name1", PrivateKey: "-----BEGIN RSA PRIVATE KEY-----"}
+	Want := UserResult{Uri: "https://chefserver/users/user_name1",
+		ChefKey: ChefKey{
+			Name:           "default",
+			PublicKey:      "-----BEGIN RSA PUBLIC KEY-----",
+			ExpirationDate: "infinity",
+			Uri:            "https://chefserver/users/user_name1/keys/default",
+			PrivateKey:     "-----BEGIN RSA PRIVATE KEY-----",
+		},
+	}
 	if !reflect.DeepEqual(userresult, Want) {
 		t.Errorf("Users.Create returned %+v, want %+v", userresult, Want)
 	}
@@ -133,7 +148,6 @@ func TestUserGet(t *testing.T) {
                                 "email": "user1@mail.com",
                                 "external_authentication_uid": "user1",
                                 "first_name": "User",
-                                "full_name": "User S Name",
                                 "last_name": "Name",
                                 "middle_name": "S",
                                 "public_key": "-----BEGIN RSA PUBLIC KEY-----",
@@ -147,7 +161,7 @@ func TestUserGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("User.Get returned error: %v", err)
 	}
-	Want := User{UserName: "user1", DisplayName: "User Name", Email: "user1@mail.com", ExternalAuthenticationUid: "user1", FirstName: "User", FullName: "User S Name", LastName: "Name", MiddleName: "S", PublicKey: "-----BEGIN RSA PUBLIC KEY-----", RecoveryAuthenticationEnabled: true}
+	Want := User{UserName: "user1", DisplayName: "User Name", Email: "user1@mail.com", ExternalAuthenticationUid: "user1", FirstName: "User", LastName: "Name", MiddleName: "S", PublicKey: "-----BEGIN RSA PUBLIC KEY-----", RecoveryAuthenticationEnabled: true}
 	if !reflect.DeepEqual(user, Want) {
 		t.Errorf("Users.Get returned %+v, want %+v", user, Want)
 	}
@@ -170,5 +184,30 @@ func TestUserDelete(t *testing.T) {
 	err := client.Users.Delete("user1")
 	if err != nil {
 		t.Errorf("User.Get returned error: %v", err)
+	}
+}
+
+func TestUserUpdate(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user_name1", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "PUT":
+			fmt.Fprintf(w, `{
+                                "uri": "https://chefserver/users/user_name1"
+                         }`)
+		}
+	})
+
+	// Update User
+	user := User{UserName: "user_name1", Email: "user_name1@mail.com", Password: "dummypass"}
+	userresult, err := client.Users.Update("user_name1", user)
+	if err != nil {
+		t.Errorf("Users.Create returned error: %v", err)
+	}
+	Want := UserResult{Uri: "https://chefserver/users/user_name1"}
+	if !reflect.DeepEqual(userresult, Want) {
+		t.Errorf("Users.Create returned %+v, want %+v", userresult, Want)
 	}
 }

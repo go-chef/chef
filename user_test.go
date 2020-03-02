@@ -13,11 +13,26 @@ import (
 
 var (
 	testUserJSON = "test/user.json"
+	testVerboseUserJSON = "test/verbose_user.json"
 )
 
 func TestUserFromJSONDecoder(t *testing.T) {
 	if file, err := os.Open(testUserJSON); err != nil {
 		t.Error("Unexpected error '", err, "' during os.Open on", testUserJSON)
+	} else {
+		dec := json.NewDecoder(file)
+		var g User
+		if err := dec.Decode(&g); err == io.EOF {
+			log.Fatal(g)
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func TestVerboseUserFromJSONDecoder(t *testing.T) {
+	if file, err := os.Open(testVerboseUserJSON); err != nil {
+		t.Error("Unexpected error '", err, "' during os.Open on", testVerboseUserJSON)
 	} else {
 		dec := json.NewDecoder(file)
 		var g User
@@ -48,6 +63,34 @@ func TestUserslist(t *testing.T) {
 	listWant := map[string]string{"user_name1": "https://url/for/user_name1", "user_name2": "https://url/for/user_name2"}
 	if !reflect.DeepEqual(users, listWant) {
 		t.Errorf("Users.List returned %+v, want %+v", users, listWant)
+	}
+}
+
+func TestVerboseUserslist(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET":
+			fmt.Fprintf(w, `{
+                                "janechef": { "email": "jane.chef@user.com", "first_name": "jane", "last_name": "chef_user" },
+                                "yaelsmith": { "email": "yael.chef@user.com", "first_name": "yael", "last_name": "smith" }
+                        }`)
+
+		}
+	})
+
+	// Test list
+	users, err := client.Users.VerboseList()
+	if err != nil {
+		t.Errorf("Verbose Users.List returned error: %v", err)
+	}
+	jane :=  UserVerboseResult{ Email: "jane.chef@user.com", FirstName: "jane", LastName: "chef_user" }
+        yael :=  UserVerboseResult{ Email: "yael.chef@user.com", FirstName: "yael", LastName: "smith" }
+	listWant := map[string]UserVerboseResult{ "janechef": jane, "yaelsmith": yael }
+	if !reflect.DeepEqual(users, listWant) {
+		t.Errorf("Verbose Users.List returned %+v, want %+v", users, listWant)
 	}
 }
 

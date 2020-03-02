@@ -29,6 +29,12 @@ type UserResult struct {
 	PrivateKey string `json:"private_key,omitempty"`
 }
 
+type UserVerboseResult struct {
+	Email      string `json:"email,omitempty"`
+	FirstName  string `json:"first_name,omitempty"`
+	LastName   string `json:"last_name,omitempty"`
+}
+
 type UserKey struct {
 	KeyName        string `json:"name,omitempty"`
 	PublicKey      string `json:"public_key,omitempty"`
@@ -43,10 +49,24 @@ type UserKeyResult struct {
 
 // /users GET
 // List lists the users in the Chef server.
-//
+// 
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) List(filters ...string) (userlist map[string]string, err error) {
 	url := "users"
+	if len(filters) > 0 {
+		url += "?" + strings.Join(filters, "&")
+	}
+	err = e.client.magicRequestDecoder("GET", url, nil, &userlist)
+	return
+}
+
+// /users GET
+// List lists the users in the Chef server in verbose format.
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#users
+func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVerboseResult, err error) {
+	url := "users"
+        filters = append(filters, "verbose=true")
 	if len(filters) > 0 {
 		url += "?" + strings.Join(filters, "&")
 	}

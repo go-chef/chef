@@ -49,9 +49,9 @@ func main() {
 	userList = listUsers(client)
 	fmt.Printf("List after adding %+v EndAddList\n", userList)
 
-        userbody := chef.User{ FullName: "usr1new" }
-	userresult := updateUser(client, "usr1", userbody)
-	fmt.Printf("Update user1 %+v", userresult)
+        //userbody := chef.User{ FullName: "usr1new" }
+	//userresult := updateUser(client, "usr1", userbody)
+	//fmt.Printf("Update user1 %+v", userresult)
 
 	userout = getUser(client, "usr1")
 	fmt.Println("Get usr1 after update %+v\n", userout)
@@ -104,20 +104,21 @@ func listUsers(client *chef.Client, filters ...string) map[string]string {
 }
 
 // listUsersVerbose uses the chef server api to list all users and return verbose output
-func listUsersVerbose(client *chef.Client) map[string]chef.UsersVerboseItem {
-	userList, err := client.Users.ListVerbose()
-        fmt.Println("VERBOSE LIST", userList)
+func listUsersVerbose(client *chef.Client) map[string]chef.UserVerboseResult {
+	userList, err := client.Users.VerboseList()
+        fmt.Printf("VERBOSE LIST %+v\n", userList)
 	if err != nil {
 		fmt.Println("Issue listing verbose users:", err)
 	}
 	return userList
 }
 
+
 // updateUser uses the chef server api to update information for a single user
-func updateUser(client *chef.Client, username string, user chef.User) chef.User {
-	user_update, err := client.Users.Update(username, user)
-	if err != nil {
-		fmt.Println("Issue updating user:", err)
-	}
-	return user_update
-}
+//func updateUser(client *chef.Client, username string, user chef.User) chef.User {
+	//user_update, err := client.Users.Update(username, user)
+	//if err != nil {
+		//fmt.Println("Issue updating user:", err)
+	//}
+	//return user_update
+//}

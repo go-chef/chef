@@ -139,6 +139,10 @@ func createServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(checkHeader))
 }
 
+func createTLSServer() *httptest.Server {
+	return httptest.NewTLSServer(http.HandlerFunc(checkHeader))
+}
+
 // publicKeyFromString parses an RSA public key from a string
 func publicKeyFromString(key []byte) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(key)
@@ -377,6 +381,69 @@ func TestRequestToEndpoint(t *testing.T) {
 	response, err := client.Do(request)
 	if err != nil {
 		t.Error(err)
+	}
+
+	if response.StatusCode != 200 {
+		t.Error("Non 200 return code: " + response.Status)
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	bodyStr := buf.String()
+
+	if bodyStr != "" {
+		t.Error(bodyStr)
+	}
+}
+
+func TestTLSValidation(t *testing.T) {
+	ac, err := makeAuthConfig()
+	if err != nil {
+		panic(err)
+	}
+	// Self-signed server
+	server := createTLSServer()
+	defer server.Close()
+
+	// Without RootCAs, TLS validation should fail
+	chefClient, _ := NewClient(&Config{
+		Name:    userid,
+		Key:     privateKey,
+		BaseURL: server.URL,
+	})
+
+	request, err := chefClient.NewRequest("GET", server.URL, nil)
+	err = ac.SignRequest(request)
+	if err != nil {
+		t.Fatal("failed to generate RequestHeaders")
+	}
+
+	client := chefClient.client
+	response, err := client.Do(request)
+	if err == nil {
+		t.Fatal("Request should fail due to TLS certification validation failure")
+	}
+
+	// Success with RootCAs containing the server's certificate
+	certPool := x509.NewCertPool()
+	certPool.AddCert(server.Certificate())
+	chefClient, _ = NewClient(&Config{
+		Name:    userid,
+		Key:     privateKey,
+		BaseURL: server.URL,
+		RootCAs: certPool,
+	})
+
+	request, err = chefClient.NewRequest("GET", server.URL, nil)
+	err = ac.SignRequest(request)
+	if err != nil {
+		t.Fatal("failed to generate RequestHeaders")
+	}
+
+	client = chefClient.client
+	response, err = client.Do(request)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	if response.StatusCode != 200 {

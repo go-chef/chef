@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	testUserJSON = "test/user.json"
+	testUserJSON        = "test/user.json"
 	testVerboseUserJSON = "test/verbose_user.json"
 )
 
@@ -86,9 +86,9 @@ func TestVerboseUserslist(t *testing.T) {
 	if err != nil {
 		t.Errorf("Verbose Users.List returned error: %v", err)
 	}
-	jane :=  UserVerboseResult{ Email: "jane.chef@user.com", FirstName: "jane", LastName: "chef_user" }
-        yael :=  UserVerboseResult{ Email: "yael.chef@user.com", FirstName: "yael", LastName: "smith" }
-	listWant := map[string]UserVerboseResult{ "janechef": jane, "yaelsmith": yael }
+	jane := UserVerboseResult{Email: "jane.chef@user.com", FirstName: "jane", LastName: "chef_user"}
+	yael := UserVerboseResult{Email: "yael.chef@user.com", FirstName: "yael", LastName: "smith"}
+	listWant := map[string]UserVerboseResult{"janechef": jane, "yaelsmith": yael}
 	if !reflect.DeepEqual(users, listWant) {
 		t.Errorf("Verbose Users.List returned %+v, want %+v", users, listWant)
 	}

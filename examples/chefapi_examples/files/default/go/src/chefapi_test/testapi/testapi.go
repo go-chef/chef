@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 
@@ -59,11 +60,11 @@ func clientKey(filepath string) string {
 
 // chefCerts creats a cert pool for the self signed certs
 // reference https://forfuncsake.github.io/post/2017/08/trust-extra-ca-cert-in-go-app/
-func chefCerts() CertPool {
+func chefCerts() *x509.CertPool {
 	const localCertFile = "/var/opt/opscode/nginx/ca/testhost.crt"
 	certPool := x509.SystemCertPool()
 	if certPool == nil {
-		certPool = x509.NewCertPool
+		certPool = x509.NewCertPool()
 	}
 	// Read in the cert file
 	certs, err := ioutil.ReadFile(localCertFile)

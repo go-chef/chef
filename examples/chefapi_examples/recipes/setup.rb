@@ -1,4 +1,4 @@
-directory '/etc/chef/accepted_licenses' do
+fmt.Printf("Skip SSL %+v\n", skipssl)directory '/etc/chef/accepted_licenses' do
   recursive true
 end
 
@@ -40,4 +40,9 @@ apt_update 'update'
 execute 'apt upgrade' do
   command 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade'
   ignore_failure true
+end
+
+hosts '127.0.0.1' do
+  action :create
+  entries %w[localhost testhost]
 end

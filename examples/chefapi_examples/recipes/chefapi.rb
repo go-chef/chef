@@ -14,7 +14,9 @@ directory '/go/src/github.com/cenkalti' do
 end
 
 git '/go/src/github.com/go-chef/chef' do
+  revision 'tls'
   repository 'https://github.com/go-chef/chef.git'
+  action :sync
 end
 
 git '/go/src/github.com/cenkalti/backoff' do

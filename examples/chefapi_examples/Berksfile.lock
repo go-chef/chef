@@ -10,8 +10,6 @@ GRAPH
   chefapi_examples (0.1.0)
     chef-server (>= 0.0.0)
     fileutils (>= 0.0.0)
-    jn_hosts (>= 0.0.0)
     line (>= 0.0.0)
   fileutils (1.3.1)
-  jn_hosts (0.0.4)
   line (2.5.0)

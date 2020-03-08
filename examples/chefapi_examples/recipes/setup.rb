@@ -1,4 +1,4 @@
-fmt.Printf("Skip SSL %+v\n", skipssl)directory '/etc/chef/accepted_licenses' do
+directory '/etc/chef/accepted_licenses' do
   recursive true
 end
 
@@ -42,7 +42,8 @@ execute 'apt upgrade' do
   ignore_failure true
 end
 
-hosts '127.0.0.1' do
-  action :create
-  entries %w[localhost testhost]
+replace_or_add 'testhost for cert compatibility' do
+  path '/etc/hosts'
+  pattern '^127.0.0.1'
+  line '127.0.0.1 localhost testhost'
 end

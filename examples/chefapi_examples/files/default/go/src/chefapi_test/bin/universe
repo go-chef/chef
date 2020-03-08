@@ -7,4 +7,4 @@ BASE=$(dirname $0)
 . ${BASE}/setup
 . ${BASE}/creds
 
-go run ${BASE}/../cmd/universe/universe.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} false
+go run ${BASE}/../cmd/universe/universe.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

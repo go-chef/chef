@@ -7,4 +7,4 @@ BASE=$(dirname $0)
 . ${BASE}/setup
 . ${BASE}/creds
 
-go run ${BASE}/../cmd/status/status.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} false
+go run ${BASE}/../cmd/status/status.go ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}

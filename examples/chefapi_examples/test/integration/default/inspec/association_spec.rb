@@ -12,6 +12,6 @@ describe command('/go/src/chefapi_test/bin/association') do
   its('stdout') { should match(/^Deleted invitation [a-f0-9]+ for usrinvite \{Id:[a-f0-9]+ Orgname:test Username:usrinvite\}/) }
   its('stdout') { should match(/^User added: \{Username:usradd\}/) }
   its('stdout') { should match(/^Users list: \[\{User:\{Username:usradd\}\}\]/) }
-  its('stdout') { should match(/^User details: \{Username:usradd Email:usradd@domain.io DisplayName:UserAdd Fullname FirstName:usr LastName:add PublicKey:-----BEGIN PUBLIC KEY-----/) }
-  its('stdout') { should match(/^User deleted: \{Username:usradd Email:usradd@domain.io DisplayName:UserAdd Fullname FirstName:usr LastName:add PublicKey:-----BEGIN PUBLIC KEY-----/) }
+  its('stdout') { should match(/^User details: \{Username:usradd Email:usradd@domain.io DisplayName:UserAdd Fullname FirstName:usr LastName:add PublicKey:/) }
+  its('stdout') { should match(/^User deleted: \{Username:usradd Email:usradd@domain.io DisplayName:UserAdd Fullname FirstName:usr LastName:add PublicKey:/) }
 end

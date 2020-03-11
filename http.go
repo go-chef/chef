@@ -20,7 +20,7 @@ import (
 )
 
 // ChefVersion that we pretend to emulate
-const ChefVersion = "11.12.0"
+const ChefVersion = "14.0.0"
 
 // Body wraps io.Reader and adds methods for calculating hashes and detecting content
 type Body struct {
@@ -297,17 +297,18 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	vals := map[string]string{
-		"Method":             request.Method,
-		"Hashed Path":        HashStr(endpoint),
-		"Accept":             "application/json",
-		"X-Chef-Version":     ChefVersion,
-		"X-Ops-Timestamp":    time.Now().UTC().Format(time.RFC3339),
-		"X-Ops-UserId":       ac.ClientName,
-		"X-Ops-Sign":         "algorithm=sha1;version=1.0",
-		"X-Ops-Content-Hash": request.Header.Get("X-Ops-Content-Hash"),
+		"Method":                   request.Method,
+		"Hashed Path":              HashStr(endpoint),
+		"Accept":                   "application/json",
+		"X-Chef-Version":           ChefVersion,
+		"X-Ops-Server-API-Version": "1",
+		"X-Ops-Timestamp":          time.Now().UTC().Format(time.RFC3339),
+		"X-Ops-UserId":             ac.ClientName,
+		"X-Ops-Sign":               "algorithm=sha1;version=1.0",
+		"X-Ops-Content-Hash":       request.Header.Get("X-Ops-Content-Hash"),
 	}
 
-	for _, key := range []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"} {
+	for _, key := range []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"} {
 		request.Header.Set(key, vals[key])
 	}
 

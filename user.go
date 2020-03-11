@@ -16,17 +16,25 @@ type User struct {
 	Email                         string `json:"email,omitempty"`
 	ExternalAuthenticationUid     string `json:"external_authentication_uid,omitempty"` // this or password
 	FirstName                     string `json:"first_name,omitempty"`
-	FullName                      string `json:"full_name,omitempty"`
 	LastName                      string `json:"last_name,omitempty"`
 	MiddleName                    string `json:"middle_name,omitempty"`
 	Password                      string `json:"password,omitempty"`   // Valid password
-	PublicKey                     string `json:"public_key,omitempty"` // not for Create
+	CreateKey                     bool   `json:"create_key,omitempty"` // Cannot be passed with PublicKey
+	PublicKey                     string `json:"public_key,omitempty"` // Cannot be passed with CreateKey
 	RecoveryAuthenticationEnabled bool   `json:"recovery_authentication_enabled,omitempty"`
 }
 
 type UserResult struct {
-	Uri        string `json:"uri,omitempty"`
-	PrivateKey string `json:"private_key,omitempty"`
+	Uri     string  `json:"uri,omitempty"`
+	ChefKey ChefKey `json:"chef_key,omitempty"`
+}
+
+type ChefKey struct {
+	Name           string `json:"name"`
+	PublicKey      string `json:"public_key"`
+	ExpirationDate string `json:"expiration_date"`
+	Uri            string `json:"uri"`
+	PrivateKey     string `json:"private_key"`
 }
 
 type UserVerboseResult struct {
@@ -47,9 +55,8 @@ type UserKeyResult struct {
 	Expired string `json:"expired,omitempty"`
 }
 
-// /users GET
 // List lists the users in the Chef server.
-//
+// /users GET
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) List(filters ...string) (userlist map[string]string, err error) {
 	url := "users"
@@ -60,9 +67,8 @@ func (e *UserService) List(filters ...string) (userlist map[string]string, err e
 	return
 }
 
+// VerboseList lists the users in the Chef server in verbose format.
 // /users GET
-// List lists the users in the Chef server in verbose format.
-//
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVerboseResult, err error) {
 	url := "users"
@@ -74,8 +80,8 @@ func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVe
 	return
 }
 
+// Create Creates a User on the chef server
 // /users POST
-// Creates a User on the chef server
 //  201 =  sucesss
 //  400 - invalid  (missing display_name, email,( password or external) among other things)
 //        username must be lower case without spaces
@@ -120,11 +126,23 @@ func (e *UserService) Get(name string) (user User, err error) {
 	return
 }
 
+// Update updates a user on the Chef server.
+// /users/USERNAME PUT
+// 200 - updated
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+// 409 - new user name is already in use
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#users-name
+func (e *UserService) Update(name string, user User) (userUpdate UserResult, err error) {
+	url := fmt.Sprintf("users/%s", name)
+	body, err := JSONReader(user)
+	err = e.client.magicRequestDecoder("PUT", url, body, &userUpdate)
+	return
+}
+
 // TODO:
-// API /users/USERNAME GET external_authentication_uid and email filters - filters is implemented. This may be ok.
-// note that the combination of verbose and filters is not supported
-// API /users/USERNAME GET verbose parameter
-// API /users/USERNAME PUT  issue #145
 // API /users/USERNAME/keys GET  issue #130
 // API /users/USERNAME/keys POST issue #130
 // API /users/USERNAME/keys/Key DELETE issue #130

@@ -20,5 +20,5 @@ the results. Running the bin commands by adding the -tags debug option will show
 
 ## Creating a client
 On the test image /go/src/chefapi_test/testapi/testapi.go has code that creates a client
-for use by other api calls. For the purposes of testing, using the pivotal user and key
-for all the tests works but seems like a really bad idea for any production use.
+for use by other api calls. For the purposes of testing it uses the pivotal user and key
+for all the tests.

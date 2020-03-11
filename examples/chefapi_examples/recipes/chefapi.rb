@@ -14,7 +14,7 @@ directory '/go/src/github.com/cenkalti' do
 end
 
 git '/go/src/github.com/go-chef/chef' do
-  revision 'tls'
+  revision node['repo_version']
   repository 'https://github.com/go-chef/chef.git'
   action :sync
 end

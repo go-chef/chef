@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"github.com/r3labs/diff"
 )
 
 var (
@@ -203,10 +204,171 @@ func TestUserUpdate(t *testing.T) {
 	user := User{UserName: "user_name1", Email: "user_name1@mail.com", Password: "dummypass"}
 	userresult, err := client.Users.Update("user_name1", user)
 	if err != nil {
-		t.Errorf("Users.Create returned error: %v", err)
+		t.Errorf("Users.Update returned error: %v", err)
 	}
 	Want := UserResult{Uri: "https://chefserver/users/user_name1"}
 	if !reflect.DeepEqual(userresult, Want) {
-		t.Errorf("Users.Create returned %+v, want %+v", userresult, Want)
+		t.Errorf("Users.Update returned %+v, want %+v", userresult, Want)
+	}
+}
+
+func TestListUserKeys(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user1/keys", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET":
+			fmt.Fprintf(w, `[
+			       {
+				       "name": "default",
+                                	"uri": "https://chefserver/users/user1/keys/default",
+                                	"expired": false
+                         	}
+		 	]`)
+		}
+	})
+
+	keyresult, err := client.Users.ListUserKeys("user1")
+	if err != nil {
+		t.Errorf("Users.ListUserKeys returned error: %v", err)
+	}
+	defaultItem := UserKeyItem{
+		KeyName: "default",
+		Uri:     "https://chefserver/users/user1/keys/default",
+		Expired: false,
+	}
+	Want := []UserKeyItem{defaultItem}
+	if !reflect.DeepEqual(keyresult, Want) {
+		t.Errorf("Users.ListUserKeys returned %+v, want %+v", keyresult, Want)
+	}
+}
+
+func TestAddUserKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user1/keys", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "POST":
+			fmt.Fprintf(w, `{
+             			        "name": "newkey",
+                                	"uri": "https://chefserver/users/user1/keys/newkey",
+                                	"expired": false
+                         	}`)
+		}
+	})
+
+	keyadd := UserKey{
+		KeyName:        "newkey",
+		PublicKey:      "RSA KEY",
+		ExpirationDate: "infinity",
+	}
+	keyresult, err := client.Users.AddUserKey("user1", keyadd)
+	if err != nil {
+		t.Errorf("Users.AddUserKey returned error: %v", err)
+	}
+	Want := UserKeyItem{
+		KeyName: "newkey",
+		Uri:     "https://chefserver/users/user1/keys/newkey",
+		Expired: false,
+	}
+	if !reflect.DeepEqual(keyresult, Want) {
+		t.Errorf("Users.AddUserKey returned %+v, want %+v", keyresult, Want)
+	}
+}
+
+func TestDeleteUserKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user1/keys/newkey", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "DELETE":
+			fmt.Fprintf(w, `{
+             			        "name": "newkey",
+                                	"public_key": "RSA KEY",
+                                	"expiration_date": "infinity"
+                         	}`)
+		}
+	})
+
+	keyresult, err := client.Users.DeleteUserKey("user1", "newkey")
+	if err != nil {
+		t.Errorf("Users.DeleteUserKey returned error: %v", err)
+	}
+	Want := UserKey{
+		KeyName:        "newkey",
+		PublicKey:      "RSA KEY",
+		ExpirationDate: "infinity",
+	}
+	if !reflect.DeepEqual(keyresult, Want) {
+		diff, _ := diff.Diff(keyresult, Want)
+		t.Errorf("Users.DeleteUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
+	}
+}
+
+func TestGetUserKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user1/keys/newkey", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET":
+			fmt.Fprintf(w, `{
+             			        "name": "newkey",
+                                	"public_key": "RSA KEY",
+                                	"expiration_date": "infinity"
+                         	}`)
+		}
+	})
+
+	keyresult, err := client.Users.GetUserKey("user1", "newkey")
+	if err != nil {
+		t.Errorf("Users.GetUserKey returned error: %v", err)
+	}
+	Want := UserKey{
+		KeyName:        "newkey",
+		PublicKey:      "RSA KEY",
+		ExpirationDate: "infinity",
+	}
+	if !reflect.DeepEqual(keyresult, Want) {
+		diff, _ := diff.Diff(keyresult, Want)
+		t.Errorf("Users.GetUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
+	}
+}
+
+func TestUpdateUserKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/user1/keys/newkey", func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "PUT":
+			fmt.Fprintf(w, `{
+             			        "name": "newkey",
+                                	"public_key": "RSA NEW KEY",
+                                	"expiration_date": "infinity"
+                         	}`)
+		}
+	})
+
+	updkey := UserKey{
+		KeyName:        "newkey",
+		PublicKey:      "RSA NEW KEY",
+		ExpirationDate: "infinity",
+	}
+	keyresult, err := client.Users.UpdateUserKey("user1", "newkey", updkey)
+	if err != nil {
+		t.Errorf("Users.UpdateUserKey returned error: %v", err)
+	}
+	Want := UserKey{
+		KeyName:        "newkey",
+		PublicKey:      "RSA NEW KEY",
+		ExpirationDate: "infinity",
+	}
+	if !reflect.DeepEqual(keyresult, Want) {
+		diff, _ := diff.Diff(keyresult, Want)
+		t.Errorf("Users.UpdateUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
 	}
 }

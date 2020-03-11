@@ -49,10 +49,10 @@ type UserKey struct {
 	ExpirationDate string `json:"expiration_date,omitempty"`
 }
 
-type UserKeyResult struct {
+type UserKeyItem struct {
 	KeyName string `json:"name,omitempty"`
 	Uri     string `json:"uri,omitempty"`
-	Expired string `json:"expired,omitempty"`
+	Expired bool   `json:"expired,omitempty"`
 }
 
 // List lists the users in the Chef server.
@@ -142,9 +142,75 @@ func (e *UserService) Update(name string, user User) (userUpdate UserResult, err
 	return
 }
 
-// TODO:
-// API /users/USERNAME/keys GET  issue #130
-// API /users/USERNAME/keys POST issue #130
-// API /users/USERNAME/keys/Key DELETE issue #130
-// API /users/USERNAME/keys/Key GET issue #130
-// API /users/USERNAME/keys/Key PUT issue #130
+// ListUserKeys gets all the keys for a user.
+// /users/USERNAME/keys GET
+// 200 - successful
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+//
+// Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
+func (e *UserService) ListUserKeys(name string) (userkeys []UserKeyItem, err error) {
+	url := fmt.Sprintf("users/%s/keys", name)
+	err = e.client.magicRequestDecoder("GET", url, nil, &userkeys)
+	return
+}
+
+// AddUserKey add a key for a user on the Chef server.
+// /users/USERNAME/keys POST
+// 201 - created
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+// 409 - new name is already in use
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#users-name
+func (e *UserService) AddUserKey(name string, keyadd UserKey) (userkey UserKeyItem, err error) {
+	url := fmt.Sprintf("users/%s/keys", name)
+	body, err := JSONReader(keyadd)
+	err = e.client.magicRequestDecoder("POST", url, body, &userkey)
+	return
+}
+
+// DeleteUserKey delete a key for a user.
+// /users/USERNAME/keys/KEYNAME DELETE
+// 200 - successful
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+//
+// Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
+func (e *UserService) DeleteUserKey(username string, keyname string) (userkey UserKey, err error) {
+	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
+	err = e.client.magicRequestDecoder("DELETE", url, nil, &userkey)
+	return
+}
+
+// GetUserKey gets a key for a user.
+// /users/USERNAME/keys/KEYNAME GET
+// 200 - successful
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+//
+// Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
+func (e *UserService) GetUserKey(username string, keyname string) (userkey UserKey, err error) {
+	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
+	err = e.client.magicRequestDecoder("GET", url, nil, &userkey)
+	return
+}
+
+// UpdateUserKey updates a key for a user.
+// /users/USERNAME/keys/KEYNAME PUT
+// 200 - successful
+// 401 - not authenticated
+// 403 - not authorizated
+// 404 - user doesn't exist
+//
+// Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
+func (e *UserService) UpdateUserKey(username string, keyname string, keyupd UserKey) (userkey UserKey, err error) {
+	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
+	body, err := JSONReader(keyupd)
+	err = e.client.magicRequestDecoder("PUT", url, body, &userkey)
+	return
+}

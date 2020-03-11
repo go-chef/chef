@@ -41,3 +41,9 @@ execute 'apt upgrade' do
   command 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade'
   ignore_failure true
 end
+
+replace_or_add 'testhost for cert compatibility' do
+  path '/etc/hosts'
+  pattern '^127.0.0.1'
+  line '127.0.0.1 localhost testhost'
+end

@@ -30,9 +30,9 @@ type UserResult struct {
 }
 
 type UserVerboseResult struct {
-	Email      string `json:"email,omitempty"`
-	FirstName  string `json:"first_name,omitempty"`
-	LastName   string `json:"last_name,omitempty"`
+	Email     string `json:"email,omitempty"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
 }
 
 type UserKey struct {
@@ -49,7 +49,7 @@ type UserKeyResult struct {
 
 // /users GET
 // List lists the users in the Chef server.
-// 
+//
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) List(filters ...string) (userlist map[string]string, err error) {
 	url := "users"
@@ -66,7 +66,7 @@ func (e *UserService) List(filters ...string) (userlist map[string]string, err e
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVerboseResult, err error) {
 	url := "users"
-        filters = append(filters, "verbose=true")
+	filters = append(filters, "verbose=true")
 	if len(filters) > 0 {
 		url += "?" + strings.Join(filters, "&")
 	}

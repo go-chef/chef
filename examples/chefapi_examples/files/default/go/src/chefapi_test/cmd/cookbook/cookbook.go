@@ -102,13 +102,13 @@ func main() {
 }
 
 func addSampleCookbooks() (err error) {
-	cmd := exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-s", "https://testhost/organizations/test", "-u", "pivotal", "-k", "/etc/opscode/pivotal.pem", "-o", "/fixtures/chef/cb/0.1.0")
+	cmd := exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-c", "/go/src/chefapi_test/bin/knife.rb", "-o", "/fixtures/chef/cb/0.1.0")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 	        fmt.Println(os.Stderr, "Issue loading cookbook:", err)
 	}
 	fmt.Printf("Load 0.1.0 cookbook versions: %+v", string(out))
-	cmd = exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-s", "https://testhost/organizations/test", "-u", "pivotal", "-k", "/etc/opscode/pivotal.pem", "-o", "/fixtures/chef/cb/0.2.0")
+	cmd = exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-c", "/go/src/chefapi_test/bin/knife.rb", "-o", "/fixtures/chef/cb/0.2.0")
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 	        fmt.Println(os.Stderr, "Issue loading cookbook:", err)

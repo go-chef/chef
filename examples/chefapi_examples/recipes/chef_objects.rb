@@ -4,11 +4,6 @@ execute 'Set the host name' do
   command 'hostname testhost'
 end
 
-append_if_no_line 'add hostname to /etc/hosts' do
-  line '127.0.01 testhost'
-  path '/etc/hosts'
-end
-
 # Create an organization
 
 execute 'create test organization' do

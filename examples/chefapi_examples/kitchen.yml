@@ -21,3 +21,4 @@ suites:
     attributes:
       chef-server:
         accept_license: true
+      repo_version: <%= `git rev-parse --abbrev-ref HEAD` %>

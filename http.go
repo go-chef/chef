@@ -74,6 +74,9 @@ type Config struct {
 	// When set to false (default) this will enable SSL Cert Verification. If you need to disable Cert Verification set to true
 	SkipSSL bool
 
+	// RootCAs is a reference to x509.CertPool for TLS
+	RootCAs *x509.CertPool
+
 	// Time to wait in seconds before giving up on a request to the server
 	Timeout int
 }
@@ -137,13 +140,17 @@ func NewClient(cfg *Config) (*Client, error) {
 
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
+	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
+	if cfg.RootCAs != nil {
+		tlsConfig.RootCAs = cfg.RootCAs
+	}
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}).Dial,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: cfg.SkipSSL},
+		TLSClientConfig:     tlsConfig,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
 

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-chef/chef"
 	"chefapi_test/testapi"
+	"github.com/go-chef/chef"
 )
 
 func main() {

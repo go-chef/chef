@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Update since testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+
+go run ${BASE}/../cmd/universe/updated_since.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

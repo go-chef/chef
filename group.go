@@ -2,7 +2,7 @@ package chef
 
 import "fmt"
 
-type oroupService struct {
+type GroupService struct {
 	client *Client
 }
 
@@ -54,7 +54,7 @@ func (e *GroupService) Create(group Group) (data *GroupResult, err error) {
 // Update a group on the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#groups
-// Should this be name and group attributes?  We might want to be 
+// Should this be name and group attributes?  We might want to be
 // able to change the name.
 func (e *GroupService) Update(g Group) (group Group, err error) {
 	url := fmt.Sprintf("groups/%s", g.Name)

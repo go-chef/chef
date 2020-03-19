@@ -82,7 +82,7 @@ func (d *DataBagService) CreateItem(databagName string, databagItem DataBagItem)
 
 // DeleteItem deletes an item from a data bag
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#delete-8
-func (d *DataBagService) DeleteItem(databagName, databagItem string) (err error) {
+func (d *DataBagService) DeleteItem(databagName string, databagItem string) (err error) {
 	path := fmt.Sprintf("data/%s/%s", databagName, databagItem)
 	err = d.client.magicRequestDecoder("DELETE", path, nil, nil)
 	return
@@ -90,7 +90,7 @@ func (d *DataBagService) DeleteItem(databagName, databagItem string) (err error)
 
 // GetItem gets an item from a data bag
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#get-21
-func (d *DataBagService) GetItem(databagName, databagItem string) (item DataBagItem, err error) {
+func (d *DataBagService) GetItem(databagName string, databagItem string) (item DataBagItem, err error) {
 	path := fmt.Sprintf("data/%s/%s", databagName, databagItem)
 	err = d.client.magicRequestDecoder("GET", path, nil, &item)
 	return
@@ -98,8 +98,7 @@ func (d *DataBagService) GetItem(databagName, databagItem string) (item DataBagI
 
 // UpdateItem updates an item in a data bag
 //    Chef API Docs: https://docs.chef.io/api_chef_server/#put-6
-// TODO: doesn't agree with the documentation for the return
-func (d *DataBagService) UpdateItem(databagName, databagItemId string, databagItem DataBagItem) (err error) {
+func (d *DataBagService) UpdateItem(databagName string, databagItemId string, databagItem DataBagItem) (err error) {
 	body, err := JSONReader(databagItem)
 	if err != nil {
 		return

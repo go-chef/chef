@@ -193,7 +193,7 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 		return err
 	}
 
-	debug("Request: %+v \n", req)
+	debug("\n\nRequest: %+v \n", req)
 	res, err := c.Do(req, v)
 	if res != nil {
 		defer res.Body.Close()
@@ -222,7 +222,7 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	// parse and encode Querystring Values
 	values := req.URL.Query()
 	req.URL.RawQuery = values.Encode()
-	debug("Encoded url %+v", u)
+	debug("Encoded url %+v\n", u)
 
 	myBody := &Body{body}
 

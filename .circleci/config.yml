@@ -45,6 +45,7 @@ jobs:
       - run: ls -Rl
       - run: go get 
       - run: go get github.com/ctdk/goiardi/chefcrypto
+      - run: go get github.com/r3labs/diff
       - run: go get github.com/smartystreets/goconvey/convey 
       - run: go get github.com/stretchr/testify/assert
       - run: go vet

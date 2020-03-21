@@ -10,6 +10,8 @@ verifier:
 
 platforms:
   - name: ubuntu-18.04
+    driver_config:
+      vm_hostname: localhost
 
 suites:
   - name: default

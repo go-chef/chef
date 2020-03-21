@@ -63,8 +63,8 @@ func main() {
 	fmt.Printf("List initial user usr3 keys %+v\n", userkeys)
 
 	// Add a key to a user
-	keyadd := chef.UserKey{
-		KeyName: "newkey",
+	keyadd := chef.AccessKey{
+		Name: "newkey",
 		PublicKey: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoYyN0AIhUh7Fw1+gQtR+ \n0/HY3625IUlVheoUeUz3WnsTrUGSSS4fHvxUiCJlNni1sQvcJ0xC9Bw3iMz7YVFO\nWz5SeKmajqKEnNywN8/NByZhhlLdBxBX/UN04/7aHZMoZxrrjXGLcyjvXN3uxyCO\nyPY989pa68LJ9jXWyyfKjCYdztSFcRuwF7tWgqnlsc8pve/UaWamNOTXQnyrQ6Dp\ndn+1jiNbEJIdxiza7DJMH/9/i/mLIDEFCLRPQ3RqW4T8QrSbkyzPO/iwaHl9U196\n06Ajv1RNnfyHnBXIM+I5mxJRyJCyDFo/MACc5AgO6M0a7sJ/sdX+WccgcHEVbPAl\n1wIDAQAB \n-----END PUBLIC KEY-----\n\n",
 		ExpirationDate: "infinity",
 	}
@@ -75,7 +75,7 @@ func main() {
 	fmt.Printf("List after add usr1 keys %+v\n", userkeys)
 
 	// Add a defaultkey to user usr3
-	keyadd.KeyName = "default"
+	keyadd.Name = "default"
 	keyout, err = addUserKey(client, "usr3", keyadd)
 	fmt.Printf("Add usr3 key %+v\n", keyout)
 	// List the user keys after adding
@@ -83,7 +83,7 @@ func main() {
 	fmt.Printf("List after add usr3 keys %+v\n", userkeys)
 
 	// Get key detail
-	keydetail, err := client.Users.GetUserKey("usr1", "default")
+	keydetail, err := client.Users.GetKey("usr1", "default")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error displaying key detail %+v\n", err)
 	}
@@ -91,15 +91,15 @@ func main() {
 	fmt.Printf("Key detail usr1 default %+v\n", keyfold)
 
 	// update a key
-	keyadd.KeyName = "default"
-	keyupdate, err := client.Users.UpdateUserKey("usr1", "default", keyadd)
+	keyadd.Name = "default"
+	keyupdate, err := client.Users.UpdateKey("usr1", "default", keyadd)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error updating usr1 default key%+v\n", err)
 	}
         keyfold = strings.Replace(fmt.Sprintf("%+v", keyupdate), "\n","",-1)
 	fmt.Printf("Key update output usr1 default %+v\n", keyfold)
 	// Get key detail after update
-	keydetail, err = client.Users.GetUserKey("usr1", "default")
+	keydetail, err = client.Users.GetKey("usr1", "default")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error displaying key detail %+v\n", err)
 	}
@@ -107,14 +107,14 @@ func main() {
 	fmt.Printf("Updated key detail usr1 default %+v\n", keyfold)
 
 	// delete the key
-	keydel, err := client.Users.DeleteUserKey("usr1", "default")
+	keydel, err := client.Users.DeleteKey("usr1", "default")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error deleting key %+v\n", err)
 	}
         keyfold = strings.Replace(fmt.Sprintf("%+v", keydel), "\n","",-1)
 	fmt.Printf("List delete result usr1 keys %+v\n", keyfold)
 	// list the key after delete - expect 404
-	keydetail, err = client.Users.GetUserKey("usr1", "default")
+	keydetail, err = client.Users.GetKey("usr1", "default")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error displaying key detail %+v\n", err)
 	}
@@ -131,8 +131,8 @@ func main() {
 }
 
 // listUserKeys uses the chef server api to show the keys for a user
-func listUserKeys(client *chef.Client, name string) (userkeys []chef.UserKeyItem) {
-	userkeys, err := client.Users.ListUserKeys(name)
+func listUserKeys(client *chef.Client, name string) (userkeys []chef.KeyItem) {
+	userkeys, err := client.Users.ListKeys(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue showing keys for user %s: %+v\n", name, err)
 	}
@@ -140,8 +140,8 @@ func listUserKeys(client *chef.Client, name string) (userkeys []chef.UserKeyItem
 }
 
 // addUserKey uses the chef server api to add a key to user
-func addUserKey(client *chef.Client, name string, keyadd chef.UserKey) (userkey chef.UserKeyItem, err error) {
-	userkey, err = client.Users.AddUserKey(name, keyadd)
+func addUserKey(client *chef.Client, name string, keyadd chef.AccessKey) (userkey chef.KeyItem, err error) {
+	userkey, err = client.Users.AddKey(name, keyadd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue deleting org:", err)
 	}

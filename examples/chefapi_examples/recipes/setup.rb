@@ -42,8 +42,8 @@ execute 'apt upgrade' do
   ignore_failure true
 end
 
-replace_or_add 'testhost for cert compatibility' do
-  path '/etc/hosts'
-  pattern '^127.0.0.1'
-  line '127.0.0.1 localhost testhost'
-end
+# replace_or_add 'testhost for cert compatibility' do
+#   path '/etc/hosts'
+#   pattern '^127.0.0.1'
+#   line '127.0.0.1 localhost testhost'
+# end

@@ -74,6 +74,7 @@ func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 
 func cookbookData() string {
 	return `
+
 {
   "version": "0.2.1",
   "name": "foo-0.2.1",

@@ -1,0 +1,19 @@
+{
+	"status": "pong",
+	"upstreams": {
+		"chef_elasticsearch": "pong",
+		"chef_sql": "pong",
+		"chef_index": "pong",
+		"oc_chef_authz": "pong",
+		"data_collector": "pong"
+	},
+	"keygen": {
+		"keys": 10,
+		"max": 10,
+		"max_workers": 2,
+		"cur_max_workers": 2,
+		"inflight": 0,
+		"avail_workers": 2,
+		"start_size": 0
+	}
+}

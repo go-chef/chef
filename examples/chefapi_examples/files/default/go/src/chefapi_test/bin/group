@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Group testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+go run ${BASE}/../cmd/group/group.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

@@ -143,16 +143,19 @@ func TestEnvironmentsService_Put(t *testing.T) {
 
 func TestEnvironmentsService_EnvironmentListResultString(t *testing.T) {
 	e := &EnvironmentResult{"_default": "https://api.opscode.com/organizations/org_name/environments/_default", "webserver": "https://api.opscode.com/organizations/org_name/environments/webserver"}
+	estr := e.String()
 	want := "_default => https://api.opscode.com/organizations/org_name/environments/_default\nwebserver => https://api.opscode.com/organizations/org_name/environments/webserver\n"
-	if e.String() != want {
-		t.Errorf("EnvironmentResult.String returned:\n%+v\nwant:\n%+v\n", e.String(), want)
+	want2 := "webserver => https://api.opscode.com/organizations/org_name/environments/webserver\n_default => https://api.opscode.com/organizations/org_name/environments/_default\n"
+	if estr != want && estr != want2 {
+		t.Errorf("EnvironmentResult.String returned:\n%+v\nwant:\n%+v\n", estr, want)
 	}
 }
 
 func TestEnvironmentsService_EnvironmentCreateResultString(t *testing.T) {
 	e := &EnvironmentResult{"uri": "http://localhost:4000/environments/dev"}
+	estr := e.String()
 	want := "uri => http://localhost:4000/environments/dev\n"
-	if e.String() != want {
-		t.Errorf("EnvironmentResult.String returned %+v, want %+v", e.String(), want)
+	if estr != want {
+		t.Errorf("EnvironmentResult.String returned %+v, want %+v", estr, want)
 	}
 }

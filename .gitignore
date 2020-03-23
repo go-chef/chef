@@ -26,3 +26,6 @@ _testmain.go
 
 # vim
 *.swp
+
+# cookbook
+*.kitchen

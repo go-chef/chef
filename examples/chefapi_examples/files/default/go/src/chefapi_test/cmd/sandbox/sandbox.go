@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cenkalti/backoff"
 	"chefapi_test/testapi"
 )
 
@@ -60,9 +59,9 @@ func main() {
 				return err
 			}
 
-			// with exp backoff 
+			// with exp backoff
 			err = upload
-                        fmt.Println(os.Stderr, "Issue posting files to the sandbox: ", err)
+			fmt.Println(os.Stderr, "Issue posting files to the sandbox: ", err)
 			// TODO: backoff of 4xx and 5xx doesn't make sense
 			// err = backoff.Retry(upload, backoff.NewExponentialBackOff())
 			// if err != nil {

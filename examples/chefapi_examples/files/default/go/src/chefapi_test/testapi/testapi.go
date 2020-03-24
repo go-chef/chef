@@ -61,8 +61,8 @@ func clientKey(filepath string) string {
 // chefCerts creats a cert pool for the self signed certs
 // reference https://forfuncsake.github.io/post/2017/08/trust-extra-ca-cert-in-go-app/
 func chefCerts() *x509.CertPool {
-	const localCertFile = "/var/opt/opscode/nginx/ca/localhost.crt"
-	certPool, _  := x509.SystemCertPool()
+	const localCertFile = "/var/opt/opscode/nginx/ca/testhost.crt"
+	certPool, _ := x509.SystemCertPool()
 	if certPool == nil {
 		certPool = x509.NewCertPool()
 	}

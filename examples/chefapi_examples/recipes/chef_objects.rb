@@ -1,11 +1,6 @@
 # Add chef objects to the server for testing
 
-execute 'Set the host name' do
-  command 'hostname localhost'
-end
-
 # Create an organization
-
 execute 'create test organization' do
   command '/opt/opscode/bin/chef-server-ctl org-create test test_org'
   not_if '/opt/opscode/bin/chef-server-ctl org-list |grep test'

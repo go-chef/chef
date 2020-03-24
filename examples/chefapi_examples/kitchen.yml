@@ -1,6 +1,9 @@
 ---
 driver:
   name: vagrant
+  synced_folders:
+    - ['../../', '/go/src/github.com/chef/go-chef']
+    - ['files/default/go/src/chefapi_test', '/go/src/chefapi_test']
 
 provisioner:
   name: chef_zero
@@ -23,4 +26,3 @@ suites:
     attributes:
       chef-server:
         accept_license: true
-      repo_version: <%= `git rev-parse --abbrev-ref HEAD` %>

@@ -1,0 +1,26 @@
+---
+driver:
+  name: vagrant
+  synced_folders:
+    - ['../', '/go/src/github.com/chef/go-chef']
+    - ['../examples/chefapi_test', '/go/src/chefapi_test']
+
+provisioner:
+  name: chef_zero
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: ubuntu-18.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[test_chef_server::setup]
+      - recipe[test_chef_server::default]
+      - recipe[test_chef_server::chef_objects]
+      - recipe[test_chef_server::chefapi]
+    attributes:
+      chef-server:
+        accept_license: true

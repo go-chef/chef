@@ -3,7 +3,7 @@
 # Create an organization
 execute 'create test organization' do
   command '/opt/opscode/bin/chef-server-ctl org-create test test_org'
-  not_if '/opt/opscode/bin/chef-server-ctl org-list |grep test'
+  not_if '/opt/opscode/bin/chef-server-ctl org-list | grep test'
 end
 
 remote_directory '/fixtures/chef/cb' do

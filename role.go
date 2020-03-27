@@ -15,6 +15,7 @@ type Role struct {
 	ChefType           string      `json:"chef_type"`
 	Description        string      `json:"description"`
 	RunList            RunList     `json:"run_list"`
+	EnvRunList         EnvRunList  `json:"env_run_lists"`
 	DefaultAttributes  interface{} `json:"default_attributes,omitempty"`
 	OverrideAttributes interface{} `json:"override_attributes,omitempty"`
 	JsonClass          string      `json:"json_class,omitempty"`

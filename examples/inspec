@@ -1,1 +1,1 @@
-chefapi_examples/test/integration/default/inspec
+../test_chef_server/test/integration/default/inspec/

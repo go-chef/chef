@@ -1,0 +1,10 @@
+{
+    "demo_policy_group": {
+      "uri": "https://api.chef.io/organizations/wsorg/policy_groups/demo_policy_group",
+      "policies": {
+        "base": {
+          "revision_id": "8228b0e381fe1de3ee39bf51e93029dbbdcecc61fb5abea4ca8c82591c0b529b"
+        }
+      }
+    }
+}

@@ -1,0 +1,7 @@
+CHEFUSER='pivotal'
+KEYFILE='/etc/opscode/pivotal.pem'
+CHEFGLOBALURL='https://testhost/'
+# The trailing / on the url is critically important.  The api does not work without it.
+CHEFORGANIZATIONURL='https://testhost/organizations/test/'
+# Use the self signed certificates
+SSLBYPASS='false'

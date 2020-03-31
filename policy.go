@@ -1,9 +1,5 @@
 package chef
 
-import (
-	"fmt"
-)
-
 // PolicyService  is the service for interacting with chef server policies endpoint
 type PolicyService struct {
 	client *Client
@@ -76,5 +72,9 @@ func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+=======
+func (e *PolicyService) List() (data PoliciesGetResponse, err error) {
+	err = e.client.magicRequestDecoder("GET", "policies", nil, &data)
+>>>>>>> 8fe0f4a... Policy and Policy Group API calls initial work
 	return
 }

@@ -1,5 +1,9 @@
 package chef
 
+import (
+	"fmt"
+)
+
 // PolicyService  is the service for interacting with chef server policies endpoint
 type PolicyService struct {
 	client *Client
@@ -21,9 +25,9 @@ type PolicyRevisionDetail map[string]interface{}
 // RevisionDetailsResponse is returned from the chef-server for Get Requests to /policies/<policy-name>/revisions/<rev-id>
 type RevisionDetailsResponse struct {
 	RevisionID           string                  `json:"revision_id,omitempty"`
-	Name                 string                  `json:"name,omitempty"`
-	RunList              []string                `json:"run_list,omitempty"`
-	IncludePolicyLocks   []string                `json:"included_policy_locks,omitempty"`
+	Name                 string                  `json:"name",omitempty`
+	RunList              []string                `json:"run_list,omitempty`
+	IncludePolicLocks    []string                `json:"included_policy_locks,omitempty"`
 	CookbookLocks        map[string]CookbookLock `json:"cookbook_locks,omitempty"`
 	DefaultAttributes    map[string]interface{}  `json:"default_attributes,omitempty"`
 	OverrideAttributes   map[string]interface{}  `json:"override_attributes,omitempty"`
@@ -43,19 +47,19 @@ type SCMDetail struct {
 	Remote                     string   `json:"remote,omitempty"`
 	Revision                   string   `json:"revision,omitempty"`
 	WorkingTreeClean           bool     `json:"working_tree_clean,omitempty"`
-	Published                  bool     `json:"published,omitempty"`
+	published                  bool     `json:"published,omitempty"`
 	SynchronizedRemoteBranches []string `json:"synchronized_remote_branches,omitempty"`
 }
 type SolutionDep struct {
-	PolicyFile   [][]string  `json:"Policyfile,omitempty"`
-	Dependencies interface{} `json:"dependencies,omitempty"`
+	PolicyFile    [][]string  `json:"Policyfile,omitempty"`
+	Depdendencies interface{} `json:"dependencies,omitempty"`
 }
 
 // List lists the policies in the Chef server.
 // Chef API docs: https://docs.chef.io/api_chef_server/#policies
 // GET /policies
-func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
-	err = c.client.magicRequestDecoder("GET", "policies", nil, &data)
+func (e *PolicyService) List() (data PoliciesGetResponse, err error) {
+	err = e.client.magicRequestDecoder("GET", "policies", nil, &data)
 	return
 }
 
@@ -72,9 +76,5 @@ func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
-=======
-func (e *PolicyService) List() (data PoliciesGetResponse, err error) {
-	err = e.client.magicRequestDecoder("GET", "policies", nil, &data)
->>>>>>> 8fe0f4a... Policy and Policy Group API calls initial work
 	return
 }

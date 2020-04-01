@@ -106,8 +106,4 @@ func TestGetPolicyRevision(t *testing.T) {
 		t.Error("Expected hardening policy version to be 0.1.0, got: ", val.Version)
 	}
 
-	//if data.CookbookLocks["hardening"].Version != "0.1.0" {
-	//	t.Fatal("Expected hardening policy version to be 0.1.0, got: %s", data.CookbookLocks["hardening"].Version)
-	//}
-
 }

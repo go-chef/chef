@@ -1,11 +1,11 @@
 package chef
 
-// PolicyService  is the service for interacting with chef server policies endpoint
+// PolicyGroupService  is the service for interacting with chef server policies endpoint
 type PolicyGroupService struct {
 	client *Client
 }
 
-// PolicyGetResponse is returned from the chef-server for Get Requests to /policies
+// PolicyGroupGetResponse is returned from the chef-server for Get Requests to /policy_groups
 type PolicyGroupGetResponse map[string]PolicyGroup
 
 type PolicyGroup struct {

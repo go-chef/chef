@@ -3,13 +3,14 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/r3labs/diff"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/r3labs/diff"
 )
 
 var (
@@ -353,12 +354,12 @@ func TestUpdateUserKey(t *testing.T) {
 		}
 	})
 
-	updkey := UserKey{
+	updKey := UserKey{
 		KeyName:        "newkey",
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}
-	keyresult, err := client.Users.UpdateUserKey("user1", "newkey", updkey)
+	keyresult, err := client.Users.UpdateUserKey("user1", "newkey", updKey)
 	if err != nil {
 		t.Errorf("Users.UpdateUserKey returned error: %v", err)
 	}

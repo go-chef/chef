@@ -53,6 +53,7 @@ type Client struct {
 	Nodes            *NodeService
 	Organizations    *OrganizationService
 	Policies         *PolicyService
+	PolicyGroups     *PolicyGroupService
 	Principals       *PrincipalService
 	Roles            *RoleService
 	Sandboxes        *SandboxService
@@ -61,8 +62,6 @@ type Client struct {
 	Universe         *UniverseService
 	UpdatedSince     *UpdatedSinceService
 	Users            *UserService
-	Policies         *PolicyService
-	PolicyGroups     *PolicyGroupService
 }
 
 // Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object

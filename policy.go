@@ -27,7 +27,7 @@ type RevisionDetailsResponse struct {
 	RevisionID           string                  `json:"revision_id,omitempty"`
 	Name                 string                  `json:"name",omitempty`
 	RunList              []string                `json:"run_list,omitempty`
-	IncludePolicLocks    []string                `json:"included_policy_locks,omitempty"`
+	IncludePolicyLocks   []string                `json:"included_policy_locks,omitempty"`
 	CookbookLocks        map[string]CookbookLock `json:"cookbook_locks,omitempty"`
 	DefaultAttributes    map[string]interface{}  `json:"default_attributes,omitempty"`
 	OverrideAttributes   map[string]interface{}  `json:"override_attributes,omitempty"`
@@ -47,19 +47,19 @@ type SCMDetail struct {
 	Remote                     string   `json:"remote,omitempty"`
 	Revision                   string   `json:"revision,omitempty"`
 	WorkingTreeClean           bool     `json:"working_tree_clean,omitempty"`
-	published                  bool     `json:"published,omitempty"`
+	Published                  bool     `json:"published,omitempty"`
 	SynchronizedRemoteBranches []string `json:"synchronized_remote_branches,omitempty"`
 }
 type SolutionDep struct {
-	PolicyFile    [][]string  `json:"Policyfile,omitempty"`
-	Depdendencies interface{} `json:"dependencies,omitempty"`
+	PolicyFile   [][]string  `json:"Policyfile,omitempty"`
+	Dependencies interface{} `json:"dependencies,omitempty"`
 }
 
 // List lists the policies in the Chef server.
 // Chef API docs: https://docs.chef.io/api_chef_server/#policies
 // GET /policies
-func (e *PolicyService) List() (data PoliciesGetResponse, err error) {
-	err = e.client.magicRequestDecoder("GET", "policies", nil, &data)
+func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
+	err = c.client.magicRequestDecoder("GET", "policies", nil, &data)
 	return
 }
 

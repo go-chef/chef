@@ -16,6 +16,7 @@ type Node struct {
 	DefaultAttributes   map[string]interface{} `json:"default,omitempty"`
 	OverrideAttributes  map[string]interface{} `json:"override,omitempty"`
 	JsonClass           string                 `json:"json_class,omitempty"`
+	//TODO: use the RunList struct for this
 	RunList             []string               `json:"run_list,omitempty"`
 	PolicyName          string                 `json:"policy_name,omitempty"`
 	PolicyGroup         string                 `json:"policy_group,omitempty"`
@@ -69,6 +70,7 @@ func (e *NodeService) Post(node Node) (data *NodeResult, err error) {
 // Put updates a node on the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
+// TODO: We might want to change the name. name and data should be separate structures
 func (e *NodeService) Put(n Node) (node Node, err error) {
 	url := fmt.Sprintf("nodes/%s", n.Name)
 	body, err := JSONReader(n)

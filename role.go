@@ -104,7 +104,7 @@ func (e *RoleService) GetEnvironments(role string) (data RoleEnvironmentsResult,
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name-environments-name
 // TODO: fairly complex returned object, probably an interface
 // TODO: go test
-func (e *RoleService) GetEnvironmentRunlist(role string, environment string) (data []string, err error) {
+func (e *RoleService) GetEnvironmentRunlist(role string, environment string) (data EnvRunList, err error) {
 	path := fmt.Sprintf("roles/%s/environments/%s", role, environment)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)
 	return

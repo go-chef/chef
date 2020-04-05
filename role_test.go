@@ -17,10 +17,11 @@ var (
 	testRoleJSON = "test/role.json"
 	// FML
 	testRole = &Role{
-		Name:               "test",
-		ChefType:           "role",
-		Description:        "Test Role",
-		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		Name:        "test",
+		ChefType:    "role",
+		Description: "Test Role",
+		RunList:     []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		// TODO: EnvRunList
 		JsonClass:          "Chef::Role",
 		DefaultAttributes:  struct{}{},
 		OverrideAttributes: struct{}{},

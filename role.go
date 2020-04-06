@@ -76,22 +76,9 @@ func (e *RoleService) Get(name string) (data *Role, err error) {
 // Update a role in the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
+// Trying to rename a role by specifying a new name in the body returns a 400
 func (e *RoleService) Put(role *Role) (data *Role, err error) {
 	path := fmt.Sprintf("roles/%s", role.Name)
-	body, err := JSONReader(role)
-	if err != nil {
-		return
-	}
-
-	err = e.client.magicRequestDecoder("PUT", path, body, &data)
-	return
-}
-
-// Update a role in the Chef server. Allow for renaming
-//
-// Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
-func (e *RoleService) Update(rolename string,role *Role) (data *Role, err error) {
-	path := fmt.Sprintf("roles/%s", rolename)
 	body, err := JSONReader(role)
 	if err != nil {
 		return

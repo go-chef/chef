@@ -66,14 +66,6 @@ func main() {
 	}
 	fmt.Printf("Update role1 %+v\n", roleUpdate)
 
-	// rename a role
-	role1.Name = "role2"
-	roleUpdate, err := client.Roles.Update('role1', &role1)
-	if err != nil {
-	       fmt.Fprintln(os.Stderr, "Issue renaming role1:", err)
-	}
-	fmt.Printf("Rename role1 %+v\n", roleUpdate)
-
 	envList, err := client.Roles.GetEnvironments("role1")
 	if err != nil {
 	       fmt.Fprintln(os.Stderr, "Issue listing environments for role1:", err)

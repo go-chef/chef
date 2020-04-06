@@ -177,40 +177,6 @@ func TestRolesService_Put(t *testing.T) {
 	}
 }
 
-func TestRolesService_Update(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc("/roles/webserver", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{
-		  "name": "webserver2",
-		  "chef_type": "role",
-		  "json_class": "Chef::Role",
-		  "description": "A webserver",
-		  "run_list": [
-		    "recipe[apache2]"
-		  ]
-		}`)
-	})
-
-	role := &Role{
-		Name:        "webserver2",
-		ChefType:    "role",
-		JsonClass:   "Chef::Role",
-		Description: "A webserver",
-		RunList:     []string{"recipe[apache2]"},
-	}
-
-	updatedRole, err := client.Roles.Update("webserver", role)
-	if err != nil {
-		t.Errorf("Roles.Update returned error: %v", err)
-	}
-
-	if !reflect.DeepEqual(updatedRole, role) {
-		t.Errorf("Roles.Update returned %+v, role %+v", updatedRole, role)
-	}
-}
-
 func TestRolesService_GetEnvironments(t *testing.T) {
 	setup()
 	defer teardown()

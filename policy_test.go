@@ -118,6 +118,12 @@ func TestGetPolicyRevision(t *testing.T) {
 		t.Error("Expected named run list for the policy, got: ", val[0])
 	}
 
+	if data.IncludedPolicyLocks[0].Name != "other" {
+		t.Error("Expected included policy name to be present in the policy information")
+	} else if data.IncludedPolicyLocks[0].RevisionID != "7b40995ad1150ec56950c757872d6732aa00e76382dfcd2fddeb3a971e57ba9c" {
+		t.Error("Expected included policy revision ID to be present in the policy information")
+	}
+
 	if val, ok := data.CookbookLocks["hardening"]; !ok {
 		t.Error("Expected hardening policy to be present in the policy information")
 	} else if val.Version != "0.1.0" {

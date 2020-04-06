@@ -18,10 +18,10 @@ var (
 	testRoleJSON = "test/role.json"
 	// FML
 	testRole = &Role{
-		Name:        "test",
-		ChefType:    "role",
-		Description: "Test Role",
-		RunList:     []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		Name:               "test",
+		ChefType:           "role",
+		Description:        "Test Role",
+		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
 		JsonClass:          "Chef::Role",
 		DefaultAttributes:  struct{}{},
 		OverrideAttributes: struct{}{},
@@ -209,7 +209,7 @@ func TestRolesService_GetEnvironmentRunlist(t *testing.T) {
 	})
 
 	list := []string{"recipe[foo1]", "recipe[foo2]"}
-	want := map[string][]string{ "run_list": list }
+	want := map[string][]string{"run_list": list}
 
 	updatedRole, err := client.Roles.GetEnvironmentRunlist("webserver", "env1")
 	if err != nil {

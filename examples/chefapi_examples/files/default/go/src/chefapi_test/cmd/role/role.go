@@ -59,12 +59,20 @@ func main() {
 
 	// Update a role
 	role1.Description = "Changed Role"
-	// TODO: try changing the runlists, attributes, environments
+	// TODO: try changing the runlists, attributes, environment run list
 	roleUpdate, err := client.Roles.Put(&role1)
 	if err != nil {
 	       fmt.Fprintln(os.Stderr, "Issue updating role1:", err)
 	}
 	fmt.Printf("Update role1 %+v\n", roleUpdate)
+
+	// rename a role
+	role1.Name = "role2"
+	roleUpdate, err := client.Roles.Update('role1', &role1)
+	if err != nil {
+	       fmt.Fprintln(os.Stderr, "Issue renaming role1:", err)
+	}
+	fmt.Printf("Rename role1 %+v\n", roleUpdate)
 
 	envList, err := client.Roles.GetEnvironments("role1")
 	if err != nil {

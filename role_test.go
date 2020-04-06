@@ -3,6 +3,7 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/r3labs/diff"
 	"io"
 	"log"
 	"net/http"
@@ -21,7 +22,6 @@ var (
 		ChefType:    "role",
 		Description: "Test Role",
 		RunList:     []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
-		// TODO: EnvRunList
 		JsonClass:          "Chef::Role",
 		DefaultAttributes:  struct{}{},
 		OverrideAttributes: struct{}{},
@@ -174,6 +174,86 @@ func TestRolesService_Put(t *testing.T) {
 
 	if !reflect.DeepEqual(updatedRole, role) {
 		t.Errorf("Roles.Put returned %+v, want %+v", updatedRole, role)
+	}
+}
+
+func TestRolesService_Update(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles/webserver", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+		  "name": "webserver2",
+		  "chef_type": "role",
+		  "json_class": "Chef::Role",
+		  "description": "A webserver",
+		  "run_list": [
+		    "recipe[apache2]"
+		  ]
+		}`)
+	})
+
+	role := &Role{
+		Name:        "webserver2",
+		ChefType:    "role",
+		JsonClass:   "Chef::Role",
+		Description: "A webserver",
+		RunList:     []string{"recipe[apache2]"},
+	}
+
+	updatedRole, err := client.Roles.Update("webserver", role)
+	if err != nil {
+		t.Errorf("Roles.Update returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(updatedRole, role) {
+		t.Errorf("Roles.Update returned %+v, role %+v", updatedRole, role)
+	}
+}
+
+func TestRolesService_GetEnvironments(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles/webserver/environments", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `[ "_default", "env1"]`)
+	})
+
+	want := RoleEnvironmentsResult{
+		"_default",
+		"env1",
+	}
+
+	updatedRole, err := client.Roles.GetEnvironments("webserver")
+	if err != nil {
+		t.Errorf("Roles.GetEnvironments returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(updatedRole, want) {
+		t.Errorf("Roles.GetEnvironments returned %+v, want %+v", updatedRole, want)
+	}
+}
+
+func TestRolesService_GetEnvironmentRunlist(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/roles/webserver/environments/env1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"run_list": ["recipe[foo1]", "recipe[foo2]"]}`)
+	})
+
+	list := []string{"recipe[foo1]", "recipe[foo2]"}
+	want := map[string][]string{ "run_list": list }
+
+	updatedRole, err := client.Roles.GetEnvironmentRunlist("webserver", "env1")
+	if err != nil {
+		t.Errorf("Roles.GetEnvironmentRunlist returned error: %v", err)
+	}
+
+	diff, err := diff.Diff(updatedRole, want)
+	if err != nil {
+		t.Errorf("Roles.GetEnvironmentRunlist returned %+v, want %+v", updatedRole, want)
+		t.Errorf("Diff  comparison %+v err %+v\n", diff, err)
 	}
 }
 

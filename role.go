@@ -58,7 +58,6 @@ func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
 // Delete a role from the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
-// TODO: Update doc
 func (e *RoleService) Delete(name string) (err error) {
 	path := fmt.Sprintf("roles/%s", name)
 	err = e.client.magicRequestDecoder("DELETE", path, nil, nil)
@@ -77,9 +76,22 @@ func (e *RoleService) Get(name string) (data *Role, err error) {
 // Update a role in the Chef server.
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
-// TODO: can we change a role name?, this parm structure doesn't work for that. should be rolename, roledata
 func (e *RoleService) Put(role *Role) (data *Role, err error) {
 	path := fmt.Sprintf("roles/%s", role.Name)
+	body, err := JSONReader(role)
+	if err != nil {
+		return
+	}
+
+	err = e.client.magicRequestDecoder("PUT", path, body, &data)
+	return
+}
+
+// Update a role in the Chef server. Allow for renaming
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
+func (e *RoleService) Update(rolename string,role *Role) (data *Role, err error) {
+	path := fmt.Sprintf("roles/%s", rolename)
 	body, err := JSONReader(role)
 	if err != nil {
 		return
@@ -92,7 +104,6 @@ func (e *RoleService) Put(role *Role) (data *Role, err error) {
 // Get a list of environments that have environment specific run-lists for the given role
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name-environments
-// TODO: go test
 func (e *RoleService) GetEnvironments(role string) (data RoleEnvironmentsResult, err error) {
 	path := fmt.Sprintf("roles/%s/environments", role)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)
@@ -102,8 +113,6 @@ func (e *RoleService) GetEnvironments(role string) (data RoleEnvironmentsResult,
 // Get the environment-specific run-list for  a role
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name-environments-name
-// TODO: fairly complex returned object, probably an interface
-// TODO: go test
 func (e *RoleService) GetEnvironmentRunlist(role string, environment string) (data EnvRunList, err error) {
 	path := fmt.Sprintf("roles/%s/environments/%s", role, environment)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)

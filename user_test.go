@@ -212,7 +212,7 @@ func TestUserUpdate(t *testing.T) {
 	}
 }
 
-func TestListUserKeys(t *testing.T) {
+func TestListKeys(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -229,22 +229,22 @@ func TestListUserKeys(t *testing.T) {
 		}
 	})
 
-	keyresult, err := client.Users.ListUserKeys("user1")
+	keyresult, err := client.Users.ListKeys("user1")
 	if err != nil {
-		t.Errorf("Users.ListUserKeys returned error: %v", err)
+		t.Errorf("Users.ListKeys returned error: %v", err)
 	}
-	defaultItem := UserKeyItem{
-		KeyName: "default",
+	defaultItem := KeyItem{
+		Name:    "default",
 		Uri:     "https://chefserver/users/user1/keys/default",
 		Expired: false,
 	}
-	Want := []UserKeyItem{defaultItem}
+	Want := []KeyItem{defaultItem}
 	if !reflect.DeepEqual(keyresult, Want) {
-		t.Errorf("Users.ListUserKeys returned %+v, want %+v", keyresult, Want)
+		t.Errorf("Users.ListKeys returned %+v, want %+v", keyresult, Want)
 	}
 }
 
-func TestAddUserKey(t *testing.T) {
+func TestAddKey(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -259,26 +259,26 @@ func TestAddUserKey(t *testing.T) {
 		}
 	})
 
-	keyadd := UserKey{
-		KeyName:        "newkey",
+	keyadd := AccessKey{
+		Name:           "newkey",
 		PublicKey:      "RSA KEY",
 		ExpirationDate: "infinity",
 	}
-	keyresult, err := client.Users.AddUserKey("user1", keyadd)
+	keyresult, err := client.Users.AddKey("user1", keyadd)
 	if err != nil {
-		t.Errorf("Users.AddUserKey returned error: %v", err)
+		t.Errorf("Users.AddKey returned error: %v", err)
 	}
-	Want := UserKeyItem{
-		KeyName: "newkey",
+	Want := KeyItem{
+		Name:    "newkey",
 		Uri:     "https://chefserver/users/user1/keys/newkey",
 		Expired: false,
 	}
 	if !reflect.DeepEqual(keyresult, Want) {
-		t.Errorf("Users.AddUserKey returned %+v, want %+v", keyresult, Want)
+		t.Errorf("Users.AddKey returned %+v, want %+v", keyresult, Want)
 	}
 }
 
-func TestDeleteUserKey(t *testing.T) {
+func TestDeleteKey(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -293,22 +293,22 @@ func TestDeleteUserKey(t *testing.T) {
 		}
 	})
 
-	keyresult, err := client.Users.DeleteUserKey("user1", "newkey")
+	keyresult, err := client.Users.DeleteKey("user1", "newkey")
 	if err != nil {
-		t.Errorf("Users.DeleteUserKey returned error: %v", err)
+		t.Errorf("Users.DeleteKey returned error: %v", err)
 	}
-	Want := UserKey{
-		KeyName:        "newkey",
+	Want := AccessKey{
+		Name:           "newkey",
 		PublicKey:      "RSA KEY",
 		ExpirationDate: "infinity",
 	}
 	if !reflect.DeepEqual(keyresult, Want) {
 		diff, _ := diff.Diff(keyresult, Want)
-		t.Errorf("Users.DeleteUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
+		t.Errorf("Users.DeleteKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
 	}
 }
 
-func TestGetUserKey(t *testing.T) {
+func TestGetKey(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -323,22 +323,22 @@ func TestGetUserKey(t *testing.T) {
 		}
 	})
 
-	keyresult, err := client.Users.GetUserKey("user1", "newkey")
+	keyresult, err := client.Users.GetKey("user1", "newkey")
 	if err != nil {
-		t.Errorf("Users.GetUserKey returned error: %v", err)
+		t.Errorf("Users.GetKey returned error: %v", err)
 	}
-	Want := UserKey{
-		KeyName:        "newkey",
+	Want := AccessKey{
+		Name:           "newkey",
 		PublicKey:      "RSA KEY",
 		ExpirationDate: "infinity",
 	}
 	if !reflect.DeepEqual(keyresult, Want) {
 		diff, _ := diff.Diff(keyresult, Want)
-		t.Errorf("Users.GetUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
+		t.Errorf("Users.GetKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
 	}
 }
 
-func TestUpdateUserKey(t *testing.T) {
+func TestUpdateKey(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -353,22 +353,22 @@ func TestUpdateUserKey(t *testing.T) {
 		}
 	})
 
-	updkey := UserKey{
-		KeyName:        "newkey",
+	updkey := AccessKey{
+		Name:           "newkey",
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}
-	keyresult, err := client.Users.UpdateUserKey("user1", "newkey", updkey)
+	keyresult, err := client.Users.UpdateKey("user1", "newkey", updkey)
 	if err != nil {
-		t.Errorf("Users.UpdateUserKey returned error: %v", err)
+		t.Errorf("Users.UpdateKey returned error: %v", err)
 	}
-	Want := UserKey{
-		KeyName:        "newkey",
+	Want := AccessKey{
+		Name:           "newkey",
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}
 	if !reflect.DeepEqual(keyresult, Want) {
 		diff, _ := diff.Diff(keyresult, Want)
-		t.Errorf("Users.UpdateUserKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
+		t.Errorf("Users.UpdateKey returned %+v, want %+v, differences %+v", keyresult, Want, diff)
 	}
 }

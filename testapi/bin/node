@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Node testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+
+go run ${BASE}/../testcase/testcase.go node ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

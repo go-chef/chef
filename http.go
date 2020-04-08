@@ -51,6 +51,7 @@ type Client struct {
 	License          *LicenseService
 	Nodes            *NodeService
 	Organizations    *OrganizationService
+	Policies         *PolicyService
 	Principals       *PrincipalService
 	Roles            *RoleService
 	Sandboxes        *SandboxService

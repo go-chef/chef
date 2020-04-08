@@ -7,6 +7,8 @@ github.com/ctdk/goiardi v0.11.10/go.mod h1:Pr6Cj6Wsahw45myttaOEZeZ0LE7p1qzWmzgsB
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/go-chef/chef v0.15.0 h1:sgo+G8FHunw3186Glm1RP3BDIYKoRy/NS2zELtVbnPI=
+github.com/go-chef/chef v0.15.0/go.mod h1:pgDutBXGDJjiZluiR2u5G/VvUONxaVP85+l9FTXo+s8=
 github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=

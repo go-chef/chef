@@ -1,7 +1,7 @@
 # Inspec tests for the user chef api go module
 #
 
-describe command('/go/src/chefapi_test/bin/user') do
+describe command('/go/src/testapi/bin/user') do
   its('stderr') { should match(%r{^Issue creating user: POST https://testhost/users: 409}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(%r{^List initial users map\[(?=.*pivotal:https://testhost/users/pivotal).*\] EndInitialList}) }

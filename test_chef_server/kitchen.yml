@@ -3,7 +3,7 @@ driver:
   name: vagrant
   synced_folders:
     - ['../', '/go/src/github.com/go-chef/chef']
-    - ['../examples/chefapi_test', '/go/src/chefapi_test']
+    - ['../testapi', '/go/src/testapi']
 
 provisioner:
   name: chef_zero

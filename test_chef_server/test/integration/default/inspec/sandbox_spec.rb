@@ -1,7 +1,7 @@
 # Inspec tests for the sandbox chef api go module
 #
 
-describe command('/go/src/chefapi_test/bin/sandbox') do
+describe command('/go/src/testapi/bin/sandbox') do
   # TODO: Get the sandbox sample code to work - upload files is failing
 
   # its('stderr') { should_not match(%r{Issue}) }

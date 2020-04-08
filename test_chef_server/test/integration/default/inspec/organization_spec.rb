@@ -1,7 +1,7 @@
 # Inspec tests for the organization chef api go module
 #
 
-describe command('/go/src/chefapi_test/bin/organization') do
+describe command('/go/src/testapi/bin/organization') do
   its('stderr') { should match(%r{^Issue creating org: {org1 organization1 } POST https://testhost/organizations: 409$}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(/^List initial organizations map\[test.*test\]$/) }

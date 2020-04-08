@@ -1,7 +1,7 @@
 # Inspec tests for the search chef api go module
 #
 
-describe command('/go/src/chefapi_test/bin/search') do
+describe command('/go/src/testapi/bin/search') do
   its('stderr') { should match(/^Issue building invalid query statement is malformed/) }
   its('stderr') { should_not match(/node/) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }

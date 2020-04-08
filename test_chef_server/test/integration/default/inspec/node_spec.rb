@@ -1,7 +1,7 @@
 # Inspec tests for the status chef api go module
 #
 
-describe command('/go/src/chefapi_test/bin/node') do
+describe command('/go/src/testapi/bin/node') do
   its('stderr') { should match(%r{^Couldn't recreate node node1.  POST https://testhost/organizations/test/nodes: 409}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(/^List initial nodes map\[\]$/) }

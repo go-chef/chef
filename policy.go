@@ -25,8 +25,8 @@ type PolicyRevisionDetail map[string]interface{}
 // RevisionDetailsResponse is returned from the chef-server for Get Requests to /policies/<policy-name>/revisions/<rev-id>
 type RevisionDetailsResponse struct {
 	RevisionID           string                  `json:"revision_id,omitempty"`
-	Name                 string                  `json:"name",omitempty`
-	RunList              []string                `json:"run_list,omitempty`
+	Name                 string                  `json:"name,omitempty"`
+	RunList              []string                `json:"run_list,omitempty"`
 	IncludePolicyLocks   []string                `json:"included_policy_locks,omitempty"`
 	CookbookLocks        map[string]CookbookLock `json:"cookbook_locks,omitempty"`
 	DefaultAttributes    map[string]interface{}  `json:"default_attributes,omitempty"`

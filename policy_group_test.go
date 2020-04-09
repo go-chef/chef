@@ -30,7 +30,6 @@ func TestPolicyGroupList(t *testing.T) {
 	if data == nil {
 		t.Fatal("We should have some data")
 	}
-	fmt.Println(data)
 
 	if len(data) != 1 {
 		t.Error("Mismatch in expected policy group count. Expected 1, Got: ", len(data))

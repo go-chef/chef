@@ -49,7 +49,7 @@ func Sandbox() {
 			req, err := client.NewRequest("PUT", item.Url, bytes.NewReader(files[hash]))
 			// TODO:  headers = { "content-type" => "application/x-binary", "content-md5" => checksum64, "accept" => "application/json" }
 			if err != nil {
-				fmt.Println(os.Stderr, "Issue this shouldn't happen:", err)
+				fmt.Fprintln(os.Stderr, "Issue this shouldn't happen:", err)
 			}
 
 			// post the files
@@ -60,11 +60,11 @@ func Sandbox() {
 
 			// with exp backoff
 			err = upload()
-			fmt.Println(os.Stderr, "Issue posting files to the sandbox: ", err)
+			fmt.Fprintln(os.Stderr, "Issue posting files to the sandbox: ", err)
 			// TODO: backoff of 4xx and 5xx doesn't make sense
 			// err = backoff.Retry(upload, backoff.NewExponentialBackOff())
 			// if err != nil {
-			// 	fmt.Println(os.Stderr, "Issue posting files to the sandbox: ", err)
+			// 	fmt.Fprintln(os.Stderr, "Issue posting files to the sandbox: ", err)
 			// }
 		}
 	}

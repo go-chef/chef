@@ -3,7 +3,7 @@ package chef
 import (
 	"fmt"
 	"net/http"
-	_ "reflect"
+	"reflect"
 	"testing"
 )
 
@@ -13,10 +13,13 @@ func TestPrincipalsGet(t *testing.T) {
 
 	mux.HandleFunc("/principals/client_node", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{
-		"name": "client_node",
-		"type": "client",
-		"public_key": "-----BEGIN PUBLIC KEY-----No, not really-----END PUBLIC KEY-----"
-}`)
+		"principals": [{
+			"name": "client_node",
+			"type": "client",
+			"authz_id": "afe1234",
+			"org_member": true,
+			"public_key": "-----BEGIN PUBLIC KEY"
+}]}`)
 	})
 
 	p, err := client.Principals.Get("client_node")
@@ -25,13 +28,27 @@ func TestPrincipalsGet(t *testing.T) {
 		return
 	}
 
-	if p.Name != "client_node" {
-		t.Errorf("Unexpected principal name: %+v", p.Name)
+	pWant := Principal{}
+	client := Principals{
+		Name: "client_node",
+		Type: "client",
+		PublicKey: "-----BEGIN PUBLIC KEY",
+		AuthzId: "afe1234",
+		OrgMember: true,
 	}
-	if p.Type != "client" {
-		t.Errorf("Unexpected principal type: %+v", p.Type)
-	}
-	if p.PublicKey != "-----BEGIN PUBLIC KEY-----No, not really-----END PUBLIC KEY-----" {
-		t.Errorf("Unexpected principal public key: %+v", p.PublicKey)
+	pWant.Principals[0] = client
+
+ //  type Principal struct {
+ //         Principals []struct {
+ //                 Name      string `json:"name"`
+ //                 Type      string `json:"type"`
+ //                 PublicKey string `json:"public_key"`
+ //                 AuthzId   string `json:"authz_id"`
+ //                 OrgMember bool   `json:"org_member"`
+ //         } `json:"principals"`
+ // }
+
+	if !reflect.DeepEqual(p, pWant) {
+		t.Errorf("Unexpected principal values got: %+v wanted: %+v", p, pWant)
 	}
 }

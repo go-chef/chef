@@ -1,0 +1,36 @@
+{
+    "seven_zip": {
+      "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip",
+      "versions": [
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/0e1fed3b56aa5e84205e330d92aca22d8704a014",
+          "identifier": "0e1fed3b56aa5e84205e330d92aca22d8704a014"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/1ef062de1bc4cb14e4a78fb739e104eb9508473e",
+          "identifier": "1ef062de1bc4cb14e4a78fb739e104eb9508473e"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/7fc2816d5d906b4e5fd7d69f8e025e37276995e3",
+          "identifier": "7fc2816d5d906b4e5fd7d69f8e025e37276995e3"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/8e6795446cfa8e0a4a09cef4d5d35eb2d522a24d",
+          "identifier": "8e6795446cfa8e0a4a09cef4d5d35eb2d522a24d"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/8e6bde2b1a92690253e9c55d717870376718cf59",
+          "identifier": "8e6bde2b1a92690253e9c55d717870376718cf59"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/91ab727ea5b817801e0799cc82a03910a806f91b",
+          "identifier": "91ab727ea5b817801e0799cc82a03910a806f91b"
+        },
+        {
+          "url": "https://localhost/organizations/utility/cookbook_artifacts/seven_zip/a76d3fe4342d6eba9c88a3282920eceb511bafe9",
+          "identifier": "a76d3fe4342d6eba9c88a3282920eceb511bafe9"
+        }
+      ]
+    }
+  }
+  

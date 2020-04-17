@@ -36,15 +36,15 @@ func TestListCBA(t *testing.T) {
 	}
 
 	if len(data) != 2 {
-		t.Error("Mismatch in expected policies count. Expected 2, Got: ", len(data))
+		t.Error("Mismatch in expected cookbook artifact count. Expected 2, Got: ", len(data))
 	}
 
 	if _, ok := data["oc-hec-postfix"]; !ok {
-		t.Error("oc-hec-postfix policy should be listed")
+		t.Error("oc-hec-postfix cookbook artifact should be listed")
 	}
 
 	if _, ok := data["grafana"]; !ok {
-		t.Error("grafana policy should be listed")
+		t.Error("grafana cookbook artifact should be listed")
 	}
 
 }

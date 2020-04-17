@@ -40,27 +40,28 @@ type Client struct {
 	BaseURL *url.URL
 	client  *http.Client
 
-	ACLs             *ACLService
-	Associations     *AssociationService
-	AuthenticateUser *AuthenticateUserService
-	Clients          *ApiClientService
-	Cookbooks        *CookbookService
-	DataBags         *DataBagService
-	Environments     *EnvironmentService
-	Groups           *GroupService
-	License          *LicenseService
-	Nodes            *NodeService
-	Organizations    *OrganizationService
-	Principals       *PrincipalService
-	Roles            *RoleService
-	Sandboxes        *SandboxService
-	Search           *SearchService
-	Status           *StatusService
-	Universe         *UniverseService
-	UpdatedSince     *UpdatedSinceService
-	Users            *UserService
-	Policies         *PolicyService
-	PolicyGroups     *PolicyGroupService
+	ACLs              *ACLService
+	Associations      *AssociationService
+	AuthenticateUser  *AuthenticateUserService
+	Clients           *ApiClientService
+	Cookbooks         *CookbookService
+	CookbookArtifacts *CBAService
+	DataBags          *DataBagService
+	Environments      *EnvironmentService
+	Groups            *GroupService
+	License           *LicenseService
+	Nodes             *NodeService
+	Organizations     *OrganizationService
+	Policies          *PolicyService
+	PolicyGroups      *PolicyGroupService
+	Principals        *PrincipalService
+	Roles             *RoleService
+	Sandboxes         *SandboxService
+	Search            *SearchService
+	Status            *StatusService
+	Universe          *UniverseService
+	UpdatedSince      *UpdatedSinceService
+	Users             *UserService
 }
 
 // Config contains the configuration options for a chef client. This structure is used primarily in the NewClient() constructor in order to setup a proper client object
@@ -173,12 +174,15 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Associations = &AssociationService{client: c}
 	c.Clients = &ApiClientService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
+	c.CookbookArtifacts = &CBAService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}
 	c.Groups = &GroupService{client: c}
 	c.License = &LicenseService{client: c}
 	c.Nodes = &NodeService{client: c}
 	c.Organizations = &OrganizationService{client: c}
+	c.Policies = &PolicyService{client: c}
+	c.PolicyGroups = &PolicyGroupService{client: c}
 	c.Principals = &PrincipalService{client: c}
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
@@ -187,8 +191,6 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.UpdatedSince = &UpdatedSinceService{client: c}
 	c.Universe = &UniverseService{client: c}
 	c.Users = &UserService{client: c}
-	c.Policies = &PolicyService{client: c}
-	c.PolicyGroups = &PolicyGroupService{client: c}
 	return c, nil
 }
 

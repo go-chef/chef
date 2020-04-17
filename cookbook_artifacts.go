@@ -71,8 +71,8 @@ func (c *CBAService) List() (data CBAGetResponse, err error) {
 	return
 }
 
-// Get retruns details for a specific cookbook artifact
-//  GET /cookbook_artifact/name
+// Get returns details for a specific cookbook artifact
+//  GET /cookbook_artifacts/name
 func (c *CBAService) Get(name string) (data CBAGetResponse, err error) {
 	path := fmt.Sprintf("cookbook_artifacts/%s", name)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)

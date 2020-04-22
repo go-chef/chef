@@ -14,9 +14,9 @@ var cases = map[string]func(){
 	"authenticate": testapi.Authenticate,
 	"client": testapi.ApiClient,
 	"clientkey": testapi.Clientkey,
+	"container": testapi.Container,
 	"cookbook": testapi.Cookbook,
 	"databag": testapi.Databag,
-	// TODO: fix environment and sandbox
 	"environment": testapi.Environment,
 	"group": testapi.Group,
 	"license": testapi.License,
@@ -26,6 +26,7 @@ var cases = map[string]func(){
 	"principals_add": testapi.PrincipalsAdd,
 	"principals_del": testapi.PrincipalsDel,
 	"role": testapi.Role,
+	// TODO: fix sandbox
 	"sandbox": testapi.Sandbox,
 	"search": testapi.Search,
 	"search_pagination": testapi.SearchPagination,

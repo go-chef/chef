@@ -44,6 +44,7 @@ type Client struct {
 	Associations     *AssociationService
 	AuthenticateUser *AuthenticateUserService
 	Clients          *ApiClientService
+	Containers       *ContainerService
 	Cookbooks        *CookbookService
 	DataBags         *DataBagService
 	Environments     *EnvironmentService
@@ -187,6 +188,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.AuthenticateUser = &AuthenticateUserService{client: c}
 	c.Associations = &AssociationService{client: c}
 	c.Clients = &ApiClientService{client: c}
+	c.Containers = &ContainerService{client: c}
 	c.Cookbooks = &CookbookService{client: c}
 	c.DataBags = &DataBagService{client: c}
 	c.Environments = &EnvironmentService{client: c}

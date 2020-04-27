@@ -133,7 +133,7 @@ func createUser_u(client *chef.Client, user chef.User) chef.UserResult {
 func deleteUser_u(client *chef.Client, name string) (err error) {
 	err = client.Users.Delete(name)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue deleting org:", err)
+		fmt.Fprintln(os.Stderr, "Issue deleting user:", err)
 	}
 	return
 }

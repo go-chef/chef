@@ -95,7 +95,7 @@ func Association() {
 		fmt.Fprintf(os.Stderr, "Issue getting user details: %+v\n", err)
 	}
 	fmt.Printf("User details: %+v\n", uget)
-	// Delete a user for the organization
+	// Delete a user from the organization
 	udel, err := client.Associations.Get("usradd")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue deleting usradd: %+v\n", err)

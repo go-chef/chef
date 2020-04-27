@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Principal testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+go run ${BASE}/../testcase/testcase.go principals_add ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}
+go run ${BASE}/../testcase/testcase.go principals ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run ${BASE}/../testcase/testcase.go principals_del ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}

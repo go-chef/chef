@@ -40,6 +40,10 @@ func Group() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating group1:", err)
 	}
+	cerr, err := chef.ChefError(err)
+        if cerr != nil {
+		fmt.Fprintln(os.Stderr, "Issue recreating group1:", cerr.StatusCode())
+        }
 	fmt.Println("Recreated group1", groupAdd)
 
 	// List groups after adding

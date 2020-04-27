@@ -1,8 +1,9 @@
-# Inspec tests for the status chef api go module
+# Inspec tests for the role chef api go module
 #
 
 describe command('/go/src/testapi/bin/role') do
   its('stderr') { should match(%r{^Issue recreating role1: POST https://testhost/organizations/test/roles: 409}) }
+  its('stderr') { should match(/^Issue recreating role1: 409/) }
   its('stderr') { should match(%r{^Issue getting nothere: GET https://testhost/organizations/test/roles/nothere: 404}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(%r{^Added role1 uri => https://testhost/organizations/test/roles/role1}) }

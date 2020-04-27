@@ -64,6 +64,10 @@ func ApiClient() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Couldn't recreate client client1. ", err)
 	}
+	cerr, err := chef.ChefError(err)
+	if cerr != nil {
+		fmt.Fprintln(os.Stderr, "Couldn't recreate client client1. ", cerr.StatusCode())
+	}
 	fmt.Printf("Added client1 %+v\n", clientResult)
 
 	// Read client1 information

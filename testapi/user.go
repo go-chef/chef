@@ -131,9 +131,6 @@ func createUser_u(client *chef.Client, user chef.User) chef.UserResult {
 			fmt.Fprintf(os.Stderr, "Issue creating user method: %+v\n", cerr.StatusMethod())
 			fmt.Fprintf(os.Stderr, "Issue creating user url: %+v\n", cerr.StatusURL().String())
 		}
-		// if cerr, ok := err.(*chef.ErrorResponse); ok {
-		// fmt.Fprintln(os.Stderr, "Status code creating user:", cerr.StatusCode)
-		// }
 	}
 	return usrResult
 }

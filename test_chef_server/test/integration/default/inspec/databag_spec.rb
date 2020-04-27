@@ -3,6 +3,7 @@
 
 describe command('/go/src/testapi/bin/databag') do
   its('stderr') { should match(%r{^Issue recreating databag1. POST https://testhost/organizations/test/data: 409}) }
+  its('stderr') { should match(/^Issue recreating databag1. 409/) }
   its('stderr') { should match(%r{^Issue getting nothere. GET https://testhost/organizations/test/data/nothere: 404}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(/^List initial databags\s*$/) }

@@ -3,6 +3,7 @@
 
 describe command('/go/src/testapi/bin/client') do
   its('stderr') { should match(%r{^Couldn't recreate client client1.  POST https://testhost/organizations/test/clients: 409}) }
+  its('stderr') { should match(/^Couldn't recreate client client1.  409/) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(%r{^List initial clients test-validator => https://testhost/organizations/test/clients/test-validator}) }
   its('stdout') { should match(/^Define client1 \{Name:client1 ClientName: Validator:false Admin:false CreateKey:true\}/) }

@@ -64,6 +64,10 @@ func createOrganization(client *chef.Client, org chef.Organization) chef.Organiz
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue creating org:", org, err)
 	}
+	cerr, err := chef.ChefError(err)
+        if cerr != nil {
+		fmt.Fprintln(os.Stderr, "Issue creating org:", org, cerr.StatusCode())
+        }
 	return orgResult
 }
 

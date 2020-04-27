@@ -11,10 +11,10 @@ type UserService struct {
 
 // User represents the native Go version of the deserialized User type
 type User struct {
-	UserName                      string `json:"username,omitempty"` // V1 name instead of name for V0
+	UserName                      string `json:"username,omitempty"` // V1 uses username instead of V0 name
 	DisplayName                   string `json:"display_name,omitempty"`
 	Email                         string `json:"email,omitempty"`
-	ExternalAuthenticationUid     string `json:"external_authentication_uid,omitempty"` // this or password
+	ExternalAuthenticationUid     string `json:"external_authentication_uid,omitempty"` // Specify this or password
 	FirstName                     string `json:"first_name,omitempty"`
 	LastName                      string `json:"last_name,omitempty"`
 	MiddleName                    string `json:"middle_name,omitempty"`

@@ -1,6 +1,8 @@
 //
 // Test the go-chef/chef chef server api /group endpoints against a live server
 //
+
+// TODO: add users and then add them to groups. Seems to fail. pivotal is maybe not a good test. adding fails silently
 package testapi
 
 import (
@@ -38,6 +40,10 @@ func Group() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating group1:", err)
 	}
+	cerr, err := chef.ChefError(err)
+        if cerr != nil {
+		fmt.Fprintln(os.Stderr, "Issue recreating group1:", cerr.StatusCode())
+        }
 	fmt.Println("Recreated group1", groupAdd)
 
 	// List groups after adding

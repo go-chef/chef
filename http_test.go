@@ -545,23 +545,29 @@ func TestGenerateSignatureError(t *testing.T) {
 }
 
 func TestRequestError(t *testing.T) {
-	ac, err := makeAuthConfig()
-	if err != nil {
-		t.Fatal(err)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Available", http.StatusServiceUnavailable)
+	}))
+	defer ts.Close()
+
+	resp, _ := http.Get(ts.URL)
+	err := CheckResponse(resp)
+	cerr, err := ChefError(err)
+	matched, err := regexp.MatchString(`^GET http://127.0.0.1:\d+: 503`, cerr.Error())
+	if !matched {
+		t.Errorf("Request Error returned %+v instead of GET URL 503", cerr.Error())
 	}
-
-	// Gave up trying to implement this myself
-	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
-	// yay for sharing
-	requestBody := nopCloser{bytes.NewBufferString("somecoolbodytext")}
-	request, err := http.NewRequest("GET", requestURL, requestBody)
-
-	err = ac.SignRequest(request)
-
-	// BUG(fujin): This should actually error not bubble nil?
-	Convey("should not sign a request with missing required information", t, func() {
-		So(err, ShouldBeNil)
-	})
+	if cerr.StatusCode() != http.StatusServiceUnavailable {
+		t.Errorf("Request Error returned %+v instead of %+v\n", cerr.StatusCode(), http.StatusServiceUnavailable)
+	}
+	if cerr.StatusMethod() != "GET" {
+		t.Errorf("Request Error returned %+v instead of %+v\n", cerr.StatusMethod(), "GET")
+	}
+	matched, err = regexp.MatchString(`http://127.0.0.1:\d+`, cerr.Error())
+	if !matched {
+		t.Errorf("Request URL returned %+v instead of %+v\n", cerr.StatusURL().String(), "http://127.0.0.1*")
+	}
 }
 
 func TestNewClient(t *testing.T) {

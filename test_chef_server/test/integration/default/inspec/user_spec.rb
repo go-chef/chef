@@ -2,7 +2,11 @@
 #
 
 describe command('/go/src/testapi/bin/user') do
-  its('stderr') { should match(%r{^Issue creating user: POST https://testhost/users: 409}) }
+  its('stderr') { should match(%r{^Issue creating user POST https://testhost/users: 409}) }
+  its('stderr') { should match(%r{^Issue creating user err: POST https://testhost/users: 409}) }
+  its('stderr') { should match(/^Issue creating user code: 409/) }
+  its('stderr') { should match(/^Issue creating user method: POST/) }
+  its('stderr') { should match(%r{^Issue creating user url: https://testhost/users}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(%r{^List initial users map\[(?=.*pivotal:https://testhost/users/pivotal).*\] EndInitialList}) }
   # might want a multi line match here to test for expirationdate, key uri and privatekey

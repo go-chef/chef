@@ -124,7 +124,16 @@ func User() {
 func createUser_u(client *chef.Client, user chef.User) chef.UserResult {
 	usrResult, err := client.Users.Create(user)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue creating user:", err)
+		fmt.Fprintf(os.Stderr, "Issue creating user %+v\n", err)
+		if cerr, ok := err.(*chef.ErrorResponse); ok {
+			fmt.Fprintf(os.Stderr, "Issue creating user err: %+v\n", cerr.Error())
+			fmt.Fprintf(os.Stderr, "Issue creating user code: %+v\n", cerr.StatusCode())
+			fmt.Fprintf(os.Stderr, "Issue creating user method: %+v\n", cerr.StatusMethod())
+			fmt.Fprintf(os.Stderr, "Issue creating user url: %+v\n", cerr.StatusURL().String())
+		}
+		// if cerr, ok := err.(*chef.ErrorResponse); ok {
+		// fmt.Fprintln(os.Stderr, "Status code creating user:", cerr.StatusCode)
+		// }
 	}
 	return usrResult
 }

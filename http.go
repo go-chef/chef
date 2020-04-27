@@ -86,6 +86,10 @@ type Config struct {
 /*
 An ErrorResponse reports one or more errors caused by an API request.
 Thanks to https://github.com/google/go-github
+
+The Response structure includes:
+        Status string
+	StatusCode int
 */
 type ErrorResponse struct {
 	Response *http.Response // HTTP response that caused this error
@@ -129,6 +133,18 @@ func (r *ErrorResponse) Error() string {
 	return fmt.Sprintf("%v %v: %d",
 		r.Response.Request.Method, r.Response.Request.URL,
 		r.Response.StatusCode)
+}
+
+func (r *ErrorResponse) StatusCode() int {
+	return r.Response.StatusCode
+}
+
+func (r *ErrorResponse) StatusMethod() string {
+	return r.Response.Request.Method
+}
+
+func (r *ErrorResponse) StatusURL() *url.URL {
+	return r.Response.Request.URL
 }
 
 // NewClient is the client generator used to instantiate a client for talking to a chef-server
@@ -253,6 +269,18 @@ func CheckResponse(r *http.Response) error {
 		json.Unmarshal(data, errorResponse)
 	}
 	return errorResponse
+}
+
+//  ChefError tries to unwind a chef client err return embedded in an error
+//  Unwinding allows easy access the StatusCode, StatusMethod and StatusURL functions
+func ChefError(err error) (cerr *ErrorResponse, nerr error) {
+	if err == nil {
+		return cerr, err
+	}
+	if cerr, ok := err.(*ErrorResponse); ok {
+		return cerr, err
+	}
+	return cerr, err
 }
 
 // Do is used either internally via our magic request shite or a user may use it

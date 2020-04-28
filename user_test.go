@@ -354,8 +354,8 @@ func TestUpdateKey(t *testing.T) {
 		}
 	})
 
-	updKey := UserKey{
-		KeyName:        "newkey",
+	updKey := AccessKey{
+		Name:        "newkey",
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}

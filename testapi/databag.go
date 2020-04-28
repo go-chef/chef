@@ -37,9 +37,9 @@ func Databag() {
 		fmt.Fprintln(os.Stderr, "Issue recreating databag1:", err)
 	}
 	cerr, err := chef.ChefError(err)
-        if cerr != nil {
+	if cerr != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating databag1:", cerr.StatusCode())
-        }
+	}
 	fmt.Println("Recreated databag1", databagAdd)
 
 	// Try to get a missing databag

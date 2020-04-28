@@ -17,9 +17,9 @@ func PrincipalsDel() {
 
 // deleteUser_p uses the chef server api to delete a single user
 func deleteUser_p(client *chef.Client, name string) (err error) {
-        err = client.Users.Delete(name)
-        if err != nil {
-                fmt.Fprintln(os.Stderr, "Issue deleting user:", err)
-        }
-        return
+	err = client.Users.Delete(name)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting user:", err)
+	}
+	return
 }

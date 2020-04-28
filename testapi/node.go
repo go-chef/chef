@@ -47,9 +47,9 @@ func Node() {
 		fmt.Fprintln(os.Stderr, "Couldn't recreate node node1. ", err)
 	}
 	cerr, err := chef.ChefError(err)
-        if cerr != nil {
-                fmt.Fprintln(os.Stderr, "Couldn't recreate node node1. ", cerr.StatusCode())
-        }
+	if cerr != nil {
+		fmt.Fprintln(os.Stderr, "Couldn't recreate node node1. ", cerr.StatusCode())
+	}
 	fmt.Println("Added node1", nodeResult)
 
 	// Read node1 information

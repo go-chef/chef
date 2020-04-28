@@ -16,8 +16,8 @@ workflows:
 jobs:
   update_tag:
     docker:
-      - image: circleci/golang:1.13.1
-    working_directory: /go/src/github.com/go-chef/chefi
+      - image: cimg/go:1.13
+    working_directory: ~/go/src/github.com/go-chef/chef
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -28,12 +28,12 @@ jobs:
       - run: git push --tags origin
   tester:
     docker:
-      - image: circleci/golang:1.9
+      - image: cimg/go:1.13
       #### TEMPLATE_NOTE: go expects specific checkout path representing url
       #### expecting it in the form of
       ####   /go/src/github.com/circleci/go-tool
       ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/go-chef/chef
+    working_directory: ~/go/src/github.com/go-chef/chef
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -43,10 +43,10 @@ jobs:
       - run: pwd
       - run: env
       - run: ls -Rl
-      - run: go get 
+      - run: go get -t
       - run: go get github.com/ctdk/goiardi/chefcrypto
       - run: go get github.com/r3labs/diff
-      - run: go get github.com/smartystreets/goconvey/convey 
+      - run: go get github.com/smartystreets/goconvey/convey
       - run: go get github.com/stretchr/testify/assert
       - run: go vet
       - run: go test

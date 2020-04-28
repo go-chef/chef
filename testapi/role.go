@@ -33,9 +33,9 @@ func Role() {
 		fmt.Fprintln(os.Stderr, "Issue recreating role1:", err)
 	}
 	cerr, err := chef.ChefError(err)
-        if cerr != nil {
+	if cerr != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating role1:", cerr.StatusCode())
-        }
+	}
 	fmt.Printf("Recreated role1 %+v\n", roleAdd)
 
 	// List roles after adding

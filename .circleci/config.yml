@@ -46,7 +46,7 @@ jobs:
       - run: go get -t
       - run: go get github.com/ctdk/goiardi/chefcrypto
       - run: go get github.com/r3labs/diff
-      - run: go get github.com/smartystreets/goconvey/convey@1.6.4
+      - run: go get github.com/smartystreets/goconvey/convey
       - run: go get github.com/stretchr/testify/assert
       - run: go vet
       - run: go test

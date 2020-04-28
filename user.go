@@ -188,7 +188,7 @@ func (e *UserService) GetKey(name string, keyname string) (key AccessKey, err er
 // 404 - user doesn't exist
 //
 // Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
-func (e *UserService) UpdateUserKey(username string, keyname string, keyUp AccessKey) (userkey AccessKey, err error) {
+func (e *UserService) UpdateKey(username string, keyname string, keyUp AccessKey) (userkey AccessKey, err error) {
 	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
 	body, err := JSONReader(keyUp)
 	err = e.client.magicRequestDecoder("PUT", url, body, &userkey)

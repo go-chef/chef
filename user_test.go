@@ -359,7 +359,7 @@ func TestUpdateKey(t *testing.T) {
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}
-	keyresult, err := client.Users.UpdateUserKey("user1", "newkey", updKey)
+	keyresult, err := client.Users.UpdateKey("user1", "newkey", updKey)
 	if err != nil {
 		t.Errorf("Users.UpdateKey returned error: %v", err)
 	}

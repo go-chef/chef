@@ -9,5 +9,5 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/r3labs/diff v0.0.0-20191120142937-b4ed99a31f5a
 	github.com/smartystreets/goconvey v1.6.4
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 )

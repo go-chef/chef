@@ -4,8 +4,19 @@
     "run_list": [
       "recipe[base::default]"
     ],
+    "named_run_lists": {
+      "os": [
+        "recipe[hardening::default]"
+      ]
+    },
     "included_policy_locks": [
-  
+      {
+        "name": "other",
+        "revision_id": "7b40995ad1150ec56950c757872d6732aa00e76382dfcd2fddeb3a971e57ba9c",
+        "source_options": {
+          "path": "./other_policy.lock.json"
+        }
+      }
     ],
     "cookbook_locks": {
       "base": {

@@ -354,12 +354,12 @@ func TestUpdateKey(t *testing.T) {
 		}
 	})
 
-	updkey := AccessKey{
+	updKey := AccessKey{
 		Name:           "newkey",
 		PublicKey:      "RSA NEW KEY",
 		ExpirationDate: "infinity",
 	}
-	keyresult, err := client.Users.UpdateKey("user1", "newkey", updkey)
+	keyresult, err := client.Users.UpdateKey("user1", "newkey", updKey)
 	if err != nil {
 		t.Errorf("Users.UpdateKey returned error: %v", err)
 	}

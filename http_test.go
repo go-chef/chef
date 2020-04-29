@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -644,5 +645,72 @@ func TestDo_badjson(t *testing.T) {
 	if err == nil {
 		t.Error(err)
 	}
+}
 
+// Add Content-Type tests
+
+func TestDoText(t *testing.T) {
+	setup()
+	defer teardown()
+
+	pigText := " pigthrusters => 100 "
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "text/plain")
+		fmt.Fprintf(w, pigText)
+	})
+
+	var getdata string
+	request, err := client.NewRequest("GET", "hashrocket", nil)
+	_, err = client.Do(request, &getdata)
+	if err != nil {
+		t.Error(err)
+	}
+	if getdata != pigText {
+		t.Errorf("Plain text got unexpected string: %+v expected: %+v\n", getdata, pigText)
+	}
+}
+
+func TestDoJSON(t *testing.T) {
+	setup()
+	defer teardown()
+
+	jsonText := `{"key": "value"}`
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, jsonText)
+	})
+
+	getdata := map[string]string{}
+	wantdata := map[string]string{"key": "value"}
+	request, err := client.NewRequest("GET", "hashrocket", nil)
+	_, err = client.Do(request, &getdata)
+	if err != nil {
+		t.Error(err)
+	}
+	if !reflect.DeepEqual(getdata, wantdata) {
+		t.Errorf("JSON data got unexpected string: %+v expected: %+v\n", getdata, wantdata)
+	}
+}
+
+func TestDoDefaultParse(t *testing.T) {
+	setup()
+	defer teardown()
+
+	jsonText := `{"key": "value"}`
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		// Note: deliberately using a non standard text type
+		w.Header().Add("Content-Type", "none/here")
+		fmt.Fprintf(w, jsonText)
+	})
+
+	getdata := map[string]string{}
+	wantdata := map[string]string{"key": "value"}
+	request, err := client.NewRequest("GET", "hashrocket", nil)
+	_, err = client.Do(request, &getdata)
+	if err != nil {
+		t.Error(err)
+	}
+	if !reflect.DeepEqual(getdata, wantdata) {
+		t.Errorf("JSON data got unexpected string: %+v expected: %+v\n", getdata, wantdata)
+	}
 }

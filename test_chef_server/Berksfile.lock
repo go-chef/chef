@@ -7,5 +7,7 @@ GRAPH
   chef-ingredient (3.1.2)
   chef-server (5.5.2)
     chef-ingredient (>= 2.1.10)
+  line (2.8.0)
   test_chef_server (0.1.0)
     chef-server (>= 0.0.0)
+    line (>= 0.0.0)

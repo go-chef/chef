@@ -56,6 +56,7 @@ type Client struct {
 	Policies          *PolicyService
 	PolicyGroups      *PolicyGroupService
 	Principals        *PrincipalService
+	RequiredRecipe    *RequiredRecipeService
 	Roles             *RoleService
 	Sandboxes         *SandboxService
 	Search            *SearchService
@@ -201,6 +202,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Organizations = &OrganizationService{client: c}
 	c.Policies = &PolicyService{client: c}
 	c.PolicyGroups = &PolicyGroupService{client: c}
+	c.RequiredRecipe = &RequiredRecipeService{client: c}
 	c.Principals = &PrincipalService{client: c}
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
@@ -303,23 +305,76 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		return res, err
 	}
 
-	var resbuf bytes.Buffer
-	restee := io.TeeReader(res.Body, &resbuf)
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, restee)
-		} else {
-			err = json.NewDecoder(restee).Decode(v)
-			if debug_on() {
-				resbody, _ := ioutil.ReadAll(&resbuf)
-				debug("Response body: %+v\n", string(resbody))
-			}
-			if err != nil {
-				return res, err
-			}
+	var resBuf bytes.Buffer
+	resTee := io.TeeReader(res.Body, &resBuf)
+
+	// no response interface specified
+	if v == nil {
+		if debug_on() {
+			// show the response body as a string
+			resbody, _ := ioutil.ReadAll(resTee)
+			debug("Response body: %+v\n", string(resbody))
 		}
+		debug("No response body requested\n")
+		return res, nil
+	}
+
+	// response interface, v, is an io writer
+	if w, ok := v.(io.Writer); ok {
+		debug("Response output desired is an io Writer\n")
+		_, err = io.Copy(w, resTee)
+		return res, err
+	}
+
+	// response content-type specifies JSON encoded - decode it
+	if hasJsonContentType(res) {
+		err = json.NewDecoder(resTee).Decode(v)
+		if debug_on() {
+			// show the response body as a string
+			resbody, _ := ioutil.ReadAll(&resBuf)
+			debug("Response body: %+v\n", string(resbody))
+		}
+		debug("Response body specifies content as JSON: %+v Err:\n", v, err)
+		if err != nil {
+			return res, err
+		}
+		return res, nil
+	}
+
+	// response interface, v, is type string and the content is plain text
+	if _, ok := v.(*string); ok && hasTextContentType(res) {
+		resbody, _ := ioutil.ReadAll(resTee)
+		if err != nil {
+			return res, err
+		}
+		out := string(resbody)
+		debug("Response body parsed as string: %+v\n", out)
+		*v.(*string) = out
+		return res, nil
+	}
+
+	// Default response: Content-Type is not JSON. Assume v is a struct and decode the response as json
+	err = json.NewDecoder(resTee).Decode(v)
+	if debug_on() {
+		// show the response body as a string
+		resbody, _ := ioutil.ReadAll(&resBuf)
+		debug("Response body: %+v\n", string(resbody))
+	}
+	debug("Response body defaulted to JSON parsing: %+v Err:\n", v, err)
+	if err != nil {
+		return res, err
 	}
 	return res, nil
+}
+
+func hasJsonContentType(res *http.Response) bool {
+	contentType := res.Header.Get("Content-Type")
+	return contentType == "application/json"
+}
+
+func hasTextContentType(res *http.Response) bool {
+	contentType := res.Header.Get("Content-Type")
+	return contentType == "text/plain"
 }
 
 // SignRequest modifies headers of an http.Request

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# RequiredRecipetestcase/testcase.go testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+
+go run ${BASE}/../testcase/testcase.go required_recipe ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

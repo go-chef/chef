@@ -26,6 +26,7 @@ var cases = map[string]func(){
 	"principals_add": testapi.PrincipalsAdd,
 	"principals_del": testapi.PrincipalsDel,
 	"role": testapi.Role,
+	"required_recipe": testapi.RequiredRecipe,
 	// TODO: fix sandbox
 	"sandbox": testapi.Sandbox,
 	"search": testapi.Search,

@@ -31,6 +31,7 @@ var cases = map[string]func(){
 	"sandbox": testapi.Sandbox,
 	"search": testapi.Search,
 	"search_pagination": testapi.SearchPagination,
+	"stats": testapi.Stats,
 	"status": testapi.Status,
 	"universe": testapi.Universe,
 	"user": testapi.User,
@@ -47,4 +48,3 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Requested case %+s was not found\n", testcase)
 	}
 }
-

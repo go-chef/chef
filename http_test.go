@@ -714,3 +714,21 @@ func TestDoDefaultParse(t *testing.T) {
 		t.Errorf("JSON data got unexpected string: %+v expected: %+v\n", getdata, wantdata)
 	}
 }
+
+func TestBasicAuthHeader(t *testing.T) {
+	setup()
+	defer teardown()
+	req, _ := client.NewRequest("GET", "http://dummy", nil)
+	basicAuthHeader(req, "stduser", "stdpassword")
+	basicHeader := req.Header.Get("Authorization")
+	if basicHeader != "Basic c3RkdXNlcjpzdGRwYXNzd29yZA==" {
+		t.Error("BasicAuthHeader credentials not calculated properly")
+	}
+}
+
+func TestBasicAuth(t *testing.T) {
+	header := basicAuth("stduser", "stdpassword")
+	if header != "c3RkdXNlcjpzdGRwYXNzd29yZA==" {
+		t.Error("BasicAuth credentials not calculated properly")
+	}
+}

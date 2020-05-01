@@ -13,9 +13,8 @@ func Stats() {
 	// Create a client for access
 	client := Client()
 	password  := os.Args[6]
-	fmt.Println("password", password)
 
-	stats, err := client.Stats.Get("json", "statsuser", password)
+	stats, err := client.Stats.Get("statsuser", password)
 	if err != nil {
 		fmt.Println("Issue getting stats information", err)
 	}

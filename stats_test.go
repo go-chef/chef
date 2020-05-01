@@ -24,7 +24,7 @@ func TestStatsGet(t *testing.T) {
 		},
 	}
 
-	stats, err := client.Stats.Get("json", "statsuser", "password")
+	stats, err := client.Stats.Get("statsuser", "password")
 	if err != nil {
 		t.Errorf("Stat.Get returned error: %s", err.Error())
 	}

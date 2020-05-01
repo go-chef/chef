@@ -12,10 +12,10 @@ type Stats []map[string]interface{}
 // https://docs.chef.io/api_chef_server/
 //
 // ?format = text or json or nothing, text is supposed to work but returns a 406
-func (e *StatsService) Get(format string, user string, password string) (data Stats, err error) {
-	if format == "" {
-		format = "json"
-	}
+// This module only implements the json option. using a struct for the parse
+// out data will force JSON output.
+func (e *StatsService) Get(user string, password string) (data Stats, err error) {
+	format := "json"
 	err = e.client.basicRequestDecoder("GET", "_stats?format="+format, nil, &data, user, password)
 	return
 }

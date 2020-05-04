@@ -61,7 +61,7 @@ type CBAMeta struct {
 	Privacy         bool                   `json:"privacy,omitempty"`
 	ChefVersions    [][]string             `json:"chef_versions,omitempty"`
 	OhaiVersions    []string               `json:"ohai_versions,omitempty"`
-	Gems            []string               `json:"gems,omitempty"`
+	Gems            [][]string             `json:"gems,omitempty"`
 }
 
 // List lists the Cookbook_Artifacts in the Chef server.
@@ -86,3 +86,4 @@ func (c *CBAService) GetVersion(name, id string) (data CBADetail, err error) {
 	err = c.client.magicRequestDecoder("GET", url, nil, &data)
 	return
 }
+

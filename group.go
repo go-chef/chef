@@ -17,6 +17,17 @@ type Group struct {
 	Users     []string `json:"users"`
 }
 
+// GroupUpdate represents the payload needed to update a group
+type GroupUpdate struct {
+	Name      string `json:"name"`
+	GroupName string `json:"groupname"`
+	Actors    struct {
+		Clients []string `json:"clients"`
+		Groups  []string `json:"groups"`
+		Users   []string `json:"users"`
+	} `json:"actors"`
+}
+
 type GroupResult struct {
 	Uri string `json:"uri"`
 }
@@ -56,7 +67,7 @@ func (e *GroupService) Create(group Group) (data *GroupResult, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#groups
 // Should this be name and group attributes?  We might want to be
 // able to change the name.
-func (e *GroupService) Update(g Group) (group Group, err error) {
+func (e *GroupService) Update(g GroupUpdate) (group GroupUpdate, err error) {
 	url := fmt.Sprintf("groups/%s", g.Name)
 	body, err := JSONReader(g)
 	if err != nil {

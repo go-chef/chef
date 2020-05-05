@@ -102,7 +102,10 @@ func TestGroupsService_Methods(t *testing.T) {
 	}
 
 	// test Update
-	updateRes, err := client.Groups.Update(group)
+	groupupdate := GroupUpdate{}
+	groupupdate.Name = "group3"
+	groupupdate.Actors.Users = []string{"tester2"}
+	updateRes, err := client.Groups.Update(groupupdate)
 	if err != nil {
 		t.Errorf("Groups.Update returned error: %v", err)
 	}

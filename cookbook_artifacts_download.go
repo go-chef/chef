@@ -1,7 +1,3 @@
-//
-//  Author:: Salim Afiune <afiune@chef.io>
-//
-
 package chef
 
 import (

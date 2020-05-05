@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Stats testing
+
+BASE=$(dirname $0)
+
+. ${BASE}/setup
+. ${BASE}/creds
+
+STATPASSWORD=`chef-server-ctl show-service-credentials | grep -A1 stats_password|awk -F'"' '{print $2}'|tail -1`
+
+go run ${BASE}/../testcase/testcase.go stats ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS} ${STATPASSWORD}

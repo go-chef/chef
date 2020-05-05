@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -60,6 +61,7 @@ type Client struct {
 	Roles             *RoleService
 	Sandboxes         *SandboxService
 	Search            *SearchService
+	Stats             *StatsService
 	Status            *StatusService
 	Universe          *UniverseService
 	UpdatedSince      *UpdatedSinceService
@@ -207,11 +209,35 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Roles = &RoleService{client: c}
 	c.Sandboxes = &SandboxService{client: c}
 	c.Search = &SearchService{client: c}
+	c.Stats = &StatsService{client: c}
 	c.Status = &StatusService{client: c}
 	c.UpdatedSince = &UpdatedSinceService{client: c}
 	c.Universe = &UniverseService{client: c}
 	c.Users = &UserService{client: c}
 	return c, nil
+}
+
+// basicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
+// basicRequestDecoder is the same code as magic RequestDecoder with the addition of a generated Authentication: Basic header
+// to the http request
+func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v interface{}, user string, password string) error {
+	req, err := c.NewRequest(method, path, body)
+	if err != nil {
+		return err
+	}
+
+	basicAuthHeader(req, user, password)
+
+	debug("\n\nRequest: %+v \n", req)
+	res, err := c.Do(req, v)
+	if res != nil {
+		defer res.Body.Close()
+	}
+	debug("Response: %+v\n", res)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
@@ -265,6 +291,19 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
 	c.Auth.SignRequest(req)
 	return req, nil
+}
+
+// basicAuth does base64 encoding of a user and password
+func basicAuth(user string, password string) string {
+	creds := user + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(creds))
+}
+
+// basicAuthHeader adds an Authentication Basic header to the request
+// The user and password values should be clear text. They will be
+// base64 encoded for the header.
+func basicAuthHeader(r *http.Request, user string, password string) {
+	r.Header.Add("authorization", "Basic "+basicAuth(user, password))
 }
 
 // CheckResponse receives a pointer to a http.Response and generates an Error via unmarshalling

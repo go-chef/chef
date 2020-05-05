@@ -68,13 +68,44 @@ func Group() {
 	fmt.Println("Get nothere", groupOutMissing)
 
 	// Update a group
-	group1.GroupName = "group1-new"
-	group1.Users = append(group1.Users, "pivotal")
-	groupUpdate, err := client.Groups.Update(group1)
+	groupupdate := chef.GroupUpdate{}
+	groupupdate.Name = "group1"
+	groupupdate.GroupName = "group1"
+	groupupdate.Actors.Clients = groupOut.Clients
+	groupupdate.Actors.Groups = []string{}
+	groupupdate.Actors.Users = []string{"pivotal"}
+	groupUpOut, err := client.Groups.Update(groupupdate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue updating group1:", err)
 	}
-	fmt.Printf("Update group1 %+v\n", groupUpdate)
+	fmt.Printf("Update group1 %+v\n", groupUpOut)
+
+	// Get new group after update
+	groupOut, err = client.Groups.Get("group1")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue getting group1:", err)
+	}
+	fmt.Printf("Get group1 after update %+v\n", groupOut)
+
+	// Update a group add groups and change the group name
+	groupupdate = chef.GroupUpdate{}
+	groupupdate.Name = "group1"
+	groupupdate.GroupName = "group1-new"
+	groupupdate.Actors.Clients = []string{}
+	groupupdate.Actors.Groups = []string{"admins"}
+	groupupdate.Actors.Users = []string{}
+	groupUpOut, err = client.Groups.Update(groupupdate)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue updating group1:", err)
+	}
+	fmt.Printf("Update group1 %+v\n", groupUpOut)
+
+	// Get new group after update and rename
+	groupOut, err = client.Groups.Get("group1-new")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue getting group1-new:", err)
+	}
+	fmt.Printf("Get group1-new after update %+v\n", groupOut)
 
 	// Clean up
 	err = client.Groups.Delete("group1-new")

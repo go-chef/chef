@@ -12,7 +12,7 @@ import (
 func Stats() {
 	// Create a client for access
 	client := Client()
-	password  := os.Args[6]
+	password := os.Args[6]
 
 	stats, err := client.Stats.Get("statsuser", password)
 	if err != nil {

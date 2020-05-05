@@ -48,15 +48,25 @@ func TestGroupsService_Methods(t *testing.T) {
 	mux.HandleFunc("/groups/group3", func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		// TODO: Add true test for PUT, updating an existing value.
-		case r.Method == "GET" || r.Method == "PUT":
+		case r.Method == "GET":
 			fmt.Fprintf(w, `{
-                "name": "group3",
-                "groupname": "group3",
-                "orgname": "Test Org, LLC",
-                "actors": ["tester"],
-                "clients": ["tester"],
-                "groups": ["nested-group"]
-            }`)
+               		"name": "group3",
+                	"groupname": "group3",
+                	"orgname": "Test Org, LLC",
+                	"actors": ["tester"],
+                	"clients": ["tester"],
+                	"groups": ["nested-group"]
+            		}`)
+		case r.Method == "PUT":
+			fmt.Fprintf(w, `{
+                	"name": "group3",
+                	"groupname": "group3",
+                	"actors": {
+                		"clients": [],
+                		"groups": [],
+                		"users": ["tester2"]
+			}
+            		}`)
 		case r.Method == "DELETE":
 		}
 	})
@@ -104,14 +114,17 @@ func TestGroupsService_Methods(t *testing.T) {
 	// test Update
 	groupupdate := GroupUpdate{}
 	groupupdate.Name = "group3"
+	groupupdate.GroupName = "group3"
+	groupupdate.Actors.Clients = []string{}
+	groupupdate.Actors.Groups = []string{}
 	groupupdate.Actors.Users = []string{"tester2"}
 	updateRes, err := client.Groups.Update(groupupdate)
 	if err != nil {
-		t.Errorf("Groups.Update returned error: %v", err)
+		t.Errorf("Groups Update returned error %v", err)
 	}
 
-	if !reflect.DeepEqual(updateRes, group) {
-		t.Errorf("Groups.Update returned %+v, want %+v", updateRes, group)
+	if !reflect.DeepEqual(updateRes, groupupdate) {
+		t.Errorf("Groups Update returned %+v, want %+v", updateRes, groupupdate)
 	}
 
 	// test Delete

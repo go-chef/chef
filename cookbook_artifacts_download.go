@@ -5,7 +5,7 @@ import (
 	"path"
 )
 
-// DownloadTo downloads a cookbook to the specified local directory on disk
+// DownloadTo downloads a cookbook artifact to the specified local directory on disk
 func (c *CBAService) DownloadTo(name, id, localDir string) error {
 
 	cba, err := c.GetVersion(name, id)

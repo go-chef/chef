@@ -22,6 +22,8 @@ var cases = map[string]func(){
 	"license": testapi.License,
 	"node": testapi.Node,
 	"organization": testapi.Organization,
+	"policy": testapi.Policy,
+	"policygroup": testapi.PolicyGroup,
 	"principals": testapi.Principals,
 	"principals_add": testapi.PrincipalsAdd,
 	"principals_del": testapi.PrincipalsDel,

@@ -37,6 +37,13 @@ func Policy() {
         }
         fmt.Printf("Get %+v revision %+v\n", policyName, policyRevOut)
 
+	// Delete a revision from a policy
+	revOutDel, err := client.Policies.DeleteRevision(policyName, revisionID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue deleting revision from %+v: %+v\n", policyName, err)
+	}
+	fmt.Printf("Delete revision %v from %+v %+v\n",revisionID, policyName, revOutDel)
+
 	// Try to get a missing policy
 	policyOutMissing, err := client.Policies.Get("nothere")
 	if err != nil {

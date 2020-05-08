@@ -82,13 +82,13 @@ func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 
 // Delete deletes a policy
 //  DELETE /policies/name
-func (c *PolicyService) Delete(name string) (data PolicyGetResponse, err error) {
-	path := fmt.Sprintf("policies/%s", name)
+func (c *PolicyService) Delete(policyName string) (data PolicyGetResponse, err error) {
+	path := fmt.Sprintf("policies/%s", policyName)
 	err = c.client.magicRequestDecoder("DELETE", path, nil, &data)
 	return
 }
 
-// GetRevisionDetails retruns details of a specific revision from Chef Server
+// GetRevisionDetails returns details of a specific revision from Chef Server
 //  GET /policies/<policy-name>/revisions/<revision-id>
 func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
@@ -96,5 +96,13 @@ func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string)
 	return
 }
 
+// DeleteRevision deletes a revisiom from a policy
+//  GET /policies/<policy-name>/revisions/<revision-id>
+func (c *PolicyService) DeleteRevision(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
+	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
+	err = c.client.magicRequestDecoder("DELETE", path, nil, &data)
+	return
+}
+
+// TODO: Add these methods
 // POST  policies/policy-name/revisions
-// DELETE policies/<policy-name>/revisions/<revision-id>

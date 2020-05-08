@@ -7,4 +7,5 @@ describe command('/go/src/testapi/bin/policy') do
   its('stdout') { should match(/List policies map\[testsamp:\{Uri/) }
   its('stdout') { should match(/Get testsamp.* map\[revisions:map/) }
   its('stdout') { should match(/Get testsamp.* revision \{RevisionID/) }
+  its('stdout') { should match(/Delete revision .*from testsamp.*\{RevisionID/) }
 end

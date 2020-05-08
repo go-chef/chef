@@ -72,11 +72,19 @@ func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
 	return
 }
 
-// Get retruns details for a specific policy
+// Get returns details for a specific policy
 //  GET /policies/name
 func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 	path := fmt.Sprintf("policies/%s", name)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+	return
+}
+
+// Delete deletes a policy
+//  DELETE /policies/name
+func (c *PolicyService) Delete(name string) (data PolicyGetResponse, err error) {
+	path := fmt.Sprintf("policies/%s", name)
+	err = c.client.magicRequestDecoder("DELETE", path, nil, &data)
 	return
 }
 
@@ -87,3 +95,6 @@ func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
 	return
 }
+
+// POST  policies/policy-name/revisions
+// DELETE policies/<policy-name>/revisions/<revision-id>

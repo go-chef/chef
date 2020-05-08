@@ -43,6 +43,13 @@ func Policy() {
 		fmt.Fprintf(os.Stderr, "Issue getting nothere: %+v\n", err)
 	}
 	fmt.Printf("Get nothere %+v\n", policyOutMissing)
+
+	// Delete a policy
+	policyOutDel, err := client.Policies.Delete("testsamp2")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue deleting testsamp2: %+v\n", err)
+	}
+	fmt.Printf("Delete testsamp2 %+v\n", policyOutDel)
 }
 
 func firstPolicy(policyList chef.PoliciesGetResponse) (string, chef.Policy) {

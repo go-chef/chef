@@ -21,3 +21,19 @@ func (e *PolicyGroupService) List() (data PolicyGroupGetResponse, err error) {
 	err = e.client.magicRequestDecoder("GET", "policy_groups", nil, &data)
 	return
 }
+
+// Delete deletes a policy group.
+// DELETE /policy_groups/GROUP
+// Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
+func (e *PolicyGroupService) Delete(policyGroupName string) (data PolicyGroupGetResponse, err error) {
+	err = e.client.magicRequestDecoder("DELETE", "policy_groups/" + policyGroupName, nil, &data)
+	return
+}
+
+
+// policy_group oc_chef_wm_policy_groups.erl  
+  // GET
+// policy_group/GN oc_chef_wm_named_policy_group.erl
+ // DELETE, GET
+// policy_group/GN/policies/PN  not sure of the path, could be revisons instead of policies oc_chef_wm_named_policy_named_revision.erl
+ // DELETE, GET, PUT

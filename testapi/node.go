@@ -59,6 +59,14 @@ func Node() {
 	}
 	fmt.Printf("Get node1 %+v\n", serverNode)
 
+	// Check node1 exits
+	err = client.Nodes.Head("node1")
+	fmt.Println("Head node node1:", err)
+
+	// Check nothere exits
+	err = client.Nodes.Head("nothere")
+	fmt.Println("Head node nothere:", err)
+
 	// update node
 	node1.RunList = append(node1.RunList, "recipe[works]")
 	updateNode, err := client.Nodes.Put(node1)

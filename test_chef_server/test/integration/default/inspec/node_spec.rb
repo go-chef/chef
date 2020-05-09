@@ -14,4 +14,6 @@ describe command('/go/src/testapi/bin/node') do
   its('stdout') { should match(/^Get node1 after update/) }
   its('stdout') { should match(/^Delete node1 <nil>/) }
   its('stdout') { should match(/^List nodes after cleanup map\[\]/) }
+  its('stdout') { should match(/^Head node node1: <nil>/) }
+  its('stdout') { should match(/^Head node nothere: .*404/) }
 end

@@ -65,6 +65,7 @@ func TestNodesService_Methods(t *testing.T) {
 	    "chef_type": "node",
 	    "chef_environment": "development"
 		}`)
+		case r.Method == "HEAD":
 		case r.Method == "DELETE":
 		}
 	})
@@ -91,6 +92,12 @@ func TestNodesService_Methods(t *testing.T) {
 	wantNode.Environment = "development"
 	if !reflect.DeepEqual(node, wantNode) {
 		t.Errorf("Nodes.Get returned %+v, want %+v", node, wantNode)
+	}
+
+	// test HEAD
+	err = client.Nodes.Head("node1")
+	if err != nil {
+		t.Errorf("Nodes.Head returned error: %v", err)
 	}
 
 	// test Post

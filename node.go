@@ -54,6 +54,15 @@ func (e *NodeService) Get(name string) (node Node, err error) {
 	return
 }
 
+// Head gets a node from the Chef server. Does not return a json body.
+//
+// Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
+func (e *NodeService) Head(name string) (err error) {
+	url := fmt.Sprintf("nodes/%s", name)
+	err = e.client.magicRequestDecoder("HEAD", url, nil, nil)
+	return
+}
+
 // Post creates a Node on the chef server
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes

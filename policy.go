@@ -45,7 +45,7 @@ type CookbookLock struct {
 	Version          string            `json:"version,omitempty"`
 	Identifier       string            `json:"identifier,omitempty"`
 	DottedIdentifier string            `json:"dotted_decimal_identifier,omitempty"`
-	Origin		 string		   `json:"origin,omitempty"`
+	Origin           string            `json:"origin,omitempty"`
 	Source           string            `json:"source,omitempty"`
 	CacheKey         string            `json:"cache_key,omitempty"`
 	SCM              SCMDetail         `json:"scm_info,omitempty"`

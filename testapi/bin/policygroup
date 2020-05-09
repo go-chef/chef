@@ -4,6 +4,11 @@
 
 BASE=$(dirname $0)
 
+chef install ${BASE}/cookbooks/testsamp/Policyfile.rb -c ${BASE}/knife.rb
+chef push testgroup ${BASE}/cookbooks/testsamp/Policyfile.rb -c ${BASE}/knife.rb
+chef install ${BASE}/cookbooks/testsamp2/Policyfile.rb -c ${BASE}/knife.rb
+chef push testgroup ${BASE}/cookbooks/testsamp2/Policyfile.rb -c ${BASE}/knife.rb
+
 . ${BASE}/setup
 . ${BASE}/creds
-go run ${BASE}/../testcase/testcase.go policygroup ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run -tags debug ${BASE}/../testcase/testcase.go policygroup ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

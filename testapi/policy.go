@@ -5,8 +5,8 @@ package testapi
 
 import (
 	"fmt"
-	"os"
 	"github.com/go-chef/chef"
+	"os"
 )
 
 // policy exercise the chef server api
@@ -31,18 +31,18 @@ func Policy() {
 	fmt.Printf("Get %+v %+v\n", policyName, policyOut)
 
 	// Get policy revision
-        policyRevOut, err := client.Policies.GetRevisionDetails(policyName, revisionID)
-        if err != nil {
-                fmt.Fprintf(os.Stderr, "Issue getting %+v err %+v\n", policyName, err)
-        }
-        fmt.Printf("Get %+v revision %+v\n", policyName, policyRevOut)
+	policyRevOut, err := client.Policies.GetRevisionDetails(policyName, revisionID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Issue getting %+v err %+v\n", policyName, err)
+	}
+	fmt.Printf("Get %+v revision %+v\n", policyName, policyRevOut)
 
 	// Delete a revision from a policy
 	revOutDel, err := client.Policies.DeleteRevision(policyName, revisionID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue deleting revision from %+v: %+v\n", policyName, err)
 	}
-	fmt.Printf("Delete revision %v from %+v %+v\n",revisionID, policyName, revOutDel)
+	fmt.Printf("Delete revision %v from %+v %+v\n", revisionID, policyName, revOutDel)
 
 	// Try to get a missing policy
 	policyOutMissing, err := client.Policies.Get("nothere")
@@ -66,7 +66,7 @@ func firstPolicy(policyList chef.PoliciesGetResponse) (string, chef.Policy) {
 	return "", chef.Policy{}
 }
 
-func firstRevision(policy chef.Policy) (string) {
+func firstRevision(policy chef.Policy) string {
 	for key, _ := range policy.Revisions {
 		return key
 	}

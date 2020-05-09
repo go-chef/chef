@@ -1,0 +1,11 @@
+{
+  "policies": {
+    "testsamp2": {
+      "revision_id": "6c1ccd4baa27ae2cb51af88ef9b2a54bb04b9cadc3f863009ca88b44c55e060d"
+    },
+    "testsamp": {
+      "revision_id": "8a547529a2e69b7b9140418d5a62b43978bbbff0ff333257880a617cdc08c24c"
+    }
+  },
+  "uri": "https://testhost/organizations/test/policy_groups/testgroup"
+}

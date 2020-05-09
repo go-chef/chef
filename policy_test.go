@@ -131,3 +131,33 @@ func TestGetPolicyRevision(t *testing.T) {
 	}
 
 }
+
+func TestDeletePolicyRevision(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const policyName = "base"
+	const policyRevision = "8228b0e381fe1de3ee39bf51e93029dbbdcecc61fb5abea4ca8c82591c0b529b"
+
+	file, err := ioutil.ReadFile(policyRevisionResponseFile)
+	if err != nil {
+		t.Error(err)
+	}
+
+	mux.HandleFunc(fmt.Sprintf("/policies/%s/revisions/%s", policyName, policyRevision), func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(file))
+	})
+
+	data, err := client.Policies.DeleteRevision(policyName, policyRevision)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if data.Name != policyName {
+		t.Errorf("Unexpected policy name: %+v", data.Name)
+	}
+
+	if data.RevisionID != policyRevision {
+		t.Errorf("Unexpected policy revision ID: %+v", data.RevisionID)
+	}
+}

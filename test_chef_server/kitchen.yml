@@ -21,6 +21,7 @@ suites:
       - recipe[test_chef_server::default]
       - recipe[test_chef_server::chef_objects]
       - recipe[test_chef_server::chefapi]
+      - recipe[test_chef_server::workstation]
     attributes:
       chef-server:
         accept_license: true

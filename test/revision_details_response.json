@@ -1,0 +1,62 @@
+{
+  "revision_id": "8a547529a2e69b7b9140418d5a62b43978bbbff0ff333257880a617cdc08c24c",
+  "name": "testsamp",
+  "run_list": [
+    "recipe[testsamp::default]"
+  ],
+  "included_policy_locks": [],
+  "cookbook_locks": {
+    "line": {
+      "version": "2.8.0",
+      "identifier": "787c9f316145715dd13391b08b0e8978e83e92e9",
+      "dotted_decimal_identifier": "33914020375381361.26407192251894542.151152385495785",
+      "cache_key": "line-2.8.0-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/line/versions/2.8.0/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/line/versions/2.8.0/download",
+        "version": "2.8.0"
+      }
+    },
+    "testsamp": {
+      "version": "0.1.0",
+      "identifier": "d5399d26b16a30081f79ce305c305eceab457f01",
+      "dotted_decimal_identifier": "60017517161179696.2286407824464944.104241729732353",
+      "source": ".",
+      "cache_key": null,
+      "scm_info": {
+        "scm": "git",
+        "remote": null,
+        "revision": "250b2c59e801ea52f4507c0d18e3d4f3c21c0c71",
+        "working_tree_clean": false,
+        "published": false,
+        "synchronized_remote_branches": []
+      },
+      "source_options": {
+        "path": "."
+      }
+    }
+  },
+  "default_attributes": {},
+  "override_attributes": {},
+  "solution_dependencies": {
+    "Policyfile": [
+      [
+        "line",
+        "= 2.8.0"
+      ],
+      [
+        "testsamp",
+        ">= 0.0.0"
+      ]
+    ],
+    "dependencies": {
+      "line (2.8.0)": [],
+      "testsamp (0.1.0)": [
+        [
+          "line",
+          ">= 0.0.0"
+        ]
+      ]
+    }
+  }
+}

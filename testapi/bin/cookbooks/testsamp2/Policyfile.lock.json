@@ -1,0 +1,72 @@
+{
+  "revision_id": "6c1ccd4baa27ae2cb51af88ef9b2a54bb04b9cadc3f863009ca88b44c55e060d",
+  "name": "testsamp2",
+  "run_list": [
+    "recipe[testsamp2::default]"
+  ],
+  "included_policy_locks": [
+
+  ],
+  "cookbook_locks": {
+    "testsamp2": {
+      "version": "0.1.0",
+      "identifier": "187f02cb4fd758eb1a0a4ee4635535651113503c",
+      "dotted_decimal_identifier": "6895049418725208.66175251102589781.58708194447420",
+      "source": ".",
+      "cache_key": null,
+      "scm_info": {
+        "scm": "git",
+        "remote": null,
+        "revision": "a57cb13e06390c2416e4c98164f530e9a2b1af6b",
+        "working_tree_clean": false,
+        "published": false,
+        "synchronized_remote_branches": [
+
+        ]
+      },
+      "source_options": {
+        "path": "."
+      }
+    },
+    "vagrant": {
+      "version": "2.0.1",
+      "identifier": "66c932a4b46d5d06ad76612370a58a14f26b9ec3",
+      "dotted_decimal_identifier": "28931666973322589.1879573807722661.151822571118275",
+      "cache_key": "vagrant-2.0.1-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/vagrant/versions/2.0.1/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/vagrant/versions/2.0.1/download",
+        "version": "2.0.1"
+      }
+    }
+  },
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+
+  },
+  "solution_dependencies": {
+    "Policyfile": [
+      [
+        "testsamp2",
+        ">= 0.0.0"
+      ],
+      [
+        "vagrant",
+        "= 2.0.1"
+      ]
+    ],
+    "dependencies": {
+      "testsamp2 (0.1.0)": [
+        [
+          "vagrant",
+          ">= 0.0.0"
+        ]
+      ],
+      "vagrant (2.0.1)": [
+
+      ]
+    }
+  }
+}

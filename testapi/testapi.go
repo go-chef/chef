@@ -24,21 +24,26 @@ func Client() *chef.Client {
 	if err != nil {
 		skipssl = true
 	}
+	version := "1.0"
+	if len(os.Args) > 6 {
+		version = os.Args[6]
+	}
 
 	// Create a client for access
-	return buildClient(user, keyfile, chefurl, skipssl)
+	return buildClient(user, keyfile, chefurl, skipssl, version)
 }
 
 // buildClient creates a connection to a chef server using the chef api.
 // goiardi uses port 4545 by default, chef-zero uses 8889, chef-server uses 443
-func buildClient(user string, keyfile string, baseurl string, skipssl bool) *chef.Client {
+func buildClient(user string, keyfile string, baseurl string, skipssl bool, version string) *chef.Client {
 	key := clientKey(keyfile)
 	client, err := chef.NewClient(&chef.Config{
-		Name:    user,
-		Key:     string(key),
-		BaseURL: baseurl,
-		SkipSSL: skipssl,
-		RootCAs: chefCerts(),
+		Name:                  user,
+		Key:                   string(key),
+		BaseURL:               baseurl,
+		SkipSSL:               skipssl,
+		RootCAs:               chefCerts(),
+		AuthenticationVersion: version,
 	})
 
 	if err != nil {

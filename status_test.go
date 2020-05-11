@@ -3,7 +3,6 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	// "github.com/google/go-cmp/cmp"
 	"io"
 	"log"
 	"net/http"

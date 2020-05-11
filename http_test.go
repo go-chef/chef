@@ -126,9 +126,10 @@ func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 	client, _ = NewClient(&Config{
-		Name:    userid,
-		Key:     privateKey,
-		BaseURL: server.URL,
+		Name:                  userid,
+		Key:                   privateKey,
+		BaseURL:               server.URL,
+		AuthenticationVersion: "1.0",
 	})
 }
 
@@ -221,7 +222,7 @@ func TestSignRequestNoBody(t *testing.T) {
 		}
 	}
 	if count != len(testRequiredHeaders) {
-		t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
+		t.Errorf("apiRequestHeaders didn't return all of testRequiredHeaders received: %+v required %+v", request.Header, testRequiredHeaders)
 	}
 }
 
@@ -519,25 +520,25 @@ func TestGenerateSignatureError(t *testing.T) {
 func TestSignatureContent(t *testing.T) {
 	pk, _ := PrivateKeyFromString([]byte(privateKey))
 	ac := &AuthConfig{
-		PrivateKey: pk,
-		ClientName: userid,
+		PrivateKey:            pk,
+		ClientName:            userid,
+		AuthenticationVersion: "1.0",
 	}
 	vals := map[string]string{
-                "Method":                   "GET",
-                "Hashed Path":              HashStr("/client"),
-                "Accept":                   "application/json",
-                "X-Chef-Version":           ChefVersion,
-                "X-Ops-Server-API-Version": "1",
-                "X-Ops-Timestamp":          "1990-12-31T15:59:60-08:00",
-                "X-Ops-UserId":             ac.ClientName,
-                "X-Ops-Sign":               "algorithm=sha1;version=1.0",
-                "X-Ops-Content-Hash":       "Content-Hash",
-        }
+		"Method":                   "GET",
+		"Accept":                   "application/json",
+		"Hashed Path":              "FaX3AVJLlDDqHB7giEG/2EbBsR0=",
+		"X-Chef-Version":           ChefVersion,
+		"X-Ops-Server-API-Version": "1",
+		"X-Ops-Timestamp":          "1990-12-31T15:59:60-08:00",
+		"X-Ops-UserId":             ac.ClientName,
+		"X-Ops-Content-Hash":       "Content-Hash",
+	}
 	expected := "Method:GET\nHashed Path:FaX3AVJLlDDqHB7giEG/2EbBsR0=\nX-Ops-Content-Hash:Content-Hash\nX-Ops-Timestamp:1990-12-31T15:59:60-08:00\nX-Ops-UserId:tester"
 
 	content := ac.SignatureContent(vals)
 	if expected != content {
-		t.Errorf("Unexpected content")
+		t.Errorf("Unexpected content wanted: %+v\n delivered: %+v", expected, content)
 	}
 }
 
@@ -604,6 +605,8 @@ func TestNewClient(t *testing.T) {
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
+
+	// TODO: Test the value of Authentication assisgned
 }
 
 func TestNewRequest(t *testing.T) {

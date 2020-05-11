@@ -3,14 +3,30 @@ package chef
 import (
 	"crypto/rsa"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"io"
 	"math/big"
 )
 
+// GenerateDigestSignature will generate a signature of the given data using a provided digest
+func GenerateDigestSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
+	// TODO: 
+	// for 1.3 we should use this, have to pass in the digest
+	// rsa https://golang.org/pkg/crypto/rsa/#PrivateKey.Sign 
+	// func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error)
+	sig, err := privateEncrypt(priv, []byte(data))
+	if err != nil {
+		return nil, err
+	}
+
 // GenerateSignature will generate a signature ( sign ) the given data
 func GenerateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
+	// TODO: 
+	// for 1.3 we should use this, have to pass in the digest
+	// rsa https://golang.org/pkg/crypto/rsa/#PrivateKey.Sign 
+	// func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error)
 	sig, err := privateEncrypt(priv, []byte(data))
 	if err != nil {
 		return nil, err
@@ -82,10 +98,18 @@ func privateEncrypt(key *rsa.PrivateKey, data []byte) (enc []byte, err error) {
 }
 
 // HashStr returns the base64 encoded SHA1 sum of the toHash string
-func HashStr(toHash string) string {
+func HashStr(toHash string) string { // Auth
 	h := sha1.New()
 	io.WriteString(h, toHash)
 	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return hashed
+}
+
+// HashStr256 returns the base64 encoded SHA256 sum of the toHash string
+func HashStr256(toHash string) string { // Auth
+	sum := sha256.Sum256([]byte(toHash))
+	sumslice := sum[:]
+	hashed := base64.StdEncoding.EncodeToString(sumslice)
 	return hashed
 }
 

@@ -494,12 +494,7 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		request.Header.Set(key, vals[key])
 	}
 
-	// To validate the signature it seems to be very particular
-	var content string
-	for _, key := range []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"} {
-		content += fmt.Sprintf("%s:%s\n", key, vals[key])
-	}
-	content = strings.TrimSuffix(content, "\n")
+	content := ac.SignatureContent(vals)
 	// generate signed string of headers
 	// Since we've gone through additional validation steps above,
 	// we shouldn't get an error at this point
@@ -518,6 +513,15 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	return nil
+}
+
+func (ac AuthConfig) SignatureContent(vals map[string]string) (content string) {
+	// The signature is very particular, the exact headers and the order they are included in the signature matter
+	for _, key := range []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"} {
+		content += fmt.Sprintf("%s:%s\n", key, vals[key])
+	}
+	content = strings.TrimSuffix(content, "\n")
+	return
 }
 
 // PrivateKeyFromString parses an RSA private key from a string

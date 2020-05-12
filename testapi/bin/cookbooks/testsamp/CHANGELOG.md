@@ -1,6 +1,6 @@
-# testsamp2 CHANGELOG
+# testsamp CHANGELOG
 
-This file is used to list changes made in each version of the testsamp2 cookbook.
+This file is used to list changes made in each version of the testsamp cookbook.
 
 # 0.1.0
 

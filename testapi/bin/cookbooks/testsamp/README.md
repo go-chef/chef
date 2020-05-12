@@ -1,4 +1,4 @@
-# testsamp2
+# testsamp
 
 TODO: Enter the cookbook description here.
 

@@ -17,8 +17,6 @@ func Search() {
 	// Give the nodes time to end up in all of the data bases.  An immediate search will show no nodes
 	time.Sleep(10 * time.Second)
 
-	// TODO: Search limit is hardcoded to 1000, figure out how to do paging and to set the limit
-
 	// List Indexes
 	indexes, err := client.Search.Indexes()
 	if err != nil {
@@ -34,6 +32,7 @@ func Search() {
 
 	// build a seach query
 	query, err = client.Search.NewQuery("node", "name:node*")
+	query.Rows = 2
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue building query ", err)
 	}
@@ -45,6 +44,15 @@ func Search() {
 		fmt.Fprintln(os.Stderr, "Issue running query ", err)
 	}
 	fmt.Printf("List nodes from query %+v\n", res)
+
+	// TODO: Get the next page of results
+	fmt.Printf("Query after the call %+v\n", query)
+	query.Start = query.Start + query.Rows
+	res, err = query.Do(client)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running 2nd query ", err)
+	}
+	fmt.Printf("List 2nd set of nodes from query %+v\n", res)
 
 	// You can also use the service to run a query
 	res, err = client.Search.Exec("node", "name:node1")

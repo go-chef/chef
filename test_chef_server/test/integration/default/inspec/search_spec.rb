@@ -6,7 +6,7 @@ describe command('/go/src/testapi/bin/search') do
   its('stderr') { should_not match(/node/) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(%r{^List indexes map\[(?=.*node:https://testhost/organizations/test/search/node)(?=.*role:https://testhost/organizations/test/search/role)(?=.*client:https://testhost/organizations/test/search/client)(?=.*environment:https://testhost/organizations/test/search/environment).*\] EndIndex}) }
-  its('stdout') { should match(/^List new query node\?q=name:node\*\&rows=1000\&sort=X_CHEF_id_CHEF_X asc\&start=0/) }
+  its('stdout') { should match(/^List new query node\?q=name:node\*\&rows=2\&sort=X_CHEF_id_CHEF_X asc\&start=0/) }
   its('stdout') { should match(/^List nodes from query \{Total:2 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from Exec query \{Total:1 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from all nodes Exec query \{Total:4 Start:0 Rows:\[/) }

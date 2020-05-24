@@ -361,7 +361,7 @@ func extractErrorMsg(data []byte) string {
 			default:
 				debug("Unknown type  %+v data %+v\n", inval, val)
 			}
-			return strings.Trimspace(rmsg)
+			return strings.TrimSpace(rmsg)
 		}
 	default:
 		debug("Unknown type  %+v data %+v msg %+v\n", t, string(data), errorMsg.Error)

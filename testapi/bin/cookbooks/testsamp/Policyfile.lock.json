@@ -1,5 +1,5 @@
 {
-  "revision_id": "0fdab743f140f12bd7eaebec79389338d200f9aac3070110a84d5c52342fb381",
+  "revision_id": "8a547529a2e69b7b9140418d5a62b43978bbbff0ff333257880a617cdc08c24c",
   "name": "testsamp",
   "run_list": [
     "recipe[testsamp::default]"
@@ -21,21 +21,11 @@
     },
     "testsamp": {
       "version": "0.1.0",
-      "identifier": "52132db9e56e5397ac42502fa3c90b35a6754acf",
-      "dotted_decimal_identifier": "23102035203550803.42692122296427465.12325053876943",
+      "identifier": "d5399d26b16a30081f79ce305c305eceab457f01",
+      "dotted_decimal_identifier": "60017517161179696.2286407824464944.104241729732353",
       "source": ".",
       "cache_key": null,
-      "scm_info": {
-        "scm": "git",
-        "remote": null,
-        "revision": "407aea1e6f3782bde912955aa06c1659548237c7",
-        "working_tree_clean": false,
-        "published": true,
-        "synchronized_remote_branches": [
-          "origin/HEAD -> origin/master",
-          "origin/master"
-        ]
-      },
+      "scm_info": null,
       "source_options": {
         "path": "."
       }

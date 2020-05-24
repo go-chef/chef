@@ -357,11 +357,11 @@ func extractErrorMsg(data []byte) string {
 		for _, val := range t {
 			switch inval := val.(type) {
 			case string:
-				rmsg = rmsg + inval
+				rmsg = rmsg + inval + "\n"
 			default:
 				debug("Unknown type  %+v data %+v\n", inval, val)
 			}
-			return rmsg
+			return strings.Trimspace(rmsg)
 		}
 	default:
 		debug("Unknown type  %+v data %+v msg %+v\n", t, string(data), errorMsg.Error)

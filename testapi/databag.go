@@ -48,6 +48,12 @@ func Databag() {
 		fmt.Fprintln(os.Stderr, "Issue getting nothere:", err)
 	}
 	fmt.Println("Get nothere", databagOutMissing)
+	cerr, err = chef.ChefError(err)
+	if cerr != nil {
+		fmt.Fprintln(os.Stdout, "Missing data bag. Code", cerr.StatusCode())
+		fmt.Fprintln(os.Stdout, "Missing data bag. Msg", cerr.StatusMsg())
+		fmt.Fprintln(os.Stdout, "Missing data bag. Text", string(cerr.StatusText()))
+	}
 
 	// List databags after adding
 	BagList, err = client.DataBags.List()

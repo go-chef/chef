@@ -64,6 +64,17 @@ func main() {
 }
 ```
 
+## Chef API Error Status
+To get tthhe error status and error message returned from calls to the Chef API Server
+you cane use ChefError to unwind the ErrorResponse and access the original http error.
+These methods are available to get specific information from the the error.
+Error() returns a formatted error message with the URL and status code.
+StatusCode() returns the original return status code.
+StatusMsg() returns the error message extracted from the error message body.
+StatusText() returns the returned error message body, usually JSON.
+StatusMethod() returns the name of the method used for the request.
+StatusURL() returns the URL object used for the request.
+
 ## CONTRIBUTING
 
 If you feel like contributing, great! Just fork the repo, make your

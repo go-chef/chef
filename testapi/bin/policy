@@ -12,4 +12,4 @@ chef push testgroup ${BASE}/cookbooks/testsamp2/Policyfile.rb -c ${BASE}/knife.r
 
 . ${BASE}/setup
 . ${BASE}/creds
-go run -tags debug ${BASE}/../testcase/testcase.go policy ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run ${BASE}/../testcase/testcase.go policy ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

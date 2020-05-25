@@ -548,7 +548,7 @@ func TestGenerateSignatureError(t *testing.T) {
 func TestRequestError(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Not Available", http.StatusServiceUnavailable)
+		http.Error(w, `{"error":["Not Available"]}`, http.StatusServiceUnavailable)
 	}))
 	defer ts.Close()
 
@@ -560,10 +560,20 @@ func TestRequestError(t *testing.T) {
 		t.Errorf("Request Error returned %+v instead of GET URL 503", cerr.Error())
 	}
 	if cerr.StatusCode() != http.StatusServiceUnavailable {
-		t.Errorf("Request Error returned %+v instead of %+v\n", cerr.StatusCode(), http.StatusServiceUnavailable)
+		t.Errorf("Request Error returned code %+v instead of %+v\n", cerr.StatusCode(), http.StatusServiceUnavailable)
 	}
 	if cerr.StatusMethod() != "GET" {
-		t.Errorf("Request Error returned %+v instead of %+v\n", cerr.StatusMethod(), "GET")
+		t.Errorf("Request Error returned method %+v instead of %+v\n", cerr.StatusMethod(), "GET")
+	}
+	if cerr.StatusMsg() != "Not Available" {
+		t.Errorf("Request Error returned msg '%+v' instead of %+v\n", cerr.StatusMsg(), "Not Available")
+	}
+	if strings.TrimSpace(string(cerr.StatusText())) != `{"error":["Not Available"]}` {
+		t.Errorf("Request Error returned text %+v instead of %+v\n", string(cerr.StatusText()), "Not Available")
+	}
+	matched, err = regexp.MatchString(`http://127.0.0.1:\d+`, cerr.StatusURL().String())
+	if !matched {
+		t.Errorf("Request Error returned URL %+v instead of %+v\n", cerr.StatusURL(), "http://127.0.0.1")
 	}
 	matched, err = regexp.MatchString(`http://127.0.0.1:\d+`, cerr.Error())
 	if !matched {

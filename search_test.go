@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSearch_Get(t *testing.T) {
@@ -85,5 +87,46 @@ func TestSearch_ExecDo(t *testing.T) {
 	if err != nil {
 		t.Errorf("Search.Exec failed err: %+v", err)
 	}
+
+}
+
+func TestSearch_PartialExec(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/search/node", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+			"total": 1,
+			"start": 0,
+			"rows": [
+			   {
+				"overrides": {"hardware_type": "laptop"},
+				"name": "latte",
+				"chef_type": "node",
+				"json_class": "Chef::Node",
+				"policy_group": "testing",
+				"policy_name": "grafana",
+				"policy_revision": "123xyz00009999",
+				"attributes": {"hardware_type": "laptop"},
+				"run_list": ["recipe[unicorn]"],
+				"defaults": {}
+			   }
+					 ]
+			}`)
+	})
+
+	query := map[string]interface{}{
+		"name":            []string{"name"},
+		"policy_group":    []string{"policy_group"},
+		"policy_name":     []string{"policy_name"},
+		"policy_revision": []string{"policy_revision"},
+	}
+
+	pres, err := client.Search.PartialExec("node", "*.*", query)
+	if err != nil {
+		t.Errorf("Search.PartialExec failed err: %+v", err)
+	}
+
+	assert.Equal(t, "grafana", pres.Rows[0].(map[string]interface{})["policy_name"])
 
 }

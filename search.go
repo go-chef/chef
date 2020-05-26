@@ -136,7 +136,6 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 	}
 
 	err = e.client.magicRequestDecoder("POST", fullUrl, body, &res)
-
 	if err != nil {
 		return
 	}
@@ -168,7 +167,7 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 	return
 }
 
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id25
+// Chef API docs: https://docs.chef.io/api_chef_server/#get-46
 func (e SearchService) Indexes() (data map[string]string, err error) {
 	err = e.client.magicRequestDecoder("GET", "search", nil, &data)
 	return

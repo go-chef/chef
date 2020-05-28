@@ -3,7 +3,7 @@ module github.com/chef/go-chef
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.30.20 // indirect
+	github.com/aws/aws-sdk-go v1.31.6 // indirect
 	github.com/axw/gocov v1.0.0 // indirect
 	github.com/cenkalti/backoff v2.1.1+incompatible
 	github.com/ctdk/chefcrypto v1.0.0 // indirect
@@ -18,9 +18,9 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/vault/api v1.0.4 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/lib/pq v1.5.1 // indirect
-	github.com/mattn/goveralls v0.0.5 // indirect
-	github.com/mitchellh/mapstructure v1.3.0 // indirect
+	github.com/lib/pq v1.5.2 // indirect
+	github.com/mattn/goveralls v0.0.6 // indirect
+	github.com/mitchellh/mapstructure v1.3.1 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
@@ -30,11 +30,11 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/tideland/golib v4.24.2+incompatible // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // indirect
-	golang.org/x/net v0.0.0-20200505041828-1ed23360d12c // indirect
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
+	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
-	golang.org/x/tools v0.0.0-20200505023115-26f46d2f7ef8 // indirect
+	golang.org/x/tools v0.0.0-20200527183253-8e7acdbce89d // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )

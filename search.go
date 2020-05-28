@@ -148,9 +148,16 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 
 	for start := res.Start; start+inc <= total; start += inc {
 		query.Start = start + inc
+
 		fullUrl = fmt.Sprintf("search/%s", query)
 
-		err = e.client.magicRequestDecoder("POST", fullUrl, body, &paged_res)
+		newbody, error := JSONReader(params)
+		if error != nil {
+			debug("Problem encoding params for new body")
+			return
+		}
+
+		err = e.client.magicRequestDecoder("POST", fullUrl, newbody, &paged_res)
 		if err != nil {
 			return
 		}
@@ -160,9 +167,7 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 	return
 }
 
-// List lists the nodes in the Chef server.
-//
-// Chef API docs: http://docs.opscode.com/api_chef_server.html#id25
+// Chef API docs: https://docs.chef.io/api_chef_server/#get-46
 func (e SearchService) Indexes() (data map[string]string, err error) {
 	err = e.client.magicRequestDecoder("GET", "search", nil, &data)
 	return

@@ -1,6 +1,8 @@
 package chef
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -10,23 +12,18 @@ import (
 	"math/big"
 )
 
-// GenerateDigestSignature will generate a signature of the given data using a provided digest
-func GenerateDigestSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
-	// TODO: 
-	// for 1.3 we should use this, have to pass in the digest
-	// rsa https://golang.org/pkg/crypto/rsa/#PrivateKey.Sign 
-	// func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error)
-	sig, err := privateEncrypt(priv, []byte(data))
+// GenerateDigestSignature will generate a signature of the given data protocol 1.3
+func GenerateDigestSignature(priv *rsa.PrivateKey, string_to_sign string) (sig []byte, err error) {
+	hashed := sha256.Sum256([]byte(string_to_sign))
+	sig, err = rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA256, hashed[:])
 	if err != nil {
 		return nil, err
 	}
+	return sig, nil
+}
 
 // GenerateSignature will generate a signature ( sign ) the given data
 func GenerateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
-	// TODO: 
-	// for 1.3 we should use this, have to pass in the digest
-	// rsa https://golang.org/pkg/crypto/rsa/#PrivateKey.Sign 
-	// func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error)
 	sig, err := privateEncrypt(priv, []byte(data))
 	if err != nil {
 		return nil, err
@@ -98,7 +95,7 @@ func privateEncrypt(key *rsa.PrivateKey, data []byte) (enc []byte, err error) {
 }
 
 // HashStr returns the base64 encoded SHA1 sum of the toHash string
-func HashStr(toHash string) string { // Auth
+func HashStr(toHash string) string {
 	h := sha1.New()
 	io.WriteString(h, toHash)
 	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
@@ -106,7 +103,7 @@ func HashStr(toHash string) string { // Auth
 }
 
 // HashStr256 returns the base64 encoded SHA256 sum of the toHash string
-func HashStr256(toHash string) string { // Auth
+func HashStr256(toHash string) string {
 	sum := sha256.Sum256([]byte(toHash))
 	sumslice := sum[:]
 	hashed := base64.StdEncoding.EncodeToString(sumslice)

@@ -336,15 +336,18 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 		req.Header.Set("Content-Type", myBody.ContentType())
 	}
 
-	// Calculate the body hash // Auth x
+	// Calculate the body hash
 	if c.Auth.AuthenticationVersion == "1.3" {
 		req.Header.Set("X-Ops-Content-Hash", myBody.Hash256())
 	} else {
 		req.Header.Set("X-Ops-Content-Hash", myBody.Hash())
 	}
 
-	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
-	c.Auth.SignRequest(req)
+	err = c.Auth.SignRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -370,14 +373,10 @@ func CheckResponse(r *http.Response) error {
 	data, err := ioutil.ReadAll(r.Body)
 	debug("Response Error Body: %+v\n", string(data))
 	if err == nil && data != nil {
-	        fmt.Printf("ErrorResponse Msg before unmarshal  %+v\n", errorResponse.ErrorMsg)
 		json.Unmarshal(data, errorResponse)
 		errorResponse.ErrorText = data
 		errorResponse.ErrorMsg = extractErrorMsg(data)
 	}
-	fmt.Printf("ErrorResponse Msg %+v\n", errorResponse.ErrorMsg)
-	fmt.Printf("ErrorResponse Text %+v\n", errorResponse.ErrorText)
-	fmt.Printf("ErrorResponse %+v\n", errorResponse)
 	return errorResponse
 }
 
@@ -521,12 +520,12 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		"X-Ops-Server-API-Version": "1",
 		"X-Ops-Timestamp":          time.Now().UTC().Format(time.RFC3339),
 		"X-Ops-Content-Hash":       request.Header.Get("X-Ops-Content-Hash"),
-		"X-Ops-UserId":             ac.ClientName, // Auth
+		"X-Ops-UserId":             ac.ClientName,
 	}
 
-	if ac.AuthenticationVersion == "1.3" { // Auth x
+	if ac.AuthenticationVersion == "1.3" {
 		vals["Path"] = endpoint
-		vals["X-Ops-Sign"] = "algorithm=sha256;version=1.3"
+		vals["X-Ops-Sign"] = "version=1.3"
 		request_headers = []string{"Method", "Path", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"}
 	} else {
 		vals["Hashed Path"] = HashStr(endpoint)
@@ -542,15 +541,22 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	content := ac.SignatureContent(vals)
 
 	// generate signed string of headers
-	// Since we've gone through additional validation steps above,
-	// we shouldn't get an error at this point
-	// TODO: use different method for 1.3
-	signature, err := GenerateSignature(ac.PrivateKey, content)
-	if err != nil {
-		return err
+	var signature []byte
+	var err error
+	if ac.AuthenticationVersion == "1.3" {
+		signature, err = GenerateDigestSignature(ac.PrivateKey, content)
+		if err != nil {
+			fmt.Printf("Error from signature %+v\n", err)
+			return err
+		}
+	} else {
+		signature, err = GenerateSignature(ac.PrivateKey, content)
+		if err != nil {
+			return err
+		}
 	}
 
-	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
+	// THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks
 	base64sig := Base64BlockEncode(signature, 60)
 
@@ -569,9 +575,9 @@ func (ac AuthConfig) SignatureContent(vals map[string]string) (content string) {
 	// The signature is very particular, the exact headers and the order they are included in the signature matter
 	var signed_headers []string
 
-	if ac.AuthenticationVersion == "1.3" { // Auth x
+	if ac.AuthenticationVersion == "1.3" {
 		signed_headers = []string{"Method", "Path", "X-Ops-Content-Hash", "X-Ops-Sign", "X-Ops-Timestamp",
-			"X-Ops-UserId", "x-Ops-Server-API-Version"}
+			"X-Ops-UserId", "X-Ops-Server-API-Version"}
 	} else {
 		signed_headers = []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"}
 	}

@@ -40,6 +40,7 @@ type AuthConfig struct {
 type Client struct {
 	Auth    *AuthConfig
 	BaseURL *url.URL
+	GlobalBaseURL *url.URL
 	client  *http.Client
 
 	ACLs              *ACLService
@@ -95,7 +96,7 @@ type Config struct {
 	// Base URL handling
 	// FixBaseURL implies 
 	//   A / will be added to the end of the specified BaseURL if it is not there
-	//   The BaseGlobalURL will be calculated and used for global end points
+	//   The GlobalBaseURL will be calculated and used for global end points
 	FixBaseURL bool
 }
 
@@ -216,6 +217,12 @@ func NewClient(cfg *Config) (*Client, error) {
 	}
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
+	globalBaseUrl := baseUrl
+	rootUrl,_ := url.Parse("/")
+	if cfg.FixBaseURL {
+		globalBaseUrl = globalBaseUrl.ResolveReference(rootUrl)
+	}
+
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
 	if cfg.RootCAs != nil {
 		tlsConfig.RootCAs = cfg.RootCAs
@@ -241,6 +248,7 @@ func NewClient(cfg *Config) (*Client, error) {
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		},
 		BaseURL: baseUrl,
+		GlobalBaseURL: globalBaseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
 	c.AuthenticateUser = &AuthenticateUserService{client: c}
@@ -282,6 +290,7 @@ func (cfg *Config) VerifyVersion() (err error) {
 // to the http request
 func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v interface{}, user string, password string) error {
 	// TODO: base url flags
+	// baseURL valu
 	req, err := c.NewRequest(method, path, body)
 	if err != nil {
 		return err

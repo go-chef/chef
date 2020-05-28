@@ -741,3 +741,24 @@ func TestBasicAuth(t *testing.T) {
 		t.Error("BasicAuth credentials not calculated properly")
 	}
 }
+
+func TesturlSlash(t *testing.T) {
+	if urlSlash("") != "/" {
+		t.Errorf("urlSlash expected / got %+v\n", urlSlash("/"))
+	}
+	if urlSlash("/") != "/" {
+		t.Errorf("urlSlash expected / got %+v\n", urlSlash("/"))
+	}
+	if urlSlash("https://stuff") != "/" {
+		t.Errorf("urlSlash expected /https://stuff/ got %+v\n", urlSlash("https://stuff"))
+	}
+	if urlSlash("https://stuff/") != "/" {
+		t.Errorf("urlSlash expected /https://stuff/ got %+v\n", urlSlash("https://stuff/"))
+	}
+	if urlSlash("https://stuff:8443") != "/" {
+		t.Errorf("urlSlash expected /https://stuff:8443/ got %+v\n", urlSlash("https://stuff:8443"))
+	}
+	if urlSlash("https://stuff/org") != "/" {
+		t.Errorf("urlSlash expected /https://stuff/org/ got %+v\n", urlSlash("https://stuff/org"))
+	}
+}

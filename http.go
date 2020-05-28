@@ -91,6 +91,12 @@ type Config struct {
 
 	// Authentication Protocol Version
 	AuthenticationVersion string
+
+	// Base URL handling
+	// FixBaseURL implies 
+	//   A / will be added to the end of the specified BaseURL if it is not there
+	//   The BaseGlobalURL will be calculated and used for global end points
+	FixBaseURL bool
 }
 
 /*
@@ -205,6 +211,9 @@ func NewClient(cfg *Config) (*Client, error) {
 		return nil, err
 	}
 
+	if cfg.FixBaseURL {
+		cfg.BaseURL = urlSlash(cfg.BaseURL)
+	}
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
@@ -272,6 +281,7 @@ func (cfg *Config) VerifyVersion() (err error) {
 // basicRequestDecoder is the same code as magic RequestDecoder with the addition of a generated Authentication: Basic header
 // to the http request
 func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v interface{}, user string, password string) error {
+	// TODO: base url flags
 	req, err := c.NewRequest(method, path, body)
 	if err != nil {
 		return err
@@ -312,6 +322,12 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 
 // NewRequest returns a signed request  suitable for the chef server
 func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+	// Client flags
+	// use it the way it is
+	// figure out the right base
+
+	// global/local flag in NewRequest and magicRequestDecoder
+
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
@@ -601,4 +617,13 @@ func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 	return rsaKey, nil
+}
+
+// urlSlash Make sure the specified URL ends in a forward slash
+func urlSlash(baseURL string) string {
+	baseURL = strings.TrimSpace(baseURL)
+	if len(baseURL) == 0 || string(baseURL[len(baseURL)-1:]) != "/" {
+		baseURL = baseURL + "/"
+	}
+        return baseURL
 }

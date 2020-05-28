@@ -14,7 +14,7 @@ type RequiredRecipe string
 // 404   required_recipe enabled = false
 func (e *RequiredRecipeService) Get() (data RequiredRecipe, err error) {
 	var getdata string
-	err = e.client.magicRequestDecoder("GET", "required_recipe", nil, &getdata)
+	err = e.client.magicRequestDecoder("GET", "required_recipe", false, nil, &getdata)
 	data = RequiredRecipe(getdata)
 	return
 }

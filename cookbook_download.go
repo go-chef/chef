@@ -99,7 +99,7 @@ func (c *CookbookService) downloadCookbookFile(item CookbookItem, localPath stri
 		return nil
 	}
 
-	request, err := c.client.NewRequest("GET", item.Url, nil)
+	request, err := c.client.NewRequest("GET", item.Url, false, nil)
 	if err != nil {
 		return err
 	}

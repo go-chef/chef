@@ -288,10 +288,8 @@ func (cfg *Config) VerifyVersion() (err error) {
 // basicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
 // basicRequestDecoder is the same code as magic RequestDecoder with the addition of a generated Authentication: Basic header
 // to the http request
-func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v interface{}, user string, password string) error {
-	// TODO: base url flags
-	// baseURL valu
-	req, err := c.NewRequest(method, path, body)
+func (c *Client) basicRequestDecoder(method, path string, globalUrl bool, body io.Reader, v interface{}, user string, password string) error {
+	req, err := c.NewRequest(method, path, globalUrl, body)
 	if err != nil {
 		return err
 	}
@@ -311,8 +309,8 @@ func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v inte
 }
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
-func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
-	req, err := c.NewRequest(method, path, body)
+func (c *Client) magicRequestDecoder(method, path string, globalUrl bool, body io.Reader, v interface{}) error {
+	req, err := c.NewRequest(method, path, globalUrl, body)
 	if err != nil {
 		return err
 	}
@@ -330,18 +328,19 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 }
 
 // NewRequest returns a signed request  suitable for the chef server
-func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
-	// Client flags
-	// use it the way it is
-	// figure out the right base
-
-	// global/local flag in NewRequest and magicRequestDecoder
+func (c *Client) NewRequest(method string, requestUrl string, globalUrl bool, body io.Reader) (*http.Request, error) {
+	// global/local flag in NewRequest and magicRequestDecoder, basicRequestDecoder
 
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
 	}
-	u := c.BaseURL.ResolveReference(relativeUrl)
+	u,_ := url.Parse("")
+	if globalUrl {
+		u = c.GlobalBaseURL.ResolveReference(relativeUrl)
+	} else {
+		u = c.BaseURL.ResolveReference(relativeUrl)
+	}
 
 	// NewRequest uses a new value object of body
 	req, err := http.NewRequest(method, u.String(), body)

@@ -51,7 +51,7 @@ func (s SandboxService) Post(sums []string) (data SandboxPostResponse, err error
 		return
 	}
 
-	err = s.client.magicRequestDecoder("POST", "sandboxes", body, &data)
+	err = s.client.magicRequestDecoder("POST", "sandboxes", false, body, &data)
 	return
 }
 
@@ -65,6 +65,6 @@ func (s SandboxService) Put(id string) (box Sandbox, err error) {
 		return box, fmt.Errorf("must supply sandbox id to PUT request.")
 	}
 
-	err = s.client.magicRequestDecoder("PUT", "sandboxes/"+id, body, &box)
+	err = s.client.magicRequestDecoder("PUT", "sandboxes/"+id, false, body, &box)
 	return
 }

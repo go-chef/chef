@@ -67,7 +67,7 @@ type CBAMeta struct {
 // List lists the Cookbook_Artifacts in the Chef server.
 //  GET /cookbook_artifacts
 func (c *CBAService) List() (data CBAGetResponse, err error) {
-	err = c.client.magicRequestDecoder("GET", "cookbook_artifacts", nil, &data)
+	err = c.client.magicRequestDecoder("GET", "cookbook_artifacts", false, nil, &data)
 	return
 }
 
@@ -75,7 +75,7 @@ func (c *CBAService) List() (data CBAGetResponse, err error) {
 //  GET /cookbook_artifacts/name
 func (c *CBAService) Get(name string) (data CBAGetResponse, err error) {
 	path := fmt.Sprintf("cookbook_artifacts/%s", name)
-	err = c.client.magicRequestDecoder("GET", path, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
 	return
 }
 
@@ -83,6 +83,6 @@ func (c *CBAService) Get(name string) (data CBAGetResponse, err error) {
 //  GET /cookbook_artifact/foo/1ef062de1bc4cb14e4a78fb739e104eb9508473e
 func (c *CBAService) GetVersion(name, id string) (data CBADetail, err error) {
 	url := fmt.Sprintf("cookbook_artifacts/%s/%s", name, id)
-	err = c.client.magicRequestDecoder("GET", url, nil, &data)
+	err = c.client.magicRequestDecoder("GET", url, false, nil, &data)
 	return
 }

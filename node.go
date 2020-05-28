@@ -41,7 +41,7 @@ func NewNode(name string) (node Node) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes
 func (e *NodeService) List() (data map[string]string, err error) {
-	err = e.client.magicRequestDecoder("GET", "nodes", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "nodes", false, nil, &data)
 	return
 }
 
@@ -50,7 +50,7 @@ func (e *NodeService) List() (data map[string]string, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Get(name string) (node Node, err error) {
 	url := fmt.Sprintf("nodes/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &node)
+	err = e.client.magicRequestDecoder("GET", url, false, nil, &node)
 	return
 }
 
@@ -59,7 +59,7 @@ func (e *NodeService) Get(name string) (node Node, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Head(name string) (err error) {
 	url := fmt.Sprintf("nodes/%s", name)
-	err = e.client.magicRequestDecoder("HEAD", url, nil, nil)
+	err = e.client.magicRequestDecoder("HEAD", url, false, nil, nil)
 	return
 }
 
@@ -72,7 +72,7 @@ func (e *NodeService) Post(node Node) (data *NodeResult, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("POST", "nodes", body, &data)
+	err = e.client.magicRequestDecoder("POST", "nodes", false, body, &data)
 	return
 }
 
@@ -87,7 +87,7 @@ func (e *NodeService) Put(n Node) (node Node, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("PUT", url, body, &node)
+	err = e.client.magicRequestDecoder("PUT", url, false, body, &node)
 	return
 }
 
@@ -95,6 +95,6 @@ func (e *NodeService) Put(n Node) (node Node, err error) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#nodes-name
 func (e *NodeService) Delete(name string) (err error) {
-	err = e.client.magicRequestDecoder("DELETE", "nodes/"+name, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", "nodes/"+name, false, nil, nil)
 	return
 }

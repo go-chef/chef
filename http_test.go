@@ -206,7 +206,7 @@ func TestSignRequestNoBody(t *testing.T) {
 	setup()
 	defer teardown()
 	ac, err := makeAuthConfig()
-	request, err := client.NewRequest("GET", requestURL, nil)
+	request, err := client.NewRequest("GET", requestURL, false, nil)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -238,7 +238,7 @@ func TestSignRequestBody(t *testing.T) {
 	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
 	// yay for sharing
 	requestBody := strings.NewReader("somecoolbodytext")
-	request, err := client.NewRequest("GET", requestURL, requestBody)
+	request, err := client.NewRequest("GET", requestURL, false, requestBody)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -339,7 +339,7 @@ func TestRequest(t *testing.T) {
 	setup()
 	defer teardown()
 
-	request, err := client.NewRequest("GET", server.URL, nil)
+	request, err := client.NewRequest("GET", server.URL, false, nil)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -372,7 +372,7 @@ func TestRequestToEndpoint(t *testing.T) {
 	defer server.Close()
 
 	requestBody := strings.NewReader("somecoolbodytext")
-	request, err := client.NewRequest("GET", server.URL+"/clients", requestBody)
+	request, err := client.NewRequest("GET", server.URL+"/clients", false, requestBody)
 
 	err = ac.SignRequest(request)
 	if err != nil {
@@ -414,7 +414,7 @@ func TestTLSValidation(t *testing.T) {
 		BaseURL: server.URL,
 	})
 
-	request, err := chefClient.NewRequest("GET", server.URL, nil)
+	request, err := chefClient.NewRequest("GET", server.URL, false, nil)
 	err = ac.SignRequest(request)
 	if err != nil {
 		t.Fatal("failed to generate RequestHeaders")
@@ -436,7 +436,7 @@ func TestTLSValidation(t *testing.T) {
 		RootCAs: certPool,
 	})
 
-	request, err = chefClient.NewRequest("GET", server.URL, nil)
+	request, err = chefClient.NewRequest("GET", server.URL, false, nil)
 	err = ac.SignRequest(request)
 	if err != nil {
 		t.Fatal("failed to generate RequestHeaders")
@@ -606,7 +606,7 @@ func TestNewClient(t *testing.T) {
 		t.Error("Built a client from a bad key string")
 	}
 
-	// TODO: Test the value of Authentication assisgned
+	// TODO: Test the value of Authentication assigned
 }
 
 func TestNewRequest(t *testing.T) {
@@ -616,7 +616,7 @@ func TestNewRequest(t *testing.T) {
 	c, _ := NewClient(cfg)
 	defer server.Close()
 
-	request, err := c.NewRequest("GET", server.URL, nil)
+	request, err := c.NewRequest("GET", server.URL, false, nil)
 	if err != nil {
 		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
 	}
@@ -627,13 +627,13 @@ func TestNewRequest(t *testing.T) {
 	}
 
 	// This should fail because we've got an invalid URI
-	_, err = c.NewRequest("GET", "%gh&%ij", nil)
+	_, err = c.NewRequest("GET", "%gh&%ij", false, nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
 	}
 
 	// This should fail because there is no TOODLES! method :D
-	request, err = c.NewRequest("TOODLES!", "", nil)
+	request, err = c.NewRequest("TOODLES!", "", false, nil)
 	_, err = c.Do(request, nil)
 	if err == nil {
 		t.Error("This terrible request thing should fail and it didn't")
@@ -649,7 +649,7 @@ func TestDo_badjson(t *testing.T) {
 	})
 
 	stupidData := struct{}{}
-	request, err := client.NewRequest("GET", "hashrocket", nil)
+	request, err := client.NewRequest("GET", "hashrocket", false, nil)
 	_, err = client.Do(request, &stupidData)
 	if err == nil {
 		t.Error(err)
@@ -669,7 +669,7 @@ func TestDoText(t *testing.T) {
 	})
 
 	var getdata string
-	request, err := client.NewRequest("GET", "hashrocket", nil)
+	request, err := client.NewRequest("GET", "hashrocket", false, nil)
 	_, err = client.Do(request, &getdata)
 	if err != nil {
 		t.Error(err)
@@ -691,7 +691,7 @@ func TestDoJSON(t *testing.T) {
 
 	getdata := map[string]string{}
 	wantdata := map[string]string{"key": "value"}
-	request, err := client.NewRequest("GET", "hashrocket", nil)
+	request, err := client.NewRequest("GET", "hashrocket", false, nil)
 	_, err = client.Do(request, &getdata)
 	if err != nil {
 		t.Error(err)
@@ -714,7 +714,7 @@ func TestDoDefaultParse(t *testing.T) {
 
 	getdata := map[string]string{}
 	wantdata := map[string]string{"key": "value"}
-	request, err := client.NewRequest("GET", "hashrocket", nil)
+	request, err := client.NewRequest("GET", "hashrocket", false, nil)
 	_, err = client.Do(request, &getdata)
 	if err != nil {
 		t.Error(err)
@@ -727,7 +727,7 @@ func TestDoDefaultParse(t *testing.T) {
 func TestBasicAuthHeader(t *testing.T) {
 	setup()
 	defer teardown()
-	req, _ := client.NewRequest("GET", "http://dummy", nil)
+	req, _ := client.NewRequest("GET", "http://dummy", false, nil)
 	basicAuthHeader(req, "stduser", "stdpassword")
 	basicHeader := req.Header.Get("Authorization")
 	if basicHeader != "Basic c3RkdXNlcjpzdGRwYXNzd29yZA==" {
@@ -742,23 +742,23 @@ func TestBasicAuth(t *testing.T) {
 	}
 }
 
-func TesturlSlash(t *testing.T) {
+func TestUrlSlash(t *testing.T) {
 	if urlSlash("") != "/" {
 		t.Errorf("urlSlash expected / got %+v\n", urlSlash("/"))
 	}
 	if urlSlash("/") != "/" {
 		t.Errorf("urlSlash expected / got %+v\n", urlSlash("/"))
 	}
-	if urlSlash("https://stuff") != "/" {
-		t.Errorf("urlSlash expected /https://stuff/ got %+v\n", urlSlash("https://stuff"))
+	if urlSlash("https://stuff") != "https://stuff/" {
+		t.Errorf("urlSlash expected https://stuff/ got %+v\n", urlSlash("https://stuff"))
 	}
-	if urlSlash("https://stuff/") != "/" {
-		t.Errorf("urlSlash expected /https://stuff/ got %+v\n", urlSlash("https://stuff/"))
+	if urlSlash("https://stuff/") != "https://stuff/" {
+		t.Errorf("urlSlash expected https://stuff/ got %+v\n", urlSlash("https://stuff/"))
 	}
-	if urlSlash("https://stuff:8443") != "/" {
-		t.Errorf("urlSlash expected /https://stuff:8443/ got %+v\n", urlSlash("https://stuff:8443"))
+	if urlSlash("https://stuff:8443") != "https://stuff:8443/" {
+		t.Errorf("urlSlash expected https://stuff:8443/ got %+v\n", urlSlash("https://stuff:8443"))
 	}
-	if urlSlash("https://stuff/org") != "/" {
-		t.Errorf("urlSlash expected /https://stuff/org/ got %+v\n", urlSlash("https://stuff/org"))
+	if urlSlash("https://stuff/org") != "https://stuff/org/" {
+		t.Errorf("urlSlash expected https://stuff/org/ got %+v\n", urlSlash("https://stuff/org"))
 	}
 }

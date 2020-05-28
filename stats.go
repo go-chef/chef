@@ -16,6 +16,6 @@ type Stats []map[string]interface{}
 // out data will force JSON output.
 func (e *StatsService) Get(user string, password string) (data Stats, err error) {
 	format := "json"
-	err = e.client.basicRequestDecoder("GET", "_stats?format="+format, nil, &data, user, password)
+	err = e.client.basicRequestDecoder("GET", "_stats?format="+format, true, nil, &data, user, password)
 	return
 }

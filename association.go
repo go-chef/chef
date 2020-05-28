@@ -76,7 +76,7 @@ type OrgUser struct {
 
 // ListInvites gets a list of the pending invitations for an organization.
 func (e *AssociationService) ListInvites() (invitelist []Invite, err error) {
-	err = e.client.magicRequestDecoder("GET", "association_requests", nil, &invitelist)
+	err = e.client.magicRequestDecoder("GET", "association_requests", false, nil, &invitelist)
 	return
 }
 
@@ -86,20 +86,20 @@ func (e *AssociationService) Invite(invite Request) (data Association, err error
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("POST", "association_requests/", body, &data)
+	err = e.client.magicRequestDecoder("POST", "association_requests/", false, body, &data)
 	return
 }
 
 // DeleteInvite removes a pending invitation to an organization
 func (e *AssociationService) DeleteInvite(id string) (rescind RescindInvite, err error) {
-	err = e.client.magicRequestDecoder("DELETE", "association_requests/"+id, nil, &rescind)
+	err = e.client.magicRequestDecoder("DELETE", "association_requests/"+id, false, nil, &rescind)
 	return
 }
 
 // InviteID Finds an invitation id for a user
 func (e *AssociationService) InviteId(user string) (id string, err error) {
 	var invitelist []Invite
-	err = e.client.magicRequestDecoder("GET", "association_requests", nil, &invitelist)
+	err = e.client.magicRequestDecoder("GET", "association_requests", false, nil, &invitelist)
 	if err != nil {
 		return
 	}
@@ -122,13 +122,13 @@ func (e *AssociationService) AcceptInvite(id string) (data string, err error) {
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("PUT", "association_requests/"+id, body, &data)
+	err = e.client.magicRequestDecoder("PUT", "association_requests/"+id, false, body, &data)
 	return
 }
 
 // List gets a list of the users in an organization
 func (e *AssociationService) List() (data []OrgUserListEntry, err error) {
-	err = e.client.magicRequestDecoder("GET", "users", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "users", false, nil, &data)
 	return
 }
 
@@ -138,18 +138,18 @@ func (e *AssociationService) Add(addme AddNow) (err error) {
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("POST", "users", body, nil)
+	err = e.client.magicRequestDecoder("POST", "users", false, body, nil)
 	return
 }
 
 // Get the details of a user in an organization
 func (e *AssociationService) Get(name string) (data OrgUser, err error) {
-	err = e.client.magicRequestDecoder("GET", "users/"+name, nil, &data)
+	err = e.client.magicRequestDecoder("GET", "users/"+name, false, nil, &data)
 	return
 }
 
 // Delete removes a user from an organization
 func (e *AssociationService) Delete(name string) (data OrgUser, err error) {
-	err = e.client.magicRequestDecoder("DELETE", "users/"+name, nil, &data)
+	err = e.client.magicRequestDecoder("DELETE", "users/"+name, false, nil, &data)
 	return
 }

@@ -94,10 +94,10 @@ type Config struct {
 	AuthenticationVersion string
 
 	// Base URL handling
-	// FixBaseURL implies 
+	// StetBaseURL false implies 
 	//   A / will be added to the end of the specified BaseURL if it is not there
 	//   The GlobalBaseURL will be calculated and used for global end points
-	FixBaseURL bool
+	StetBaseURL bool
 }
 
 /*
@@ -212,14 +212,14 @@ func NewClient(cfg *Config) (*Client, error) {
 		return nil, err
 	}
 
-	if cfg.FixBaseURL {
+	if !cfg.StetBaseURL {
 		cfg.BaseURL = urlSlash(cfg.BaseURL)
 	}
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
 	globalBaseUrl := baseUrl
 	rootUrl,_ := url.Parse("/")
-	if cfg.FixBaseURL {
+	if !cfg.StetBaseURL {
 		globalBaseUrl = globalBaseUrl.ResolveReference(rootUrl)
 	}
 

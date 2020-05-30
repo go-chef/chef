@@ -22,7 +22,10 @@ func Node() {
 	// Define a Node object
 	node1 := chef.NewNode("node1")
 	node1.RunList = []string{"pwn"}
-	fmt.Println("Define node1", node1)
+	node1.AutomaticAttributes = map[string]interface{}{
+		"attr": "value",
+	}
+	fmt.Printf("Define node1 %+v\n", node1)
 
 	// Delete node1 ignoring errors :)
 	err = client.Nodes.Delete(node1.Name)
@@ -69,6 +72,7 @@ func Node() {
 
 	// update node
 	node1.RunList = append(node1.RunList, "recipe[works]")
+	node1.AutomaticAttributes = map[string]interface{}{}
 	updateNode, err := client.Nodes.Put(node1)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Couldn't update node: ", err)

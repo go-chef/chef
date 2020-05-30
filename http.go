@@ -31,8 +31,9 @@ type Body struct {
 // AuthConfig representing a client and a private key used for encryption
 //  This is embedded in the Client type
 type AuthConfig struct {
-	PrivateKey *rsa.PrivateKey
-	ClientName string
+	PrivateKey            *rsa.PrivateKey
+	ClientName            string
+	AuthenticationVersion string
 }
 
 // Client is vessel for public methods used against the chef-server
@@ -87,6 +88,9 @@ type Config struct {
 
 	// Time to wait in seconds before giving up on a request to the server
 	Timeout int
+
+	// Authentication Protocol Version
+	AuthenticationVersion string
 }
 
 /*
@@ -135,6 +139,17 @@ func (body *Body) Hash() (h string) {
 	return
 }
 
+// Hash256 calculates the body content hash
+func (body *Body) Hash256() (h string) {
+	b := body.Buffer()
+	// empty buffs should return a empty string
+	if b.Len() == 0 {
+		h = HashStr256("")
+	}
+	h = HashStr256(b.String())
+	return
+}
+
 // ContentType returns the content-type string of Body as detected by http.DetectContentType()
 func (body *Body) ContentType() string {
 	if json.Unmarshal(body.Buffer().Bytes(), &struct{}{}) == nil {
@@ -180,6 +195,11 @@ func (r *ErrorResponse) StatusURL() *url.URL {
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
 func NewClient(cfg *Config) (*Client, error) {
+
+	// Verify Config settings
+	// Authentication version = 1.0 or 1.3, default to 1.0
+	cfg.VerifyVersion()
+
 	pk, err := PrivateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
@@ -203,8 +223,9 @@ func NewClient(cfg *Config) (*Client, error) {
 
 	c := &Client{
 		Auth: &AuthConfig{
-			PrivateKey: pk,
-			ClientName: cfg.Name,
+			PrivateKey:            pk,
+			ClientName:            cfg.Name,
+			AuthenticationVersion: cfg.AuthenticationVersion,
 		},
 		client: &http.Client{
 			Transport: tr,
@@ -238,6 +259,13 @@ func NewClient(cfg *Config) (*Client, error) {
 	c.Universe = &UniverseService{client: c}
 	c.Users = &UserService{client: c}
 	return c, nil
+}
+
+func (cfg *Config) VerifyVersion() (err error) {
+	if cfg.AuthenticationVersion != "1.3" {
+		cfg.AuthenticationVersion = "1.0"
+	}
+	return
 }
 
 // basicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
@@ -309,10 +337,17 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	}
 
 	// Calculate the body hash
-	req.Header.Set("X-Ops-Content-Hash", myBody.Hash())
+	if c.Auth.AuthenticationVersion == "1.3" {
+		req.Header.Set("X-Ops-Content-Hash", myBody.Hash256())
+	} else {
+		req.Header.Set("X-Ops-Content-Hash", myBody.Hash())
+	}
 
-	// don't have to check this works, signRequest only emits error when signing hash is not valid, and we baked that in
-	c.Auth.SignRequest(req)
+	err = c.Auth.SignRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -336,6 +371,7 @@ func CheckResponse(r *http.Response) error {
 	}
 	errorResponse := &ErrorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
+	debug("Response Error Body: %+v\n", string(data))
 	if err == nil && data != nil {
 		json.Unmarshal(data, errorResponse)
 		errorResponse.ErrorText = data
@@ -468,8 +504,7 @@ func hasTextContentType(res *http.Response) bool {
 
 // SignRequest modifies headers of an http.Request
 func (ac AuthConfig) SignRequest(request *http.Request) error {
-	// sanitize the path for the chef-server
-	// chef-server doesn't support '//' in the Hash Path.
+	var request_headers []string
 	var endpoint string
 	if request.URL.Path != "" {
 		endpoint = path.Clean(request.URL.Path)
@@ -480,35 +515,48 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 
 	vals := map[string]string{
 		"Method":                   request.Method,
-		"Hashed Path":              HashStr(endpoint),
 		"Accept":                   "application/json",
 		"X-Chef-Version":           ChefVersion,
 		"X-Ops-Server-API-Version": "1",
 		"X-Ops-Timestamp":          time.Now().UTC().Format(time.RFC3339),
-		"X-Ops-UserId":             ac.ClientName,
-		"X-Ops-Sign":               "algorithm=sha1;version=1.0",
 		"X-Ops-Content-Hash":       request.Header.Get("X-Ops-Content-Hash"),
+		"X-Ops-UserId":             ac.ClientName,
 	}
 
-	for _, key := range []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"} {
+	if ac.AuthenticationVersion == "1.3" {
+		vals["Path"] = endpoint
+		vals["X-Ops-Sign"] = "version=1.3"
+		request_headers = []string{"Method", "Path", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"}
+	} else {
+		vals["Hashed Path"] = HashStr(endpoint)
+		vals["X-Ops-Sign"] = "algorithm=sha1;version=1.0"
+		request_headers = []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign"}
+	}
+
+	// Add the vals to the request
+	for _, key := range request_headers {
 		request.Header.Set(key, vals[key])
 	}
 
-	// To validate the signature it seems to be very particular
-	var content string
-	for _, key := range []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"} {
-		content += fmt.Sprintf("%s:%s\n", key, vals[key])
-	}
-	content = strings.TrimSuffix(content, "\n")
+	content := ac.SignatureContent(vals)
+
 	// generate signed string of headers
-	// Since we've gone through additional validation steps above,
-	// we shouldn't get an error at this point
-	signature, err := GenerateSignature(ac.PrivateKey, content)
-	if err != nil {
-		return err
+	var signature []byte
+	var err error
+	if ac.AuthenticationVersion == "1.3" {
+		signature, err = GenerateDigestSignature(ac.PrivateKey, content)
+		if err != nil {
+			fmt.Printf("Error from signature %+v\n", err)
+			return err
+		}
+	} else {
+		signature, err = GenerateSignature(ac.PrivateKey, content)
+		if err != nil {
+			return err
+		}
 	}
 
-	// TODO: THIS IS CHEF PROTOCOL SPECIFIC
+	// THIS IS CHEF PROTOCOL SPECIFIC
 	// Signature is made up of n 60 length chunks
 	base64sig := Base64BlockEncode(signature, 60)
 
@@ -518,6 +566,28 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	}
 
 	return nil
+}
+
+func (ac AuthConfig) SignatureContent(vals map[string]string) (content string) {
+	// sanitize the path for the chef-server
+	// chef-server doesn't support '//' in the Hash Path.
+
+	// The signature is very particular, the exact headers and the order they are included in the signature matter
+	var signed_headers []string
+
+	if ac.AuthenticationVersion == "1.3" {
+		signed_headers = []string{"Method", "Path", "X-Ops-Content-Hash", "X-Ops-Sign", "X-Ops-Timestamp",
+			"X-Ops-UserId", "X-Ops-Server-API-Version"}
+	} else {
+		signed_headers = []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"}
+	}
+
+	for _, key := range signed_headers {
+		content += fmt.Sprintf("%s:%s\n", key, vals[key])
+	}
+
+	content = strings.TrimSuffix(content, "\n")
+	return
 }
 
 // PrivateKeyFromString parses an RSA private key from a string

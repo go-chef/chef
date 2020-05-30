@@ -126,9 +126,10 @@ func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 	client, _ = NewClient(&Config{
-		Name:    userid,
-		Key:     privateKey,
-		BaseURL: server.URL,
+		Name:                  userid,
+		Key:                   privateKey,
+		BaseURL:               server.URL,
+		AuthenticationVersion: "1.0",
 	})
 }
 
@@ -221,7 +222,7 @@ func TestSignRequestNoBody(t *testing.T) {
 		}
 	}
 	if count != len(testRequiredHeaders) {
-		t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
+		t.Errorf("apiRequestHeaders didn't return all of testRequiredHeaders received: %+v required %+v", request.Header, testRequiredHeaders)
 	}
 }
 
@@ -492,35 +493,6 @@ func assembleSignedHeader(r *http.Request) (string, error) {
 	return signedHeaders, nil
 }
 
-func assembleHeaderToCheck(r *http.Request) string {
-
-	// To validate the signature it seems to be very particular
-	// Would like to use this loop to generate the content
-	// But it causes validation to fail.. so we do it explicitly
-
-	// authHeader := regexp.MustCompile(`(?i)^X-Ops-Authorization-(\d+)`)
-	// acceptEncoding := regexp.MustCompile(`(?i)^Accept-Encoding`)
-	// userAgent := regexp.MustCompile(`(?i)^User-Agent`)
-	//
-	// var content string
-	// for key, value := range r.Header {
-	//  if !authHeader.MatchString(key) && !acceptEncoding.MatchString(key) && !userAgent.MatchString(key) {
-	//    content += fmt.Sprintf("%s:%s\n", key, value)
-	//  }
-	// }
-	// return content
-	var content string
-	content += fmt.Sprintf("%s:%s\n", "Method", r.Header.Get("Method"))
-	content += fmt.Sprintf("%s:%s\n", "Hashed Path", r.Header.Get("Hashed Path"))
-	content += fmt.Sprintf("%s:%s\n", "Accept", r.Header.Get("Accept"))
-	content += fmt.Sprintf("%s:%s\n", "X-Chef-Version", r.Header.Get("X-Chef-Version"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Timestamp", r.Header.Get("X-Ops-Timestamp"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Userid", r.Header.Get("X-Ops-Userid"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Sign", r.Header.Get("X-Ops-Sign"))
-	content += fmt.Sprintf("%s:%s\n", "X-Ops-Content-Hash", r.Header.Get("X-Ops-Content-Hash"))
-	return content
-}
-
 func TestGenerateHash(t *testing.T) {
 	input, output := HashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
 
@@ -543,6 +515,31 @@ func TestGenerateSignatureError(t *testing.T) {
 	Convey("errors for an unknown reason to fujin", t, func() {
 		So(err, ShouldBeNil)
 	})
+}
+
+func TestSignatureContent(t *testing.T) {
+	pk, _ := PrivateKeyFromString([]byte(privateKey))
+	ac := &AuthConfig{
+		PrivateKey:            pk,
+		ClientName:            userid,
+		AuthenticationVersion: "1.0",
+	}
+	vals := map[string]string{
+		"Method":                   "GET",
+		"Accept":                   "application/json",
+		"Hashed Path":              "FaX3AVJLlDDqHB7giEG/2EbBsR0=",
+		"X-Chef-Version":           ChefVersion,
+		"X-Ops-Server-API-Version": "1",
+		"X-Ops-Timestamp":          "1990-12-31T15:59:60-08:00",
+		"X-Ops-UserId":             ac.ClientName,
+		"X-Ops-Content-Hash":       "Content-Hash",
+	}
+	expected := "Method:GET\nHashed Path:FaX3AVJLlDDqHB7giEG/2EbBsR0=\nX-Ops-Content-Hash:Content-Hash\nX-Ops-Timestamp:1990-12-31T15:59:60-08:00\nX-Ops-UserId:tester"
+
+	content := ac.SignatureContent(vals)
+	if expected != content {
+		t.Errorf("Unexpected content wanted: %+v\n delivered: %+v", expected, content)
+	}
 }
 
 func TestRequestError(t *testing.T) {
@@ -608,6 +605,8 @@ func TestNewClient(t *testing.T) {
 	if err == nil {
 		t.Error("Built a client from a bad key string")
 	}
+
+	// TODO: Test the value of Authentication assisgned
 }
 
 func TestNewRequest(t *testing.T) {

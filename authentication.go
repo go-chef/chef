@@ -1,13 +1,26 @@
 package chef
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"io"
 	"math/big"
 )
+
+// GenerateDigestSignature will generate a signature of the given data protocol 1.3
+func GenerateDigestSignature(priv *rsa.PrivateKey, string_to_sign string) (sig []byte, err error) {
+	hashed := sha256.Sum256([]byte(string_to_sign))
+	sig, err = rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA256, hashed[:])
+	if err != nil {
+		return nil, err
+	}
+	return sig, nil
+}
 
 // GenerateSignature will generate a signature ( sign ) the given data
 func GenerateSignature(priv *rsa.PrivateKey, data string) (enc []byte, err error) {
@@ -86,6 +99,14 @@ func HashStr(toHash string) string {
 	h := sha1.New()
 	io.WriteString(h, toHash)
 	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return hashed
+}
+
+// HashStr256 returns the base64 encoded SHA256 sum of the toHash string
+func HashStr256(toHash string) string {
+	sum := sha256.Sum256([]byte(toHash))
+	sumslice := sum[:]
+	hashed := base64.StdEncoding.EncodeToString(sumslice)
 	return hashed
 }
 

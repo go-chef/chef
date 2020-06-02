@@ -36,7 +36,7 @@ func (e RoleCreateResult) String() (out string) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles
 func (e *RoleService) List() (data *RoleListResult, err error) {
-	err = e.client.magicRequestDecoder("GET", "roles", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "roles", UseOrg, nil, &data)
 	return
 }
 
@@ -50,7 +50,7 @@ func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
 	}
 
 	// BUG(fujiN): This is now both a *response* decoder and handles upload.. gettin smelly
-	err = e.client.magicRequestDecoder("POST", "roles", body, &data)
+	err = e.client.magicRequestDecoder("POST", "roles", UseOrg, body, &data)
 
 	return
 }
@@ -60,7 +60,7 @@ func (e *RoleService) Create(role *Role) (data *RoleCreateResult, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
 func (e *RoleService) Delete(name string) (err error) {
 	path := fmt.Sprintf("roles/%s", name)
-	err = e.client.magicRequestDecoder("DELETE", path, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", path, UseOrg, nil, nil)
 	return
 }
 
@@ -69,7 +69,7 @@ func (e *RoleService) Delete(name string) (err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name
 func (e *RoleService) Get(name string) (data *Role, err error) {
 	path := fmt.Sprintf("roles/%s", name)
-	err = e.client.magicRequestDecoder("GET", path, nil, &data)
+	err = e.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -84,7 +84,7 @@ func (e *RoleService) Put(role *Role) (data *Role, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("PUT", path, body, &data)
+	err = e.client.magicRequestDecoder("PUT", path, UseOrg, body, &data)
 	return
 }
 
@@ -93,7 +93,7 @@ func (e *RoleService) Put(role *Role) (data *Role, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name-environments
 func (e *RoleService) GetEnvironments(role string) (data RoleEnvironmentsResult, err error) {
 	path := fmt.Sprintf("roles/%s/environments", role)
-	err = e.client.magicRequestDecoder("GET", path, nil, &data)
+	err = e.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -102,6 +102,6 @@ func (e *RoleService) GetEnvironments(role string) (data RoleEnvironmentsResult,
 // Chef API docs: https://docs.chef.io/api_chef_server.html#roles-name-environments-name
 func (e *RoleService) GetEnvironmentRunlist(role string, environment string) (data EnvRunList, err error) {
 	path := fmt.Sprintf("roles/%s/environments/%s", role, environment)
-	err = e.client.magicRequestDecoder("GET", path, nil, &data)
+	err = e.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }

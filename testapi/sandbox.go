@@ -46,7 +46,7 @@ func Sandbox() {
 			}
 			// If you were writing this in your own tool you could just use the FH and let the Reader interface suck out the content instead of doing the convert.
 			fmt.Printf("\nUploading: %s --->  %v\n\n", hash, item)
-			req, err := client.NewRequest("PUT", item.Url, bytes.NewReader(files[hash]))
+			req, err := client.NewRequest("PUT", item.Url, false, bytes.NewReader(files[hash]))
 			// TODO:  headers = { "content-type" => "application/x-binary", "content-md5" => checksum64, "accept" => "application/json" }
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Issue this shouldn't happen:", err)

@@ -50,7 +50,7 @@ func (e SearchService) PageSize(setting int) {
 // Do will execute the search query on the client
 func (q SearchQuery) Do(client *Client) (res SearchResult, err error) {
 	fullUrl := fmt.Sprintf("search/%s", q)
-	err = client.magicRequestDecoder("GET", fullUrl, nil, &res)
+	err = client.magicRequestDecoder("GET", fullUrl, UseOrg, nil, &res)
 	return
 }
 
@@ -64,7 +64,7 @@ func (q SearchQuery) DoPartial(client *Client, params map[string]interface{}) (r
 		return
 	}
 
-	err = client.magicRequestDecoder("POST", fullUrl, body, &res)
+	err = client.magicRequestDecoder("POST", fullUrl, UseOrg, body, &res)
 	return
 }
 
@@ -144,7 +144,7 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 		return
 	}
 
-	err = e.client.magicRequestDecoder("POST", fullUrl, body, &res)
+	err = e.client.magicRequestDecoder("POST", fullUrl, UseOrg, body, &res)
 	if err != nil {
 		return
 	}
@@ -163,7 +163,7 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 			return
 		}
 		fullUrl := fmt.Sprintf("search/%s", query)
-		err = e.client.magicRequestDecoder("POST", fullUrl, body, &paged_res)
+		err = e.client.magicRequestDecoder("POST", fullUrl, UseOrg, body, &paged_res)
 		if err != nil {
 			fmt.Printf("Partial search error %+v\n", err)
 			return
@@ -178,6 +178,6 @@ func (e SearchService) PartialExec(idx, statement string, params map[string]inte
 //
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id25
 func (e SearchService) Indexes() (data map[string]string, err error) {
-	err = e.client.magicRequestDecoder("GET", "search", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "search", UseOrg, nil, &data)
 	return
 }

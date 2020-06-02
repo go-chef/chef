@@ -24,7 +24,7 @@ type UniverseVersion struct {
 // https://docs.chef.io/api_chef_server.html#universe
 func (e *UniverseService) Get() (universe Universe, err error) {
 	var data map[string]interface{}
-	err = e.client.magicRequestDecoder("GET", "universe", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "universe", UseOrg, nil, &data)
 	unpackUniverse(&universe, &data)
 	return
 }

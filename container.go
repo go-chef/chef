@@ -33,7 +33,7 @@ func (c ContainerListResult) String() (out string) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server/containers
 func (e *ContainerService) List() (data ContainerListResult, err error) {
-	err = e.client.magicRequestDecoder("GET", "containers", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "containers", UseOrg, nil, &data)
 	return
 }
 
@@ -45,7 +45,7 @@ func (e *ContainerService) Create(container Container) (data *ContainerCreateRes
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("POST", "containers", body, &data)
+	err = e.client.magicRequestDecoder("POST", "containers", UseOrg, body, &data)
 	return
 }
 
@@ -54,7 +54,7 @@ func (e *ContainerService) Create(container Container) (data *ContainerCreateRes
 // Chef API docs: https://docs.chef.io/api_chef_server.html#container
 func (e *ContainerService) Delete(name string) (err error) {
 	url := fmt.Sprintf("containers/%s", name)
-	err = e.client.magicRequestDecoder("DELETE", url, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", url, UseOrg, nil, nil)
 	return
 }
 
@@ -63,6 +63,6 @@ func (e *ContainerService) Delete(name string) (err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#containers
 func (e *ContainerService) Get(name string) (container Container, err error) {
 	url := fmt.Sprintf("containers/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &container)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &container)
 	return
 }

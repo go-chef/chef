@@ -24,6 +24,6 @@ type Principals struct {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#principals-name
 func (e *PrincipalService) Get(name string) (principal Principal, err error) {
 	url := fmt.Sprintf("principals/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &principal)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &principal)
 	return
 }

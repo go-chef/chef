@@ -47,7 +47,7 @@ func (c ApiClientListResult) String() (out string) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server/#get-11
 func (e *ApiClientService) List() (data ApiClientListResult, err error) {
-	err = e.client.magicRequestDecoder("GET", "clients", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "clients", UseOrg, nil, &data)
 	return
 }
 
@@ -59,7 +59,7 @@ func (e *ApiClientService) Create(client ApiNewClient) (data *ApiClientCreateRes
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("POST", "clients", body, &data)
+	err = e.client.magicRequestDecoder("POST", "clients", UseOrg, body, &data)
 	return
 }
 
@@ -68,7 +68,7 @@ func (e *ApiClientService) Create(client ApiNewClient) (data *ApiClientCreateRes
 // Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 func (e *ApiClientService) Delete(name string) (err error) {
 	url := fmt.Sprintf("clients/%s", name)
-	err = e.client.magicRequestDecoder("DELETE", url, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", url, UseOrg, nil, nil)
 	return
 }
 
@@ -77,7 +77,7 @@ func (e *ApiClientService) Delete(name string) (err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#clients-name
 func (e *ApiClientService) Get(name string) (client ApiClient, err error) {
 	url := fmt.Sprintf("clients/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &client)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &client)
 	return
 }
 
@@ -90,7 +90,7 @@ func (e *ApiClientService) Update(name string, client ApiNewClient) (data *ApiCl
 	if err != nil {
 		return
 	}
-	err = e.client.magicRequestDecoder("PUT", url, body, &data)
+	err = e.client.magicRequestDecoder("PUT", url, UseOrg, body, &data)
 	return
 }
 
@@ -99,7 +99,7 @@ func (e *ApiClientService) Update(name string, client ApiNewClient) (data *ApiCl
 // Chef API docs: https://docs.chef.io/api_chef_server.html#clients-client-keys
 func (e *ApiClientService) ListKeys(name string) (data []KeyItem, err error) {
 	url := fmt.Sprintf("clients/%s/keys", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &data)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &data)
 	return
 }
 
@@ -115,7 +115,7 @@ func (e *ApiClientService) ListKeys(name string) (data []KeyItem, err error) {
 func (e *ApiClientService) AddKey(name string, keyadd AccessKey) (key KeyItem, err error) {
 	url := fmt.Sprintf("clients/%s/keys", name)
 	body, err := JSONReader(keyadd)
-	err = e.client.magicRequestDecoder("POST", url, body, &key)
+	err = e.client.magicRequestDecoder("POST", url, UseOrg, body, &key)
 	return
 }
 
@@ -129,7 +129,7 @@ func (e *ApiClientService) AddKey(name string, keyadd AccessKey) (key KeyItem, e
 // Chef API docs: https://docs.chef.io/api_chef_server/#clientskeys
 func (e *ApiClientService) DeleteKey(name string, keyname string) (key AccessKey, err error) {
 	url := fmt.Sprintf("clients/%s/keys/%s", name, keyname)
-	err = e.client.magicRequestDecoder("DELETE", url, nil, &key)
+	err = e.client.magicRequestDecoder("DELETE", url, UseOrg, nil, &key)
 	return
 }
 
@@ -138,7 +138,7 @@ func (e *ApiClientService) DeleteKey(name string, keyname string) (key AccessKey
 // Chef API docs: https://docs.chef.io/api_chef_server.html#clients-client-keys-key
 func (e *ApiClientService) GetKey(name string, keyname string) (key AccessKey, err error) {
 	url := fmt.Sprintf("clients/%s/keys/%s", name, keyname)
-	err = e.client.magicRequestDecoder("GET", url, nil, &key)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &key)
 	return
 }
 
@@ -153,6 +153,6 @@ func (e *ApiClientService) GetKey(name string, keyname string) (key AccessKey, e
 func (e *ApiClientService) UpdateKey(name string, keyname string, keyupd AccessKey) (key AccessKey, err error) {
 	url := fmt.Sprintf("clients/%s/keys/%s", name, keyname)
 	body, err := JSONReader(keyupd)
-	err = e.client.magicRequestDecoder("PUT", url, body, &key)
+	err = e.client.magicRequestDecoder("PUT", url, UseOrg, body, &key)
 	return
 }

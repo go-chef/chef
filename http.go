@@ -23,6 +23,10 @@ import (
 // ChefVersion that we pretend to emulate
 const ChefVersion = "14.0.0"
 
+// Values to indicate which base url to use
+const UseGlobal = true
+const UseOrg = false
+
 // Body wraps io.Reader and adds methods for calculating hashes and detecting content
 type Body struct {
 	io.Reader
@@ -38,9 +42,10 @@ type AuthConfig struct {
 
 // Client is vessel for public methods used against the chef-server
 type Client struct {
-	Auth    *AuthConfig
-	BaseURL *url.URL
-	client  *http.Client
+	Auth          *AuthConfig
+	BaseURL       *url.URL
+	GlobalBaseURL *url.URL
+	client        *http.Client
 
 	ACLs              *ACLService
 	Associations      *AssociationService
@@ -91,6 +96,12 @@ type Config struct {
 
 	// Authentication Protocol Version
 	AuthenticationVersion string
+
+	// Base URL handling
+	// StetBaseURL the default of false implies
+	//   A / will be added to the end of the specified BaseURL if it is not there
+	//   The GlobalBaseURL will be calculated and used for global end points
+	StetBaseURL bool
 }
 
 /*
@@ -205,7 +216,15 @@ func NewClient(cfg *Config) (*Client, error) {
 		return nil, err
 	}
 
+	if !cfg.StetBaseURL {
+		cfg.BaseURL = urlSlash(cfg.BaseURL)
+	}
 	baseUrl, _ := url.Parse(cfg.BaseURL)
+
+	globalBaseUrl := baseUrl
+	if !cfg.StetBaseURL {
+		globalBaseUrl = urlBase(globalBaseUrl)
+	}
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
 	if cfg.RootCAs != nil {
@@ -231,7 +250,8 @@ func NewClient(cfg *Config) (*Client, error) {
 			Transport: tr,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		},
-		BaseURL: baseUrl,
+		BaseURL:       baseUrl,
+		GlobalBaseURL: globalBaseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
 	c.AuthenticateUser = &AuthenticateUserService{client: c}
@@ -271,8 +291,8 @@ func (cfg *Config) VerifyVersion() (err error) {
 // basicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
 // basicRequestDecoder is the same code as magic RequestDecoder with the addition of a generated Authentication: Basic header
 // to the http request
-func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v interface{}, user string, password string) error {
-	req, err := c.NewRequest(method, path, body)
+func (c *Client) basicRequestDecoder(method, path string, globalUrl bool, body io.Reader, v interface{}, user string, password string) error {
+	req, err := c.NewRequest(method, path, globalUrl, body)
 	if err != nil {
 		return err
 	}
@@ -292,8 +312,8 @@ func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v inte
 }
 
 // magicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
-func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v interface{}) error {
-	req, err := c.NewRequest(method, path, body)
+func (c *Client) magicRequestDecoder(method, path string, globalUrl bool, body io.Reader, v interface{}) error {
+	req, err := c.NewRequest(method, path, globalUrl, body)
 	if err != nil {
 		return err
 	}
@@ -311,12 +331,17 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 }
 
 // NewRequest returns a signed request  suitable for the chef server
-func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+func (c *Client) NewRequest(method string, requestUrl string, globalUrl bool, body io.Reader) (*http.Request, error) {
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
 	}
-	u := c.BaseURL.ResolveReference(relativeUrl)
+	u, _ := url.Parse("")
+	if globalUrl {
+		u = c.GlobalBaseURL.ResolveReference(relativeUrl)
+	} else {
+		u = c.BaseURL.ResolveReference(relativeUrl)
+	}
 
 	// NewRequest uses a new value object of body
 	req, err := http.NewRequest(method, u.String(), body)
@@ -601,4 +626,19 @@ func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 	return rsaKey, nil
+}
+
+// urlSlash Make sure the specified URL ends in a forward slash
+func urlSlash(baseURL string) string {
+	baseURL = strings.TrimSpace(baseURL)
+	if len(baseURL) == 0 || string(baseURL[len(baseURL)-1:]) != "/" {
+		baseURL = baseURL + "/"
+	}
+	return baseURL
+}
+
+// urlBase Extract the base chef server URL
+func urlBase(baseUrl *url.URL) *url.URL {
+	rootUrl, _ := url.Parse("/")
+	return baseUrl.ResolveReference(rootUrl)
 }

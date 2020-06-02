@@ -37,7 +37,7 @@ func (d DataBagListResult) String() (out string) {
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#get-19
 func (d *DataBagService) List() (data *DataBagListResult, err error) {
 	path := fmt.Sprintf("data")
-	err = d.client.magicRequestDecoder("GET", path, nil, &data)
+	err = d.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -49,7 +49,7 @@ func (d *DataBagService) Create(databag *DataBag) (result *DataBagCreateResult, 
 		return
 	}
 
-	err = d.client.magicRequestDecoder("POST", "data", body, &result)
+	err = d.client.magicRequestDecoder("POST", "data", UseOrg, body, &result)
 	return
 }
 
@@ -57,7 +57,7 @@ func (d *DataBagService) Create(databag *DataBag) (result *DataBagCreateResult, 
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#delete-7
 func (d *DataBagService) Delete(name string) (result *DataBag, err error) {
 	path := fmt.Sprintf("data/%s", name)
-	err = d.client.magicRequestDecoder("DELETE", path, nil, &result)
+	err = d.client.magicRequestDecoder("DELETE", path, UseOrg, nil, &result)
 	return
 }
 
@@ -65,7 +65,7 @@ func (d *DataBagService) Delete(name string) (result *DataBag, err error) {
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#get-20
 func (d *DataBagService) ListItems(name string) (data *DataBagListResult, err error) {
 	path := fmt.Sprintf("data/%s", name)
-	err = d.client.magicRequestDecoder("GET", path, nil, &data)
+	err = d.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -77,14 +77,14 @@ func (d *DataBagService) CreateItem(databagName string, databagItem DataBagItem)
 		return
 	}
 	path := fmt.Sprintf("data/%s", databagName)
-	return d.client.magicRequestDecoder("POST", path, body, nil)
+	return d.client.magicRequestDecoder("POST", path, UseOrg, body, nil)
 }
 
 // DeleteItem deletes an item from a data bag
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#delete-8
 func (d *DataBagService) DeleteItem(databagName string, databagItem string) (err error) {
 	path := fmt.Sprintf("data/%s/%s", databagName, databagItem)
-	err = d.client.magicRequestDecoder("DELETE", path, nil, nil)
+	err = d.client.magicRequestDecoder("DELETE", path, UseOrg, nil, nil)
 	return
 }
 
@@ -92,7 +92,7 @@ func (d *DataBagService) DeleteItem(databagName string, databagItem string) (err
 //   Chef API Docs: https://docs.chef.io/api_chef_server/#get-21
 func (d *DataBagService) GetItem(databagName string, databagItem string) (item DataBagItem, err error) {
 	path := fmt.Sprintf("data/%s/%s", databagName, databagItem)
-	err = d.client.magicRequestDecoder("GET", path, nil, &item)
+	err = d.client.magicRequestDecoder("GET", path, UseOrg, nil, &item)
 	return
 }
 
@@ -104,5 +104,5 @@ func (d *DataBagService) UpdateItem(databagName string, databagItemId string, da
 		return
 	}
 	path := fmt.Sprintf("data/%s/%s", databagName, databagItemId)
-	return d.client.magicRequestDecoder("PUT", path, body, nil)
+	return d.client.magicRequestDecoder("PUT", path, UseOrg, body, nil)
 }

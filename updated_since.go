@@ -23,7 +23,7 @@ type UpdatedSince struct {
 // Calls will always return 404 not found errors
 func (e UpdatedSinceService) Get(sequenceId int64) (updated []UpdatedSince, err error) {
 	url := "updated_since?seq=" + strconv.FormatInt(sequenceId, 10)
-	err = e.client.magicRequestDecoder("GET", url, nil, &updated)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &updated)
 	if err != nil {
 		err = errors.New("Update_since is a deprecated endpoint and always returns 404.")
 	}

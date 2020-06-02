@@ -34,7 +34,7 @@ func NewACL(acltype string, actors, groups ACLitem) (acl *ACL) {
 // Chef API docs: lol
 func (a *ACLService) Get(subkind string, name string) (acl ACL, err error) {
 	url := fmt.Sprintf("%s/%s/_acl", subkind, name)
-	err = a.client.magicRequestDecoder("GET", url, nil, &acl)
+	err = a.client.magicRequestDecoder("GET", url, UseOrg, nil, &acl)
 	return
 }
 
@@ -48,6 +48,6 @@ func (a *ACLService) Put(subkind, name string, acltype string, item *ACL) (err e
 		return
 	}
 
-	err = a.client.magicRequestDecoder("PUT", url, body, nil)
+	err = a.client.magicRequestDecoder("PUT", url, UseOrg, body, nil)
 	return
 }

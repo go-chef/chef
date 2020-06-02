@@ -22,7 +22,7 @@ type Revision map[string]string
 // List lists the policy groups in the Chef server.
 // Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
 func (e *PolicyGroupService) List() (data PolicyGroupGetResponse, err error) {
-	err = e.client.magicRequestDecoder("GET", "policy_groups", nil, &data)
+	err = e.client.magicRequestDecoder("GET", "policy_groups", UseOrg, nil, &data)
 	return
 }
 
@@ -31,7 +31,7 @@ func (e *PolicyGroupService) List() (data PolicyGroupGetResponse, err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
 func (e *PolicyGroupService) Get(policyGroupName string) (data PolicyGroup, err error) {
 	url := fmt.Sprintf("policy_groups/%s", policyGroupName)
-	err = e.client.magicRequestDecoder("GET", url, nil, &data)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &data)
 	return
 }
 
@@ -40,7 +40,7 @@ func (e *PolicyGroupService) Get(policyGroupName string) (data PolicyGroup, err 
 // Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
 func (e *PolicyGroupService) Delete(policyGroupName string) (data PolicyGroup, err error) {
 	url := fmt.Sprintf("policy_groups/%s", policyGroupName)
-	err = e.client.magicRequestDecoder("DELETE", url, nil, &data)
+	err = e.client.magicRequestDecoder("DELETE", url, UseOrg, nil, &data)
 	return
 }
 
@@ -49,7 +49,7 @@ func (e *PolicyGroupService) Delete(policyGroupName string) (data PolicyGroup, e
 // Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
 func (e *PolicyGroupService) GetPolicy(policyGroupName string, policyName string) (data RevisionDetailsResponse, err error) {
 	url := fmt.Sprintf("policy_groups/%s/policies/%s", policyGroupName, policyName)
-	err = e.client.magicRequestDecoder("GET", url, nil, &data)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &data)
 	return
 }
 
@@ -58,7 +58,7 @@ func (e *PolicyGroupService) GetPolicy(policyGroupName string, policyName string
 // Chef API docs: https://docs.chef.io/api_chef_server/#policy_groups
 func (e *PolicyGroupService) DeletePolicy(policyGroupName string, policyName string) (data RevisionDetailsResponse, err error) {
 	url := fmt.Sprintf("policy_groups/%s/policies/%s", policyGroupName, policyName)
-	err = e.client.magicRequestDecoder("DELETE", url, nil, &data)
+	err = e.client.magicRequestDecoder("DELETE", url, UseOrg, nil, &data)
 	return
 }
 

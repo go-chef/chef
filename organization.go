@@ -23,7 +23,7 @@ type OrganizationResult struct {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#organizations
 func (e *OrganizationService) List() (organizationlist map[string]string, err error) {
-	err = e.client.magicRequestDecoder("GET", "organizations", nil, &organizationlist)
+	err = e.client.magicRequestDecoder("GET", "organizations", UseGlobal, nil, &organizationlist)
 	return
 }
 
@@ -32,7 +32,7 @@ func (e *OrganizationService) List() (organizationlist map[string]string, err er
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id28
 func (e *OrganizationService) Get(name string) (organization Organization, err error) {
 	url := fmt.Sprintf("organizations/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, nil, &organization)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &organization)
 	return
 }
 
@@ -46,7 +46,7 @@ func (e *OrganizationService) Create(organization Organization) (data Organizati
 	}
 
 	var orglist map[string]string
-	err = e.client.magicRequestDecoder("POST", "organizations", body, &orglist)
+	err = e.client.magicRequestDecoder("POST", "organizations", UseGlobal, body, &orglist)
 	data.ClientName = orglist["clientname"]
 	data.PrivateKey = orglist["private_key"]
 	data.Uri = orglist["uri"]
@@ -63,7 +63,7 @@ func (e *OrganizationService) Update(g Organization) (organization Organization,
 		return
 	}
 
-	err = e.client.magicRequestDecoder("PUT", url, body, &organization)
+	err = e.client.magicRequestDecoder("PUT", url, UseGlobal, body, &organization)
 	return
 }
 
@@ -71,6 +71,6 @@ func (e *OrganizationService) Update(g Organization) (organization Organization,
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#organizations
 func (e *OrganizationService) Delete(name string) (err error) {
-	err = e.client.magicRequestDecoder("DELETE", "organizations/"+name, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", "organizations/"+name, UseGlobal, nil, nil)
 	return
 }

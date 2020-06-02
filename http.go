@@ -23,6 +23,10 @@ import (
 // ChefVersion that we pretend to emulate
 const ChefVersion = "14.0.0"
 
+// Values to indicate which base url to use
+const UseGlobal = true
+const UseOrg = false
+
 // Body wraps io.Reader and adds methods for calculating hashes and detecting content
 type Body struct {
 	io.Reader
@@ -38,10 +42,10 @@ type AuthConfig struct {
 
 // Client is vessel for public methods used against the chef-server
 type Client struct {
-	Auth    *AuthConfig
-	BaseURL *url.URL
+	Auth          *AuthConfig
+	BaseURL       *url.URL
 	GlobalBaseURL *url.URL
-	client  *http.Client
+	client        *http.Client
 
 	ACLs              *ACLService
 	Associations      *AssociationService
@@ -94,7 +98,7 @@ type Config struct {
 	AuthenticationVersion string
 
 	// Base URL handling
-	// StetBaseURL false implies 
+	// StetBaseURL the default of false implies
 	//   A / will be added to the end of the specified BaseURL if it is not there
 	//   The GlobalBaseURL will be calculated and used for global end points
 	StetBaseURL bool
@@ -218,9 +222,8 @@ func NewClient(cfg *Config) (*Client, error) {
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
 	globalBaseUrl := baseUrl
-	rootUrl,_ := url.Parse("/")
 	if !cfg.StetBaseURL {
-		globalBaseUrl = globalBaseUrl.ResolveReference(rootUrl)
+		globalBaseUrl = urlBase(globalBaseUrl)
 	}
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
@@ -247,7 +250,7 @@ func NewClient(cfg *Config) (*Client, error) {
 			Transport: tr,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		},
-		BaseURL: baseUrl,
+		BaseURL:       baseUrl,
 		GlobalBaseURL: globalBaseUrl,
 	}
 	c.ACLs = &ACLService{client: c}
@@ -329,13 +332,11 @@ func (c *Client) magicRequestDecoder(method, path string, globalUrl bool, body i
 
 // NewRequest returns a signed request  suitable for the chef server
 func (c *Client) NewRequest(method string, requestUrl string, globalUrl bool, body io.Reader) (*http.Request, error) {
-	// global/local flag in NewRequest and magicRequestDecoder, basicRequestDecoder
-
 	relativeUrl, err := url.Parse(requestUrl)
 	if err != nil {
 		return nil, err
 	}
-	u,_ := url.Parse("")
+	u, _ := url.Parse("")
 	if globalUrl {
 		u = c.GlobalBaseURL.ResolveReference(relativeUrl)
 	} else {
@@ -633,5 +634,11 @@ func urlSlash(baseURL string) string {
 	if len(baseURL) == 0 || string(baseURL[len(baseURL)-1:]) != "/" {
 		baseURL = baseURL + "/"
 	}
-        return baseURL
+	return baseURL
+}
+
+// urlBase Extract the base chef server URL
+func urlBase(baseUrl *url.URL) *url.URL {
+	rootUrl, _ := url.Parse("/")
+	return baseUrl.ResolveReference(rootUrl)
 }

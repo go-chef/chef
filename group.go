@@ -36,7 +36,7 @@ type GroupResult struct {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#groups
 func (e *GroupService) List() (grouplist map[string]string, err error) {
-	err = e.client.magicRequestDecoder("GET", "groups", false, nil, &grouplist)
+	err = e.client.magicRequestDecoder("GET", "groups", UseOrg, nil, &grouplist)
 	return
 }
 
@@ -45,7 +45,7 @@ func (e *GroupService) List() (grouplist map[string]string, err error) {
 // Chef API docs: http://docs.opscode.com/api_chef_server.html#id28
 func (e *GroupService) Get(name string) (group Group, err error) {
 	url := fmt.Sprintf("groups/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, false, nil, &group)
+	err = e.client.magicRequestDecoder("GET", url, UseOrg, nil, &group)
 	return
 }
 
@@ -58,7 +58,7 @@ func (e *GroupService) Create(group Group) (data *GroupResult, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("POST", "groups", false, body, &data)
+	err = e.client.magicRequestDecoder("POST", "groups", UseOrg, body, &data)
 	return
 }
 
@@ -72,7 +72,7 @@ func (e *GroupService) Update(g GroupUpdate) (group GroupUpdate, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("PUT", url, false, body, &group)
+	err = e.client.magicRequestDecoder("PUT", url, UseOrg, body, &group)
 	return
 }
 
@@ -80,6 +80,6 @@ func (e *GroupService) Update(g GroupUpdate) (group GroupUpdate, err error) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#groups
 func (e *GroupService) Delete(name string) (err error) {
-	err = e.client.magicRequestDecoder("DELETE", "groups/"+name, false, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", "groups/"+name, UseOrg, nil, nil)
 	return
 }

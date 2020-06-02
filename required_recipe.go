@@ -4,7 +4,7 @@ type RequiredRecipeService struct {
 	client *Client
 }
 
-// RequireRecipe the text of the required recipe.
+// RequiredRecipe the text of the required recipe.
 type RequiredRecipe string
 
 // RequiredRecipe gets the optional required_runlist value.
@@ -14,7 +14,7 @@ type RequiredRecipe string
 // 404   required_recipe enabled = false
 func (e *RequiredRecipeService) Get() (data RequiredRecipe, err error) {
 	var getdata string
-	err = e.client.magicRequestDecoder("GET", "required_recipe", false, nil, &getdata)
+	err = e.client.magicRequestDecoder("GET", "required_recipe", UseOrg, nil, &getdata)
 	data = RequiredRecipe(getdata)
 	return
 }

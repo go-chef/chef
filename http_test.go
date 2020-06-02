@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -760,5 +761,23 @@ func TestUrlSlash(t *testing.T) {
 	}
 	if urlSlash("https://stuff/org") != "https://stuff/org/" {
 		t.Errorf("urlSlash expected https://stuff/org/ got %+v\n", urlSlash("https://stuff/org"))
+	}
+}
+
+func TestUrlBase(t *testing.T) {
+	baseUrl, _ := url.Parse("https://stuff/org/")
+	globalBaseUrl := urlBase(baseUrl).String()
+	if globalBaseUrl != "https://stuff/" {
+		t.Errorf("urlBase expected https://stuff/ got %+v\n", globalBaseUrl)
+	}
+	baseUrl, _ = url.Parse("https://stuff:8443/org/mine/")
+	globalBaseUrl = urlBase(baseUrl).String()
+	if globalBaseUrl != "https://stuff:8443/" {
+		t.Errorf("urlBase expected https://stuff:8443/ got %+v\n", globalBaseUrl)
+	}
+	baseUrl, _ = url.Parse("https://stuff:8443/org/mine")
+	globalBaseUrl = urlBase(baseUrl).String()
+	if globalBaseUrl != "https://stuff:8443/" {
+		t.Errorf("urlBase expected https://stuff:8443/ got %+v\n", globalBaseUrl)
 	}
 }

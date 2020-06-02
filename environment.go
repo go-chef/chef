@@ -48,7 +48,7 @@ func (e EnvironmentResult) String() (out string) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#environments
 func (e *EnvironmentService) List() (data *EnvironmentResult, err error) {
-	err = e.client.magicRequestDecoder("GET", "environments", false, nil, &data)
+	err = e.client.magicRequestDecoder("GET", "environments", UseOrg, nil, &data)
 	return
 }
 
@@ -61,7 +61,7 @@ func (e *EnvironmentService) Create(environment *Environment) (data *Environment
 		return
 	}
 
-	err = e.client.magicRequestDecoder("POST", "environments", false, body, &data)
+	err = e.client.magicRequestDecoder("POST", "environments", UseOrg, body, &data)
 	return
 }
 
@@ -70,7 +70,7 @@ func (e *EnvironmentService) Create(environment *Environment) (data *Environment
 // Chef API docs: https://docs.chef.io/api_chef_server/#delete-9
 func (e *EnvironmentService) Delete(name string) (data *Environment, err error) {
 	path := fmt.Sprintf("environments/%s", name)
-	err = e.client.magicRequestDecoder("DELETE", path, false, nil, &data)
+	err = e.client.magicRequestDecoder("DELETE", path, UseOrg, nil, &data)
 	return
 }
 
@@ -79,7 +79,7 @@ func (e *EnvironmentService) Delete(name string) (data *Environment, err error) 
 // Chef API docs: https://docs.chef.io/api_chef_server.html#environments-name
 func (e *EnvironmentService) Get(name string) (data *Environment, err error) {
 	path := fmt.Sprintf("environments/%s", name)
-	err = e.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = e.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -94,7 +94,7 @@ func (e *EnvironmentService) Put(environment *Environment) (data *Environment, e
 		return
 	}
 
-	err = e.client.magicRequestDecoder("PUT", path, false, body, &data)
+	err = e.client.magicRequestDecoder("PUT", path, UseOrg, body, &data)
 	return
 }
 
@@ -103,7 +103,7 @@ func (e *EnvironmentService) Put(environment *Environment) (data *Environment, e
 // Chef API docs: https://docs.chef.io/api_chef_server.html#environments-name-cookbooks
 func (e *EnvironmentService) ListCookbooks(name string, numVersions string) (data EnvironmentCookbookResult, err error) {
 	path := versionParams(fmt.Sprintf("environments/%s/cookbooks", name), numVersions)
-	err = e.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = e.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 

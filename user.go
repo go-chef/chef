@@ -43,7 +43,7 @@ func (e *UserService) List(filters ...string) (userlist map[string]string, err e
 	if len(filters) > 0 {
 		url += "?" + strings.Join(filters, "&")
 	}
-	err = e.client.magicRequestDecoder("GET", url, true, nil, &userlist)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &userlist)
 	return
 }
 
@@ -56,7 +56,7 @@ func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVe
 	if len(filters) > 0 {
 		url += "?" + strings.Join(filters, "&")
 	}
-	err = e.client.magicRequestDecoder("GET", url, true, nil, &userlist)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &userlist)
 	return
 }
 
@@ -75,7 +75,7 @@ func (e *UserService) Create(user User) (data UserResult, err error) {
 		return
 	}
 
-	err = e.client.magicRequestDecoder("POST", "users", true, body, &data)
+	err = e.client.magicRequestDecoder("POST", "users", UseGlobal, body, &data)
 	return
 }
 
@@ -88,7 +88,7 @@ func (e *UserService) Create(user User) (data UserResult, err error) {
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users-name
 func (e *UserService) Delete(name string) (err error) {
-	err = e.client.magicRequestDecoder("DELETE", "users/"+name, true, nil, nil)
+	err = e.client.magicRequestDecoder("DELETE", "users/"+name, UseGlobal, nil, nil)
 	return
 }
 
@@ -102,7 +102,7 @@ func (e *UserService) Delete(name string) (err error) {
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users-name
 func (e *UserService) Get(name string) (user User, err error) {
 	url := fmt.Sprintf("users/%s", name)
-	err = e.client.magicRequestDecoder("GET", url, true, nil, &user)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &user)
 	return
 }
 
@@ -118,7 +118,7 @@ func (e *UserService) Get(name string) (user User, err error) {
 func (e *UserService) Update(name string, user User) (userUpdate UserResult, err error) {
 	url := fmt.Sprintf("users/%s", name)
 	body, err := JSONReader(user)
-	err = e.client.magicRequestDecoder("PUT", url, true, body, &userUpdate)
+	err = e.client.magicRequestDecoder("PUT", url, UseGlobal, body, &userUpdate)
 	return
 }
 
@@ -132,7 +132,7 @@ func (e *UserService) Update(name string, user User) (userUpdate UserResult, err
 // Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
 func (e *UserService) ListKeys(name string) (userkeys []KeyItem, err error) {
 	url := fmt.Sprintf("users/%s/keys", name)
-	err = e.client.magicRequestDecoder("GET", url, true, nil, &userkeys)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &userkeys)
 	return
 }
 
@@ -148,7 +148,7 @@ func (e *UserService) ListKeys(name string) (userkeys []KeyItem, err error) {
 func (e *UserService) AddKey(name string, keyadd AccessKey) (key KeyItem, err error) {
 	url := fmt.Sprintf("users/%s/keys", name)
 	body, err := JSONReader(keyadd)
-	err = e.client.magicRequestDecoder("POST", url, true, body, &key)
+	err = e.client.magicRequestDecoder("POST", url, UseGlobal, body, &key)
 	return
 }
 
@@ -162,7 +162,7 @@ func (e *UserService) AddKey(name string, keyadd AccessKey) (key KeyItem, err er
 // Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
 func (e *UserService) DeleteKey(name string, keyname string) (key AccessKey, err error) {
 	url := fmt.Sprintf("users/%s/keys/%s", name, keyname)
-	err = e.client.magicRequestDecoder("DELETE", url, true, nil, &key)
+	err = e.client.magicRequestDecoder("DELETE", url, UseGlobal, nil, &key)
 	return
 }
 
@@ -176,7 +176,7 @@ func (e *UserService) DeleteKey(name string, keyname string) (key AccessKey, err
 // Chef API docs: https://docs.chef.io/api_chef_server/#usersuserkeys
 func (e *UserService) GetKey(name string, keyname string) (key AccessKey, err error) {
 	url := fmt.Sprintf("users/%s/keys/%s", name, keyname)
-	err = e.client.magicRequestDecoder("GET", url, true, nil, &key)
+	err = e.client.magicRequestDecoder("GET", url, UseGlobal, nil, &key)
 	return
 }
 
@@ -191,6 +191,6 @@ func (e *UserService) GetKey(name string, keyname string) (key AccessKey, err er
 func (e *UserService) UpdateKey(username string, keyname string, keyUp AccessKey) (userkey AccessKey, err error) {
 	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
 	body, err := JSONReader(keyUp)
-	err = e.client.magicRequestDecoder("PUT", url, true, body, &userkey)
+	err = e.client.magicRequestDecoder("PUT", url, UseGlobal, body, &userkey)
 	return
 }

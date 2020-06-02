@@ -7,4 +7,4 @@ BASE=$(dirname $0)
 . ${BASE}/setup
 . ${BASE}/creds
 # Use the organization end point and let the GlobalBaseUrl code figure out the right URL
-go run ${BASE}/../testcase/testcase.go user ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}
+go run ${BASE}/../testcase/testcase.go user ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS} "1.3" false

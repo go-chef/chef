@@ -15,11 +15,21 @@ This is a Library that you can use to write tools to interact with the chef serv
     go test -v github.com/go-chef/chef
     examples::chefapi_tester kitchen verify 
 
+## Chef Server URL
+
+The API calls expect the client configuration to be set up with the appropriate base URL. Most of the API calls are intended to be made relative to a base URL that specifies a chef server organization. The specified URL will look something like "https://chef-server.example/organizations/orgname".  The association, license, organization and user endpoints use the base URL without a specified organization similar to "https://chef-server.example".  If the StetURL variable in the client config is set to false, the default, the global URL will be computed from a URL that specifies the organization.  The default makes it possible to make global calls and calls for one organization using the same client configuration.If you want to call the API for multiple organizations new clients need to be created for each organization. 
+
 ## SSL
 
-  If you run into an SSL verification problem when trying to connect to a ssl server with self signed certs setup your config object with `SkipSSL: true`
+If you run into an SSL verification problem when trying to connect to a chef server with self signed certs you can setup your config object with `SkipSSL: true`.
+You may also add self signed certificates and missing root CAs to the ROOTCAS field in the chef client cfg.  See the testapi/testapi.go file for example code.
 
 ## Usage
+Typically using this api client follows this pattern:
+
+* Create a client structure using NewClient. Specify the chef server URL and an organization.
+* Make api calls using client.EndPoint.method function calls.  Some calls take parameters and some require JSON bodies.  The functions generally turn the JSON returnedfrom the chef server into golang structures.
+
 This example is setting up a basic client that you can use to interact with all the service endpoints (clients, nodes, cookbooks, etc. At [@chefapi](https://docs.chef.io/api_chef_server.html))
 More usage examples can be found in the [examples](examples) directory.
 

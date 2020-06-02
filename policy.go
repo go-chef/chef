@@ -68,7 +68,7 @@ type SolutionDep struct {
 // Chef API docs: https://docs.chef.io/api_chef_server/#policies
 // GET /policies
 func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
-	err = c.client.magicRequestDecoder("GET", "policies", false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", "policies", UseOrg, nil, &data)
 	return
 }
 
@@ -76,7 +76,7 @@ func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
 //  GET /policies/name
 func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 	path := fmt.Sprintf("policies/%s", name)
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -84,7 +84,7 @@ func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 //  DELETE /policies/name
 func (c *PolicyService) Delete(policyName string) (data PolicyGetResponse, err error) {
 	path := fmt.Sprintf("policies/%s", policyName)
-	err = c.client.magicRequestDecoder("DELETE", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("DELETE", path, UseOrg, nil, &data)
 	return
 }
 
@@ -92,7 +92,7 @@ func (c *PolicyService) Delete(policyName string) (data PolicyGetResponse, err e
 //  GET /policies/<policy-name>/revisions/<revision-id>
 func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -100,7 +100,7 @@ func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string)
 //  GET /policies/<policy-name>/revisions/<revision-id>
 func (c *PolicyService) DeleteRevision(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
-	err = c.client.magicRequestDecoder("DELETE", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("DELETE", path, UseOrg, nil, &data)
 	return
 }
 

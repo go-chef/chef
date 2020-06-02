@@ -15,6 +15,6 @@ type Status struct {
 //
 // https://docs.chef.io/api_chef_server/#_status
 func (e *StatusService) Get() (data Status, err error) {
-	err = e.client.magicRequestDecoder("GET", "_status", false, nil, &data)
+	err = e.client.magicRequestDecoder("GET", "_status", UseOrg, nil, &data)
 	return
 }

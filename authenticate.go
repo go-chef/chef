@@ -15,6 +15,6 @@ type Authenticate struct {
 // https://docs.chef.io/api_chef_server.html#authenticate-user
 func (e *AuthenticateUserService) Authenticate(authenticate_request Authenticate) (err error) {
 	body, err := JSONReader(authenticate_request)
-	err = e.client.magicRequestDecoder("POST", "authenticate_user", true, body, nil)
+	err = e.client.magicRequestDecoder("POST", "authenticate_user", UseOrg, body, nil)
 	return
 }

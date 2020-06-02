@@ -112,18 +112,18 @@ func versionParams(path, numVersions string) string {
 	return path
 }
 
-// Get retruns a CookbookVersion for a specific cookbook
+// Get returns a CookbookVersion for a specific cookbook
 //  GET /cookbooks/name
 func (c *CookbookService) Get(name string) (data CookbookVersion, err error) {
 	path := fmt.Sprintf("cookbooks/%s", name)
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
 // GetAvailable returns the versions of a coookbook available on a server
 func (c *CookbookService) GetAvailableVersions(name, numVersions string) (data CookbookListResult, err error) {
 	path := versionParams(fmt.Sprintf("cookbooks/%s", name), numVersions)
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -133,7 +133,7 @@ func (c *CookbookService) GetAvailableVersions(name, numVersions string) (data C
 //   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-name-version
 func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err error) {
 	url := fmt.Sprintf("cookbooks/%s/%s", name, version)
-	err = c.client.magicRequestDecoder("GET", url, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", url, UseOrg, nil, &data)
 	return
 }
 
@@ -141,7 +141,7 @@ func (c *CookbookService) GetVersion(name, version string) (data Cookbook, err e
 //   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-name
 func (c *CookbookService) ListAvailableVersions(numVersions string) (data CookbookListResult, err error) {
 	path := versionParams("cookbooks", numVersions)
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -149,7 +149,7 @@ func (c *CookbookService) ListAvailableVersions(numVersions string) (data Cookbo
 //   Chef API docs: https://docs.chef.io/api_chef_server.html#cookbooks-recipes
 func (c *CookbookService) ListAllRecipes() (data CookbookRecipesResult, err error) {
 	path := "cookbooks/_recipes"
-	err = c.client.magicRequestDecoder("GET", path, false, nil, &data)
+	err = c.client.magicRequestDecoder("GET", path, UseOrg, nil, &data)
 	return
 }
 
@@ -161,6 +161,6 @@ func (c *CookbookService) List() (CookbookListResult, error) {
 // DeleteVersion removes a version of a cook from a server
 func (c *CookbookService) Delete(name, version string) (err error) {
 	path := fmt.Sprintf("cookbooks/%s/%s", name, version)
-	err = c.client.magicRequestDecoder("DELETE", path, false, nil, nil)
+	err = c.client.magicRequestDecoder("DELETE", path, UseOrg, nil, nil)
 	return
 }

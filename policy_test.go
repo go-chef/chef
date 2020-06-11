@@ -53,7 +53,7 @@ func TestGetPolicy(t *testing.T) {
 	policyGetJSON := `{
 						"revisions": {
 		  					"8228b0e381fe1de3ee39bf51e93029dbbdcecc61fb5abea4ca8c82591c0b529b": {
-	  
+
 		  						}
 							}
 	  				 }`

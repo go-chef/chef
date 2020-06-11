@@ -53,15 +53,15 @@ type CBAMeta struct {
 	Conflicts       map[string]string      `json:"conflicting,omitempty"`
 	Provides        map[string]string      `json:"providing,omitempty"`
 	Replaces        map[string]string      `json:"replacing,omitempty"`
-	Attributes      map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
-	Groupings       map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
+	Attributes      map[string]interface{} `json:"attributes,omitempty"`
+	Groupings       map[string]interface{} `json:"groupings,omitempty"`
 	Recipes         map[string]string      `json:"recipes,omitempty"`
 	SourceURL       string                 `json:"source_url,omitempty"`
 	IssuesURL       string                 `json:"issues_url,omitempty"`
 	Privacy         bool                   `json:"privacy,omitempty"`
 	ChefVersions    [][]string             `json:"chef_versions,omitempty"`
 	OhaiVersions    []string               `json:"ohai_versions,omitempty"`
-	Gems            []string               `json:"gems,omitempty"`
+	Gems            [][]string             `json:"gems,omitempty"`
 }
 
 // List lists the Cookbook_Artifacts in the Chef server.
@@ -80,7 +80,7 @@ func (c *CBAService) Get(name string) (data CBAGetResponse, err error) {
 }
 
 // GetVersion fetches a specific version of a cookbook_artifact from the server api
-//  GET /cookbook_artifact/foo/1ef062de1bc4cb14e4a78fb739e104eb9508473e
+//  GET /cookbook_artifacts/foo/1ef062de1bc4cb14e4a78fb739e104eb9508473e
 func (c *CBAService) GetVersion(name, id string) (data CBADetail, err error) {
 	url := fmt.Sprintf("cookbook_artifacts/%s/%s", name, id)
 	err = c.client.magicRequestDecoder("GET", url, nil, &data)

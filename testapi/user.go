@@ -4,21 +4,14 @@
 package testapi
 
 import (
-	"chefapi_test/testapi"
 	"fmt"
 	"github.com/go-chef/chef"
 	"os"
 )
 
-<<<<<<< HEAD:testapi/user.go
 // User exercise the chef server api
 func User() {
 	client := Client()
-=======
-// main Exercise the chef server api
-func main() {
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/user/user.go
 
 	// Create a new private key when adding the user
 	usr1 := chef.User{UserName: "usr1",
@@ -40,11 +33,7 @@ func main() {
 		PublicKey:   "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoYyN0AIhUh7Fw1+gQtR+ \n0/HY3625IUlVheoUeUz3WnsTrUGSSS4fHvxUiCJlNni1sQvcJ0xC9Bw3iMz7YVFO\nWz5SeKmajqKEnNywN8/NByZhhlLdBxBX/UN04/7aHZMoZxrrjXGLcyjvXN3uxyCO\nyPY989pa68LJ9jXWyyfKjCYdztSFcRuwF7tWgqnlsc8pve/UaWamNOTXQnyrQ6Dp\ndn+1jiNbEJIdxiza7DJMH/9/i/mLIDEFCLRPQ3RqW4T8QrSbkyzPO/iwaHl9U196\n06Ajv1RNnfyHnBXIM+I5mxJRyJCyDFo/MACc5AgO6M0a7sJ/sdX+WccgcHEVbPAl\n1wIDAQAB \n-----END PUBLIC KEY-----\n\n",
 	}
 
-<<<<<<< HEAD:testapi/user.go
 	err := deleteUser_u(client, "usr2")
-=======
-	err := deleteUser(client, "usr2")
->>>>>>> master:examples/chefapi_test/cmd/user/user.go
 	fmt.Println("Delete usr2", err)
 
 	// Neither PublicKey nor CreateKey specified

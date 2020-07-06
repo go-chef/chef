@@ -5,26 +5,14 @@
 package testapi
 
 import (
-	"chefapi_test/testapi"
 	"fmt"
-<<<<<<< HEAD:testapi/association.go
 	"github.com/go-chef/chef"
-=======
->>>>>>> master:examples/chefapi_test/cmd/association/association.go
 	"os"
+)
 
-<<<<<<< HEAD:testapi/association.go
 // association exercise the chef server api
 func Association() {
 	client := Client()
-=======
-	"github.com/go-chef/chef"
-)
-
-// main Exercise the chef server api
-func main() {
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/association/association.go
 
 	// Build stuctures to invite users
 	invite := chef.Request{
@@ -107,11 +95,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Issue getting user details: %+v\n", err)
 	}
 	fmt.Printf("User details: %+v\n", uget)
-<<<<<<< HEAD:testapi/association.go
 	// Delete a user from the organization
-=======
-	// Delete a user for the organization
->>>>>>> master:examples/chefapi_test/cmd/association/association.go
 	udel, err := client.Associations.Get("usradd")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Issue deleting usradd: %+v\n", err)

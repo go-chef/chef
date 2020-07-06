@@ -9,17 +9,10 @@ import (
 	"os/exec"
 )
 
-<<<<<<< HEAD:testapi/cookbook.go
 // cookbook exercise the chef server api
 func Cookbook() {
 	// Create a client for user access
 	client := Client()
-=======
-// main Exercise the chef server api
-func main() {
-	// Create a client for user access
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/cookbook/cookbook.go
 
 	// Prep by adding a couple versions of some cookbooks before running this code
 	err := addSampleCookbooks()
@@ -109,21 +102,13 @@ func addSampleCookbooks() (err error) {
 	cmd := exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-c", "/go/src/testapi/bin/knife.rb", "-o", "/fixtures/chef/cb/0.1.0")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-<<<<<<< HEAD:testapi/cookbook.go
 		fmt.Fprintln(os.Stderr, "Issue loading cookbook:", err)
-=======
-		fmt.Println(os.Stderr, "Issue loading cookbook:", err)
->>>>>>> master:examples/chefapi_test/cmd/cookbook/cookbook.go
 	}
 	fmt.Printf("Load 0.1.0 cookbook versions: %+v", string(out))
 	cmd = exec.Command("knife", "cookbook", "upload", "sampbook", "testbook", "-c", "/go/src/testapi/bin/knife.rb", "-o", "/fixtures/chef/cb/0.2.0")
 	out, err = cmd.CombinedOutput()
 	if err != nil {
-<<<<<<< HEAD:testapi/cookbook.go
 		fmt.Fprintln(os.Stderr, "Issue loading cookbook:", err)
-=======
-		fmt.Println(os.Stderr, "Issue loading cookbook:", err)
->>>>>>> master:examples/chefapi_test/cmd/cookbook/cookbook.go
 	}
 	fmt.Printf("Load 0.2.0 cookbook versions: %+v", string(out))
 	return

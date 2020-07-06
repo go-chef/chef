@@ -6,11 +6,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"os"
-<<<<<<< HEAD:testapi/sandbox.go
-=======
-
-	"chefapi_test/testapi"
->>>>>>> master:examples/chefapi_test/cmd/sandbox/sandbox.go
 )
 
 //random_data makes random byte slice for building junk sandbox data
@@ -64,13 +59,8 @@ func Sandbox() {
 			}
 
 			// with exp backoff
-<<<<<<< HEAD:testapi/sandbox.go
 			err = upload()
 			fmt.Fprintln(os.Stderr, "Issue posting files to the sandbox: ", err)
-=======
-			err = upload
-			fmt.Println(os.Stderr, "Issue posting files to the sandbox: ", err)
->>>>>>> master:examples/chefapi_test/cmd/sandbox/sandbox.go
 			// TODO: backoff of 4xx and 5xx doesn't make sense
 			// err = backoff.Retry(upload, backoff.NewExponentialBackOff())
 			// if err != nil {

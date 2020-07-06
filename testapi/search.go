@@ -6,18 +6,13 @@ import (
 	"os"
 	"time"
 
-	"chefapi_test/testapi"
 	"github.com/go-chef/chef"
 )
 
 // search exercise the chef api
 func Search() {
 	// Add nodes
-<<<<<<< HEAD:testapi/search.go
 	client := Client()
-=======
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/search/search.go
 	addNodes(client)
 	// Give the nodes time to end up in all of the data bases.  An immediate search will show no nodes
 	time.Sleep(10 * time.Second)

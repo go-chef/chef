@@ -4,11 +4,6 @@ import (
 	"fmt"
 	"os"
 
-<<<<<<< HEAD:testapi/node.go
-=======
-	"chefapi_test/testapi"
-
->>>>>>> master:examples/chefapi_test/cmd/node/nodes.go
 	"github.com/go-chef/chef"
 )
 

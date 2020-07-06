@@ -4,7 +4,6 @@
 package testapi
 
 import (
-<<<<<<< HEAD:testapi/status.go
 	"fmt"
 )
 
@@ -12,16 +11,6 @@ import (
 func Status() {
 	// Create a client for access
 	client := Client()
-=======
-	"chefapi_test/testapi"
-	"fmt"
-)
-
-// main Exercise the chef server api
-func main() {
-	// Create a client for access
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/status/status.go
 
 	status, err := client.Status.Get()
 	if err != nil {

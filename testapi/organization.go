@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 
-<<<<<<< HEAD:testapi/organization.go
 	"github.com/go-chef/chef"
 )
 
@@ -15,16 +14,6 @@ import (
 func Organization() {
 	// Create a client for access
 	client := Client()
-=======
-	"chefapi_test/testapi"
-	"github.com/go-chef/chef"
-)
-
-// main Exercise the chef server api
-func main() {
-	// Create a client for access
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/organization/organization.go
 
 	// Organization tests
 	org1 := "org1"

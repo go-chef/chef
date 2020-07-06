@@ -4,21 +4,14 @@
 package testapi
 
 import (
-	"chefapi_test/testapi"
 	"fmt"
 	"github.com/go-chef/chef"
 	"os"
 )
 
-<<<<<<< HEAD:testapi/databag.go
 // databog exercise the chef server api
 func Databag() {
 	client := Client()
-=======
-// main Exercise the chef server api
-func main() {
-	client := testapi.Client()
->>>>>>> master:examples/chefapi_test/cmd/databag/databag.go
 
 	// List the current databags
 	BagList, err := client.DataBags.List()
@@ -42,13 +35,10 @@ func main() {
 	databagAdd, err = client.DataBags.Create(&databag1)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating databag1:", err)
-<<<<<<< HEAD:testapi/databag.go
 	}
 	cerr, err := chef.ChefError(err)
 	if cerr != nil {
 		fmt.Fprintln(os.Stderr, "Issue recreating databag1:", cerr.StatusCode())
-=======
->>>>>>> master:examples/chefapi_test/cmd/databag/databag.go
 	}
 	fmt.Println("Recreated databag1", databagAdd)
 

@@ -3,11 +3,7 @@ driver:
   name: vagrant
   synced_folders:
     - ['../', '/go/src/github.com/go-chef/chef']
-<<<<<<< HEAD
     - ['../testapi', '/go/src/testapi']
-=======
-    - ['../examples/chefapi_test', '/go/src/chefapi_test']
->>>>>>> master
 
 provisioner:
   name: chef_zero
@@ -25,10 +21,7 @@ suites:
       - recipe[test_chef_server::default]
       - recipe[test_chef_server::chef_objects]
       - recipe[test_chef_server::chefapi]
-<<<<<<< HEAD
       - recipe[test_chef_server::workstation]
-=======
->>>>>>> master
     attributes:
       chef-server:
         accept_license: true

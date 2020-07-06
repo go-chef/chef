@@ -1,10 +1,6 @@
 # Inspec tests for the cookbook chef api go module
 #
-<<<<<<< HEAD:test_chef_server/test/integration/default/inspec/cookbook_spec.rb
 describe command('/go/src/testapi/bin/cookbook') do
-=======
-describe command('/go/src/chefapi_test/bin/cookbook') do
->>>>>>> master:examples/chefapi_examples/test/integration/default/inspec/cookbook_spec.rb
   its('stderr') { should match(%r{^Issue getting cookbook nothere: GET https://testhost/organizations/test/cookbooks/nothere: 404}) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stderr') { should_not match(/testbook/) }

@@ -1,14 +1,9 @@
 # Inspec tests for the organization chef api go module
 #
 
-<<<<<<< HEAD:test_chef_server/test/integration/default/inspec/organization_spec.rb
 describe command('/go/src/testapi/bin/organization') do
   its('stderr') { should match(%r{^Issue creating org: {org1 organization1 } POST https://testhost/organizations: 409$}) }
   its('stderr') { should match(/^Issue creating org: {org1 organization1 } 409$/) }
-=======
-describe command('/go/src/chefapi_test/bin/organization') do
-  its('stderr') { should match(%r{^Issue creating org: {org1 organization1 } POST https://testhost/organizations: 409$}) }
->>>>>>> master:examples/chefapi_examples/test/integration/default/inspec/organization_spec.rb
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stdout') { should match(/^List initial organizations map\[test.*test\]$/) }
   its('stdout') { should match(/^Added org1 {org1-validator -----BEGIN RSA PRIVATE KEY-----/) }

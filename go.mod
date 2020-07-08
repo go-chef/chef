@@ -6,14 +6,14 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.31.6 // indirect
 	github.com/axw/gocov v1.0.0 // indirect
-	github.com/cenkalti/backoff v2.1.1+incompatible
+	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/ctdk/chefcrypto v1.0.0 // indirect
 	github.com/ctdk/go-trie v0.0.0-20161110000926-fe74c509b12e // indirect
 	github.com/ctdk/goiardi v0.11.10
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-chef/chef v0.16.2
 	github.com/go-ole/go-ole v1.2.4 // indirect
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/google/gops v0.3.8 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect

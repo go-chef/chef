@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -8,36 +7,36 @@ import (
 )
 
 var cases = map[string]func(){
-	"association": testapi.Association,
+	"association":         testapi.Association,
 	"association_cleanup": testapi.AssociationCleanup,
-	"association_setup": testapi.AssociationSetup,
-	"authenticate": testapi.Authenticate,
-	"client": testapi.ApiClient,
-	"clientkey": testapi.Clientkey,
-	"container": testapi.Container,
-	"cookbook": testapi.Cookbook,
-	"databag": testapi.Databag,
-	"environment": testapi.Environment,
-	"group": testapi.Group,
-	"license": testapi.License,
-	"node": testapi.Node,
-	"organization": testapi.Organization,
-	"policy": testapi.Policy,
-	"policygroup": testapi.PolicyGroup,
-	"principals": testapi.Principals,
-	"principals_add": testapi.PrincipalsAdd,
-	"principals_del": testapi.PrincipalsDel,
-	"role": testapi.Role,
-	"required_recipe": testapi.RequiredRecipe,
+	"association_setup":   testapi.AssociationSetup,
+	"authenticate":        testapi.Authenticate,
+	"client":              testapi.ApiClient,
+	"clientkey":           testapi.Clientkey,
+	"container":           testapi.Container,
+	"cookbook":            testapi.Cookbook,
+	"databag":             testapi.Databag,
+	"environment":         testapi.Environment,
+	"group":               testapi.Group,
+	"license":             testapi.License,
+	"node":                testapi.Node,
+	"organization":        testapi.Organization,
+	"policy":              testapi.Policy,
+	"policygroup":         testapi.PolicyGroup,
+	"principals":          testapi.Principals,
+	"principals_add":      testapi.PrincipalsAdd,
+	"principals_del":      testapi.PrincipalsDel,
+	"role":                testapi.Role,
+	"required_recipe":     testapi.RequiredRecipe,
 	// TODO: fix sandbox
-	"sandbox": testapi.Sandbox,
-	"search": testapi.Search,
+	"sandbox":           testapi.Sandbox,
+	"search":            testapi.Search,
 	"search_pagination": testapi.SearchPagination,
-	"stats": testapi.Stats,
-	"status": testapi.Status,
-	"universe": testapi.Universe,
-	"user": testapi.User,
-	"userkey": testapi.Userkey,
+	"stats":             testapi.Stats,
+	"status":            testapi.Status,
+	"universe":          testapi.Universe,
+	"user":              testapi.User,
+	"userkey":           testapi.Userkey,
 }
 
 // Invoke the requested testapi test function
@@ -46,7 +45,7 @@ func main() {
 	fn, ok := cases[testcase]
 	if ok {
 		fn()
-        } else {
+	} else {
 		fmt.Fprintf(os.Stderr, "Requested case %+s was not found\n", testcase)
 	}
 }

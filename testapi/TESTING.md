@@ -11,8 +11,8 @@ Write the go code.
 
 Add examples to exercise the functions in the chefapi_examples cookbook.
 
-Create go code to call the functions. See the files in go-chef/chef/examples/cmd. Many times extra setup is required.
-Create a shell script to call the go code. See the files in go-chef/chef/examples/bin.
+Create go code to call the functions. See the files in go-chef/chef/testapi/cmd. Many times extra setup is required.
+Create a shell script to call the go code. See the files in go-chef/chef/testapi/bin.
 Write Inspec tests to verify the output. Be aware that go map output does not alway have consistent ordering. The matching regex structures are rarely fun to write.
 Commit the go-chef/chef (api client go code at least) changes to a branch and push to GitHub. The chefapi.rb recipe would need to be updated to pull from the correct repo.
 kitchen converge. - installs the code, spins up a chef server to test against
@@ -20,7 +20,7 @@ kitchen login - run the /bin commands and iterate on fixing the code. Both cmd c
 While logged in to the virtual box image try adding "-tags" debug the bin command. Example
 go run -tags debug ${BASE}/../cmd/client/clients.go ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS} will produce output that shows the real request body returned from the chef server. Note what you passed in and what you got back. Send updates for the documentation to https://github.com/chef/chef-web-docs
 After things work ok. Create an inspec test for the endpoint that calls the bin command for the endpoint. Run kitchen verify to run the full set of integration tests.
-Run cookstyle -a in the go-chef/chef/examples/chefapi_examples directory
+Run cookstyle -a in the go-chef/chef/test_chef_server directory
 
 Run go fmt in the go-chef/chef directory
 

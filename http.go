@@ -47,8 +47,8 @@ type Client struct {
 	AuthenticateUser  *AuthenticateUserService
 	Clients           *ApiClientService
 	Containers        *ContainerService
-	Cookbooks         *CookbookService
 	CookbookArtifacts *CBAService
+	Cookbooks         *CookbookService
 	DataBags          *DataBagService
 	Environments      *EnvironmentService
 	Groups            *GroupService

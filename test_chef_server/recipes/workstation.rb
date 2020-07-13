@@ -11,7 +11,7 @@ execute 'Sync the time' do
   command 'ntpdate time.nist.gov'
 end
 
-file '/etc/chef/accepted_licenses/chef_infra_server' do
+file '/etc/chef/accepted_licenses/chef_workstation' do
   content "---
     id: chef-workstation
     name: Chef Workstation
@@ -23,6 +23,6 @@ file '/etc/chef/accepted_licenses/chef_infra_server' do
 end
 
 execute 'Install chef workstation' do
-  command 'curl --silent --show-error https://omnitruck.chef.io/install.sh | sudo -E bash -s -- -c stable -P chef-workstation'
-  not_if 'chef --version'
+  command 'curl --silent --show-error https://omnitruck.chef.io/install.sh | sudo -E bash -s -- -c stable -P chef-workstation --chef-license accept'
+  not_if 'test -x /opt/chef-workstation/bin/chef'
 end

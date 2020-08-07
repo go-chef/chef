@@ -17,7 +17,7 @@ This is a Library that you can use to write tools to interact with the chef serv
 
 ## SSL
 
-  If you run into an SSL verification problem when trying to connect to a ssl server with self signed certs setup your config object with `SkipSSL: true`
+  If you run into an SSL verification problem when trying to connect to a ssl server with self signed certs set up your config object with `SkipSSL: true`
 
 ## Usage
 This example is setting up a basic client that you can use to interact with all the service endpoints (clients, nodes, cookbooks, etc. At [@chefapi](https://docs.chef.io/api_chef_server.html))

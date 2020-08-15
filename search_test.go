@@ -1,6 +1,7 @@
 package chef
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -131,7 +132,10 @@ func TestSearch_PartialExec(t *testing.T) {
 		t.Errorf("Search.PartialExec failed err: %+v", err)
 	}
 
-	assert.Equal(t, "grafana", pres.Rows[0].(map[string]interface{})["policy_name"])
+	assert.Len(t, pres.Rows, 1)
+	actualNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[0], &actualNode))
+	assert.Equal(t, "grafana", actualNode.PolicyName)
 
 }
 
@@ -177,8 +181,14 @@ func TestSearch_PartialExecMultipleCalls(t *testing.T) {
 		t.Errorf("Search.PartialExec failed err: %+v", err)
 	}
 
-	assert.Equal(t, 1185, len(pres.Rows))
-	assert.Equal(t, "node1", pres.Rows[0].(map[string]interface{})["name"])
-	assert.Equal(t, "node1185", pres.Rows[len(pres.Rows)-1].(map[string]interface{})["name"])
+	assert.Len(t, pres.Rows, 1185)
+
+	firstNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[0], &firstNode))
+	assert.Equal(t, "node1", firstNode.Name)
+
+	lastNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[len(pres.Rows)-1], &lastNode))
+	assert.Equal(t, "node1185", lastNode.Name)
 
 }

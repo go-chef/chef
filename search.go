@@ -1,6 +1,7 @@
 package chef
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -34,11 +35,12 @@ func (q SearchQuery) String() string {
 	return fmt.Sprintf("%s?q=%s&rows=%d&sort=%s&start=%d", q.Index, q.Query, q.Rows, q.SortBy, q.Start)
 }
 
-// SearchResult will return a slice of interface{} of chef-like objects (roles/nodes/etc)
+// SearchResult will return a slice of json.RawMessage which can then
+// be json.Unmarshaled to any of the chef-like objects (Role/Node/etc)
 type SearchResult struct {
 	Total int
 	Start int
-	Rows  []interface{}
+	Rows  []json.RawMessage
 }
 
 var inc = 1000

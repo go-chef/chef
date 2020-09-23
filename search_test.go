@@ -133,8 +133,9 @@ func TestSearch_PartialExec(t *testing.T) {
 	}
 
 	assert.Len(t, pres.Rows, 1)
+	jres, err := pres.JsonResult()
 	actualNode := Node{}
-	assert.NoError(t, json.Unmarshal(pres.Rows[0], &actualNode))
+	assert.NoError(t, json.Unmarshal(jres.Rows[0], &actualNode))
 	assert.Equal(t, "grafana", actualNode.PolicyName)
 
 }
@@ -183,12 +184,14 @@ func TestSearch_PartialExecMultipleCalls(t *testing.T) {
 
 	assert.Len(t, pres.Rows, 1185)
 
+	jres, err := pres.JsonResult()
+
 	firstNode := Node{}
-	assert.NoError(t, json.Unmarshal(pres.Rows[0], &firstNode))
+	assert.NoError(t, json.Unmarshal(jres.Rows[0], &firstNode))
 	assert.Equal(t, "node1", firstNode.Name)
 
 	lastNode := Node{}
-	assert.NoError(t, json.Unmarshal(pres.Rows[len(pres.Rows)-1], &lastNode))
+	assert.NoError(t, json.Unmarshal(jres.Rows[len(jres.Rows)-1], &lastNode))
 	assert.Equal(t, "node1185", lastNode.Name)
 
 }

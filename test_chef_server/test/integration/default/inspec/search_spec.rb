@@ -11,4 +11,5 @@ describe command('/go/src/testapi/bin/search') do
   its('stdout') { should match(/^List nodes from Exec query \{Total:1 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from all nodes Exec query \{Total:4 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from partial search \{Total:4 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^List JsonResult total: 4 start: 0 .*bode0/) }
 end

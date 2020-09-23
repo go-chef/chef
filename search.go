@@ -40,6 +40,12 @@ func (q SearchQuery) String() string {
 type SearchResult struct {
 	Total int
 	Start int
+	Rows  []interface{}
+}
+
+type SearchJResult struct {
+	Total int
+	Start int
 	Rows  []json.RawMessage
 }
 
@@ -47,6 +53,14 @@ var inc = 1000
 
 func (e SearchService) PageSize(setting int) {
 	inc = setting
+}
+
+// JsonResult convert the search result to []json.RawMessage from []interface{}
+func (ir SearchResult) JsonResult() (res *SearchJResult, err error) {
+	res = &SearchJResult{}
+	rawSearch, err := json.Marshal(ir)
+	err = json.Unmarshal(rawSearch, res)
+	return res, err
 }
 
 // Do will execute the search query on the client

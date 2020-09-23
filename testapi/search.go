@@ -81,6 +81,17 @@ func Search() {
 	}
 	fmt.Printf("List nodes from partial search %+v\n", pres)
 
+	// Return json.RawMessage format 
+	jres, err := pres.JsonResult()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue converting from interface to json.RawMessage", err)
+	}
+	fmt.Printf("List JsonResult total: %d start: %d ", jres.Total, jres.Start)
+	for _, row := range jres.Rows {
+		fmt.Printf("%v ", string(row)) 
+	}
+	fmt.Printf("\n")
+
 	// Clean up nodes
 	deleteNodes(client)
 }

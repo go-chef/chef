@@ -23,6 +23,6 @@ file '/etc/chef/accepted_licenses/chef_workstation' do
 end
 
 execute 'Install chef workstation' do
-  command 'curl --silent --show-error https://omnitruck.chef.io/install.sh | sudo -E bash -s -- -c stable -P chef-workstation --chef-license accept'
+  command 'curl --silent --show-error https://omnitruck.chef.io/install.sh >/tmp/install.sh && chmod +x /tmp/install.sh && /tmp/install.sh -P chef-workstation'
   not_if 'test -x /opt/chef-workstation/bin/chef'
 end

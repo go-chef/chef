@@ -7,8 +7,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"math/big"
 	"net/http"
@@ -19,29 +17,25 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/ctdk/goiardi/chefcrypto"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-var (
-	testRequiredHeaders = []string{
-		"X-Ops-Timestamp",
-		"X-Ops-UserId",
-		"X-Ops-Sign",
-		"X-Ops-Content-Hash",
-		"X-Ops-Authorization-1",
-	}
-
-	mux    *http.ServeMux
-	server *httptest.Server
-	client *Client
-)
+type keyPair struct {
+	private,
+	public,
+	kind string
+}
 
 const (
 	userid     = "tester"
 	requestURL = "http://localhost:80"
+
 	// Generated from
 	// openssl genrsa -out privkey.pem 2048
 	// perl -pe 's/\n/\\n/g' privkey.pem
-	privateKey = `
+	privateKeyPKCS1 = `
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAx12nDxxOwSPHRSJEDz67a0folBqElzlu2oGMiUTS+dqtj3FU
 h5lJc1MjcprRVxcDVwhsSSo9948XEkk39IdblUCLohucqNMzOnIcdZn8zblN7Cnp
@@ -73,7 +67,7 @@ dYkX7NdNQ5E6tcJZuJCGq0HxIAQeKPf3x9DRKzMnLply6BEzyuAC4g==
 	// Generated from
 	// openssl rsa -in privkey.pem -pubout -out pubkey.pem
 	// perl -pe 's/\n/\\n/g' pubkey.pem
-	publicKey = `
+	publicKeyPKCS1 = `
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx12nDxxOwSPHRSJEDz67
 a0folBqElzlu2oGMiUTS+dqtj3FUh5lJc1MjcprRVxcDVwhsSSo9948XEkk39Idb
@@ -88,7 +82,7 @@ RQIDAQAB
 	// openssl dsaparam -out dsaparam.pem 2048
 	// openssl gendsa  -out privkey.pem dsaparam.pem
 	// perl -pe 's/\n/\\n/g' privkey.pem
-	badPrivateKey = `
+	badPrivateKeyPKCS1 = `
 -----BEGIN DSA PRIVATE KEY-----
 MIIDVgIBAAKCAQEApv0SsaKRWyn0IrbI6i547c/gldLQ3vB5xoSuTkVOvmD3HfuE
 EVPKMS+XKlhgHOJy677zYNKUOIR78vfDVr1M89w19NSic81UwGGaOkrjQWOkoHaA
@@ -110,6 +104,79 @@ KH70bpEV84JIzWo0ejKzgMBQ0Zrjcsm4lGBtzaBqGSvOrlIVFuSWFYUxrSTTxthQ
 Y5WF0OX+ABcCIEXhrzI1NddyFwLnfDCQ+sy6HT8/xLKXfaipd2rpn3gL
 -----END DSA PRIVATE KEY-----
 `
+	// Generated from
+	// openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+	// openssl genrsa -out privkey.pem 2048
+	privateKeyPKCS8 = `
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDNjtxSUP5FjiD9
+a0KXByeLPE1y5d7G1WpJOo6YgAJjFUFPYs8+EtF7MzWpxvcRQEuYgrR7K5E7ZmSk
+uM3fg+kWessqrc8qZLx3LFVv7C2O2IT0s2riHjBbBOjLbM0Ps9uX5u5vgyIOlEGz
+o1dw5AMDi52QjjfROMML7WqRLMY7jcRuK7IpL5UhnAtKnOrakHSzxMHqIC2ZQnsJ
+Es2Rnj7ihgr6VZ66FEEUcIqbUwZDEHYsamkg4bCFHB+P925FeZfQtBDBGlFGeNSs
+mDOKrw66I2wDdq/BZ7MN3y/tdpda0H+95qYRye2FeyL9uSoREWaAv5PemQYGt2wc
+xmkNoImRAgMBAAECggEABFJ2q3xsfEXqx6lTsx1BZZoU/s96ia+/Fl8W1HoMkszF
+nMe1F9cJdI+1FybJ1yEE9eX5qYVW/mq+vv/rxEFfy0s1rmYNLxUDKXZTLZFHu/Mt
+iH+lRa/g0GkgA/b7sNLVUTJX3RxiwO+5Ge/bTNJehdqPq5Rx9AI/h6asUPUiDep5
+gy22eGh8hNYXrDvZxQBe8stVw11PSItn5pgYTtlLW+AxdR5r17JvIsxbdX+nceEK
+KWiS8YvkPJwlhIskMu8nBlc62efk6R8bVIRCrgbn87KNe/SmOTgUvgdw5zL5UxU7
+m3IMdy7Cl9+0h7AYKUha2d05cAw5nEvmcJlOGjwygQKBgQD4vOuEJXcjjOYzOwEO
+DbCfExCl9KnCCOJewq37AxBWreo3gWu4+S4RxSnsEN7NPQGj4JfePr/gSzcr0Zkb
+wDZc1jVIUdh5eyE1ABvJWnyfYducKF1j5hO0XJNlHqg1+5DhtycsQRlsbiMDEUxk
+1S/zMMg3Af/y87Su/wmnZdCo+QKBgQDTjzY2iaxhut3gi8vKzrS+YAAsjHw+ohT5
+WVgFp+TP1lFEjV8hLhWWvnbfluFItzLawjYNpckNcHEA/cgTtsy2baEdrkhhFIj0
+1FF2xIYJzHucHZT9e8hMU6FyoX/iqXSfA9bmc5LSV/Bi6nN8hneIcz/x/Vt1z3qd
+EeUgHYnjWQKBgGwR2NnPVVYSz6mOh0TN2eEjbWZNSLxPE9tMBj8684xVf5+iEWWK
+jeOWoEI6ijLtwJqs6A7dgIw44b2eEUGnX3cycm/7b2xIfQMECw6Oy/qLj9jnCLxw
+qDsCxd93VGov5KDM7K4jkqIzr+6TQ3fD0FN+7F5J9iRekjA+Crm6WNAxAoGBAJkC
+84rueCcXKHLHqVW9uywV8wpFcXc7c0AFRoyQqgVIVO7n8O3mjubASuncDoSxO67M
+2Jt2VLvLn2/AHX1ksRsgn28AJolQeN3a0jC8YtWjd6OqIaBUbsIFmrd15zDgruBz
+vnJfFMndoJdqSqy99KZT9OPpAsVqkpwX3UglFR3BAoGBAJLMwZ1bKqIH1BrZhSdx
+dtDSoMoQsg+5mWVx5DXSyN4cgkykfbIqAPh8xe6hDFUwMBPniVj9D1c67YYPs/7/
+9UtZHPN4s55Li7gJ4tGIpRkcThMEbdBE9rBzgFdNSPloBzwJgC4/XgWR6ZQr6zXD
+CD/2ADbs1OybuNTkDSiPdw9K
+-----END PRIVATE KEY-----
+	`
+	// Generated from
+	// openssl rsa -in privkey.pem -pubout -out pubkey.pem
+	// perl -pe 's/\n/\\n/g' pubkey.pem
+	publicKeyPKCS8 = `
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzY7cUlD+RY4g/WtClwcn
+izxNcuXextVqSTqOmIACYxVBT2LPPhLRezM1qcb3EUBLmIK0eyuRO2ZkpLjN34Pp
+FnrLKq3PKmS8dyxVb+wtjtiE9LNq4h4wWwToy2zND7Pbl+bub4MiDpRBs6NXcOQD
+A4udkI430TjDC+1qkSzGO43EbiuyKS+VIZwLSpzq2pB0s8TB6iAtmUJ7CRLNkZ4+
+4oYK+lWeuhRBFHCKm1MGQxB2LGppIOGwhRwfj/duRXmX0LQQwRpRRnjUrJgziq8O
+uiNsA3avwWezDd8v7XaXWtB/veamEcnthXsi/bkqERFmgL+T3pkGBrdsHMZpDaCJ
+kQIDAQAB
+-----END PUBLIC KEY-----
+`
+)
+
+var (
+	testRequiredHeaders = []string{
+		"X-Ops-Timestamp",
+		"X-Ops-UserId",
+		"X-Ops-Sign",
+		"X-Ops-Content-Hash",
+		"X-Ops-Authorization-1",
+	}
+
+	mux      *http.ServeMux
+	server   *httptest.Server
+	client   *Client
+	keyPairs = []keyPair{
+		{
+			privateKeyPKCS1,
+			publicKeyPKCS1,
+			"PKCS1",
+		},
+		{
+			privateKeyPKCS8,
+			publicKeyPKCS8,
+			"PKCS8",
+		},
+	}
 )
 
 // Gave up trying to implement this myself
@@ -127,6 +194,17 @@ func setup() {
 	server = httptest.NewServer(mux)
 	client, _ = NewClient(&Config{
 		Name:                  userid,
+		Key:                   privateKeyPKCS1,
+		BaseURL:               server.URL,
+		AuthenticationVersion: "1.0",
+	})
+}
+
+func setupWithKey(privateKey string) {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+	client, _ = NewClient(&Config{
+		Name:                  userid,
 		Key:                   privateKey,
 		BaseURL:               server.URL,
 		AuthenticationVersion: "1.0",
@@ -137,12 +215,24 @@ func teardown() {
 	server.Close()
 }
 
-func createServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(checkHeader))
+func createServer(key *keyPair) *httptest.Server {
+	return httptest.NewServer(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, req *http.Request) {
+				checkHeader(key, rw, req)
+			},
+		),
+	)
 }
 
-func createTLSServer() *httptest.Server {
-	return httptest.NewTLSServer(http.HandlerFunc(checkHeader))
+func createTLSServer(key *keyPair) *httptest.Server {
+	return httptest.NewTLSServer(
+		http.HandlerFunc(
+			func(rw http.ResponseWriter, req *http.Request) {
+				checkHeader(key, rw, req)
+			},
+		),
+	)
 }
 
 // publicKeyFromString parses an RSA public key from a string
@@ -159,7 +249,7 @@ func publicKeyFromString(key []byte) (*rsa.PublicKey, error) {
 	return rsaKey.(*rsa.PublicKey), nil
 }
 
-func makeAuthConfig() (*AuthConfig, error) {
+func makeAuthConfig(privateKey string) (*AuthConfig, error) {
 	pk, err := PrivateKeyFromString([]byte(privateKey))
 	if err != nil {
 		return nil, err
@@ -173,88 +263,102 @@ func makeAuthConfig() (*AuthConfig, error) {
 }
 
 func TestAuthConfig(t *testing.T) {
-	_, err := makeAuthConfig()
-	if err != nil {
-		t.Error("Failed to create AuthConfig struct from privatekeys and stuff", err)
+	for _, keys := range keyPairs {
+		_, err := makeAuthConfig(keys.private)
+		if err != nil {
+			t.Error("Failed to create AuthConfig struct from privatekeys and stuff", err)
+		}
 	}
 }
 
 func TestBase64BlockEncodeNoLimit(t *testing.T) {
-	ac, _ := makeAuthConfig()
-	var content string
-	for _, key := range []string{"header1", "header2", "header3"} {
-		content += fmt.Sprintf("%s:blahblahblah\n", key)
-	}
-	content = strings.TrimSuffix(content, "\n")
+	for _, keys := range keyPairs {
+		ac, _ := makeAuthConfig(keys.private)
+		var content string
+		for _, key := range []string{"header1", "header2", "header3"} {
+			content += fmt.Sprintf("%s:blahblahblah\n", key)
+		}
+		content = strings.TrimSuffix(content, "\n")
 
-	signature, _ := GenerateSignature(ac.PrivateKey, content)
-	Base64BlockEncode(signature, 0)
+		signature, _ := GenerateSignature(ac.PrivateKey, content)
+		Base64BlockEncode(signature, 0)
+	}
 }
 
 func TestSignRequestBadSignature(t *testing.T) {
-	ac, err := makeAuthConfig()
-	request, err := http.NewRequest("GET", requestURL, nil)
-	ac.PrivateKey.PublicKey.N = big.NewInt(23234728432324)
+	for _, keys := range keyPairs {
+		ac, err := makeAuthConfig(keys.private)
+		request, err := http.NewRequest("GET", requestURL, nil)
+		ac.PrivateKey.PublicKey.N = big.NewInt(23234728432324)
 
-	err = ac.SignRequest(request)
-	if err == nil {
-		t.Fatal("failed to generate failed signature")
+		err = ac.SignRequest(request)
+		if err == nil {
+			t.Fatal("failed to generate failed signature")
+		}
 	}
 }
 
 func TestSignRequestNoBody(t *testing.T) {
-	setup()
-	defer teardown()
-	ac, err := makeAuthConfig()
-	request, err := client.NewRequest("GET", requestURL, nil)
+	for _, keys := range keyPairs {
+		func() {
+			setupWithKey(keys.private)
+			defer teardown()
+			ac, err := makeAuthConfig(keys.private)
+			request, err := client.NewRequest("GET", requestURL, nil)
 
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
-	}
-	count := 0
-	for _, requiredHeader := range testRequiredHeaders {
-		for header := range request.Header {
-			if strings.ToLower(requiredHeader) == strings.ToLower(header) {
-				count++
-				break
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
 			}
-		}
-	}
-	if count != len(testRequiredHeaders) {
-		t.Errorf("apiRequestHeaders didn't return all of testRequiredHeaders received: %+v required %+v", request.Header, testRequiredHeaders)
+			count := 0
+			for _, requiredHeader := range testRequiredHeaders {
+				for header := range request.Header {
+					if strings.ToLower(requiredHeader) == strings.ToLower(header) {
+						count++
+						break
+					}
+				}
+			}
+			if count != len(testRequiredHeaders) {
+				t.Errorf("apiRequestHeaders didn't return all of testRequiredHeaders received: %+v required %+v", request.Header, testRequiredHeaders)
+			}
+		}()
 	}
 }
 
 func TestSignRequestBody(t *testing.T) {
-	ac, err := makeAuthConfig()
-	if err != nil {
-		t.Fatal(err)
-	}
-	setup()
-	defer teardown()
-
-	// Gave up trying to implement this myself
-	// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
-	// yay for sharing
-	requestBody := strings.NewReader("somecoolbodytext")
-	request, err := client.NewRequest("GET", requestURL, requestBody)
-
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
-	}
-	count := 0
-	for _, requiredHeader := range testRequiredHeaders {
-		for header := range request.Header {
-			if strings.ToLower(requiredHeader) == strings.ToLower(header) {
-				count++
-				break
+	for _, keys := range keyPairs {
+		func() {
+			ac, err := makeAuthConfig(keys.private)
+			if err != nil {
+				t.Fatal(err)
 			}
-		}
-	}
-	if count != len(testRequiredHeaders) {
-		t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
+			setupWithKey(keys.private)
+			defer teardown()
+
+			// Gave up trying to implement this myself
+			// nopCloser came from https://groups.google.com/d/msg/golang-nuts/J-Y4LtdGNSw/wDSYbHWIKj0J
+			// yay for sharing
+			requestBody := strings.NewReader("somecoolbodytext")
+			request, err := client.NewRequest("GET", requestURL, requestBody)
+
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
+			count := 0
+			for _, requiredHeader := range testRequiredHeaders {
+				for header := range request.Header {
+					if strings.ToLower(requiredHeader) == strings.ToLower(header) {
+						count++
+						break
+					}
+				}
+			}
+			if count != len(testRequiredHeaders) {
+				t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
+			}
+		}()
 	}
 }
 
@@ -262,24 +366,24 @@ func TestSignRequestBody(t *testing.T) {
 // Test our headers as goiardi would
 // https://github.com/ctdk/goiardi/blob/master/authentication/authentication.go
 // func checkHeader(user_id string, r *http.Request) string {
-func checkHeader(rw http.ResponseWriter, req *http.Request) {
+func checkHeader(key *keyPair, rw http.ResponseWriter, req *http.Request) {
 	user_id := req.Header.Get("X-OPS-USERID")
 	// Since we don't have a real client or user to check against,
 	// we'll just verify that input user = output user
 	// user, err := actor.GetReqUser(user_id)
 	// if err != nil {
 	if user_id != userid {
-		fmt.Fprintf(rw, "Failed to authenticate as %s", user_id)
+		fmt.Fprintf(rw, "Failed to authenticate as %s with key standard %s", user_id, key.kind)
 	}
 
 	contentHash := req.Header.Get("X-OPS-CONTENT-HASH")
 	if contentHash == "" {
-		fmt.Fprintf(rw, "no content hash provided")
+		fmt.Fprintf(rw, "no content hash provided (%s)", key.kind)
 	}
 
 	authTimestamp := req.Header.Get("x-ops-timestamp")
 	if authTimestamp == "" {
-		fmt.Fprintf(rw, "no timestamp header provided")
+		fmt.Fprintf(rw, "no timestamp header provided (%s)", key.kind)
 	}
 	// TODO: Will want to implement this later
 	//  else {
@@ -298,25 +402,25 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 	var apiVer string
 	var hashChk []string
 	if xopssign == "" {
-		fmt.Fprintf(rw, "missing X-Ops-Sign header")
+		fmt.Fprintf(rw, "missing X-Ops-Sign header (%s)", key.kind)
 	} else {
 		re := regexp.MustCompile(`version=(\d+\.\d+)`)
 		shaRe := regexp.MustCompile(`algorithm=(\w+)`)
 		if verChk := re.FindStringSubmatch(xopssign); verChk != nil {
 			apiVer = verChk[1]
 			if apiVer != "1.0" && apiVer != "1.1" {
-				fmt.Fprintf(rw, "Bad version number '%s' in X-Ops-Header", apiVer)
+				fmt.Fprintf(rw, "Bad version number '%s' in X-Ops-Header with crypto standard %s", apiVer, key.kind)
 
 			}
 		} else {
-			fmt.Fprintf(rw, "malformed version in X-Ops-Header")
+			fmt.Fprintf(rw, "malformed version in X-Ops-Header with crypto standard %s", key.kind)
 		}
 
 		// if algorithm is missing, it uses sha1. Of course, no other
 		// hashing algorithm is supported yet...
 		if hashChk = shaRe.FindStringSubmatch(xopssign); hashChk != nil {
 			if hashChk[1] != "sha1" {
-				fmt.Fprintf(rw, "Unsupported hashing algorithm '%s' specified in X-Ops-Header", hashChk[1])
+				fmt.Fprintf(rw, "Unsupported hashing algorithm '%s' specified in X-Ops-Header with crypto standard %s", hashChk[1], key.kind)
 			}
 		}
 	}
@@ -326,138 +430,149 @@ func checkHeader(rw http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(rw, sherr.Error())
 	}
 
-	_, err := HeaderDecrypt(publicKey, signedHeaders)
+	_, err := HeaderDecrypt(key.public, signedHeaders)
 	if err != nil {
-		fmt.Fprintf(rw, "unexpected header decryption error '%s'", err)
+		fmt.Fprintf(rw, "unexpected header decryption error '%s' with crypto standard %s", err, key.kind)
 	}
 }
 
 func TestRequest(t *testing.T) {
-	ac, err := makeAuthConfig()
-	server := createServer()
-	defer server.Close()
-	setup()
-	defer teardown()
+	for _, keys := range keyPairs {
+		func() {
+			ac, err := makeAuthConfig(keys.private)
+			server := createServer(&keys)
+			defer server.Close()
+			setupWithKey(keys.private)
+			defer teardown()
 
-	request, err := client.NewRequest("GET", server.URL, nil)
+			request, err := client.NewRequest("GET", server.URL, nil)
 
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
+
+			client := &http.Client{}
+			response, err := client.Do(request)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if response.StatusCode != 200 {
+				t.Error("Non 200 return code: " + response.Status)
+			}
+
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(response.Body)
+			bodyStr := buf.String()
+
+			if bodyStr != "" {
+				t.Error(bodyStr)
+			}
+		}()
 	}
-
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if response.StatusCode != 200 {
-		t.Error("Non 200 return code: " + response.Status)
-	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	bodyStr := buf.String()
-
-	if bodyStr != "" {
-		t.Error(bodyStr)
-	}
-
 }
 
 func TestRequestToEndpoint(t *testing.T) {
-	ac, err := makeAuthConfig()
-	server := createServer()
-	defer server.Close()
+	for _, keys := range keyPairs {
+		func() {
+			ac, err := makeAuthConfig(keys.private)
+			server := createServer(&keys)
+			defer server.Close()
 
-	requestBody := strings.NewReader("somecoolbodytext")
-	request, err := client.NewRequest("GET", server.URL+"/clients", requestBody)
+			requestBody := strings.NewReader("somecoolbodytext")
+			request, err := client.NewRequest("GET", server.URL+"/clients", requestBody)
 
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
-	}
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
 
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		t.Error(err)
-	}
+			client := &http.Client{}
+			response, err := client.Do(request)
+			if err != nil {
+				t.Error(err)
+			}
 
-	if response.StatusCode != 200 {
-		t.Error("Non 200 return code: " + response.Status)
-	}
+			if response.StatusCode != 200 {
+				t.Error("Non 200 return code: " + response.Status)
+			}
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	bodyStr := buf.String()
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(response.Body)
+			bodyStr := buf.String()
 
-	if bodyStr != "" {
-		t.Error(bodyStr)
+			if bodyStr != "" {
+				t.Error(bodyStr)
+			}
+		}()
 	}
 }
 
 func TestTLSValidation(t *testing.T) {
-	ac, err := makeAuthConfig()
-	if err != nil {
-		panic(err)
-	}
-	// Self-signed server
-	server := createTLSServer()
-	defer server.Close()
+	for _, keys := range keyPairs {
+		func() {
+			ac, err := makeAuthConfig(keys.private)
+			if err != nil {
+				panic(err)
+			}
+			// Self-signed server
+			server := createTLSServer(&keys)
+			defer server.Close()
 
-	// Without RootCAs, TLS validation should fail
-	chefClient, _ := NewClient(&Config{
-		Name:    userid,
-		Key:     privateKey,
-		BaseURL: server.URL,
-	})
+			// Without RootCAs, TLS validation should fail
+			chefClient, _ := NewClient(&Config{
+				Name:    userid,
+				Key:     keys.private,
+				BaseURL: server.URL,
+			})
 
-	request, err := chefClient.NewRequest("GET", server.URL, nil)
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
-	}
+			request, err := chefClient.NewRequest("GET", server.URL, nil)
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
 
-	client := chefClient.client
-	response, err := client.Do(request)
-	if err == nil {
-		t.Fatal("Request should fail due to TLS certification validation failure")
-	}
+			client := chefClient.client
+			response, err := client.Do(request)
+			if err == nil {
+				t.Fatal("Request should fail due to TLS certification validation failure")
+			}
 
-	// Success with RootCAs containing the server's certificate
-	certPool := x509.NewCertPool()
-	certPool.AddCert(server.Certificate())
-	chefClient, _ = NewClient(&Config{
-		Name:    userid,
-		Key:     privateKey,
-		BaseURL: server.URL,
-		RootCAs: certPool,
-	})
+			// Success with RootCAs containing the server's certificate
+			certPool := x509.NewCertPool()
+			certPool.AddCert(server.Certificate())
+			chefClient, _ = NewClient(&Config{
+				Name:    userid,
+				Key:     keys.private,
+				BaseURL: server.URL,
+				RootCAs: certPool,
+			})
 
-	request, err = chefClient.NewRequest("GET", server.URL, nil)
-	err = ac.SignRequest(request)
-	if err != nil {
-		t.Fatal("failed to generate RequestHeaders")
-	}
+			request, err = chefClient.NewRequest("GET", server.URL, nil)
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
 
-	client = chefClient.client
-	response, err = client.Do(request)
-	if err != nil {
-		t.Fatal(err)
-	}
+			client = chefClient.client
+			response, err = client.Do(request)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if response.StatusCode != 200 {
-		t.Error("Non 200 return code: " + response.Status)
-	}
+			if response.StatusCode != 200 {
+				t.Error("Non 200 return code: " + response.Status)
+			}
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	bodyStr := buf.String()
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(response.Body)
+			bodyStr := buf.String()
 
-	if bodyStr != "" {
-		t.Error(bodyStr)
+			if bodyStr != "" {
+				t.Error(bodyStr)
+			}
+		}()
 	}
 }
 
@@ -503,22 +618,24 @@ func TestGenerateHash(t *testing.T) {
 
 // BUG(fujin): @bradbeam: this doesn't make sense to me.
 func TestGenerateSignatureError(t *testing.T) {
-	ac, _ := makeAuthConfig()
+	for _, keys := range keyPairs {
+		ac, _ := makeAuthConfig(keys.private)
 
-	// BUG(fujin): what about the 'hi' string is not meant to be signable?
-	sig, err := GenerateSignature(ac.PrivateKey, "hi")
+		// BUG(fujin): what about the 'hi' string is not meant to be signable?
+		sig, err := GenerateSignature(ac.PrivateKey, "hi")
 
-	Convey("sig should be empty?", t, func() {
-		So(sig, ShouldNotBeEmpty)
-	})
+		Convey("sig should be empty?", t, func() {
+			So(sig, ShouldNotBeEmpty)
+		})
 
-	Convey("errors for an unknown reason to fujin", t, func() {
-		So(err, ShouldBeNil)
-	})
+		Convey("errors for an unknown reason to fujin", t, func() {
+			So(err, ShouldBeNil)
+		})
+	}
 }
 
 func TestSignatureContent(t *testing.T) {
-	pk, _ := PrivateKeyFromString([]byte(privateKey))
+	pk, _ := PrivateKeyFromString([]byte(privateKeyPKCS1))
 	ac := &AuthConfig{
 		PrivateKey:            pk,
 		ClientName:            userid,
@@ -579,7 +696,7 @@ func TestRequestError(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false, Timeout: 1}
+	cfg := &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
 	c, err := NewClient(cfg)
 	if err != nil {
 		t.Error("Couldn't make a valid client...\n", err)
@@ -600,7 +717,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	// Not a proper key should be an error
-	cfg = &Config{Name: "blah", Key: badPrivateKey, SkipSSL: false}
+	cfg = &Config{Name: "blah", Key: badPrivateKeyPKCS1, SkipSSL: false}
 	c, err = NewClient(cfg)
 	if err == nil {
 		t.Error("Built a client from a bad key string")
@@ -610,33 +727,35 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewRequest(t *testing.T) {
-	var err error
-	server := createServer()
-	cfg := &Config{Name: "testclient", Key: privateKey, SkipSSL: false}
-	c, _ := NewClient(cfg)
-	defer server.Close()
+	for _, keys := range keyPairs {
+		var err error
+		server := createServer(&keys)
+		cfg := &Config{Name: "testclient", Key: keys.private, SkipSSL: false}
+		c, _ := NewClient(cfg)
+		defer server.Close()
 
-	request, err := c.NewRequest("GET", server.URL, nil)
-	if err != nil {
-		t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
-	}
+		request, err := c.NewRequest("GET", server.URL, nil)
+		if err != nil {
+			t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
+		}
 
-	resp, err := c.Do(request, nil)
-	if resp.StatusCode != 200 {
-		t.Error("Non 200 return code: ", resp.Status)
-	}
+		resp, err := c.Do(request, nil)
+		if resp.StatusCode != 200 {
+			t.Error("Non 200 return code: ", resp.Status)
+		}
 
-	// This should fail because we've got an invalid URI
-	_, err = c.NewRequest("GET", "%gh&%ij", nil)
-	if err == nil {
-		t.Error("This terrible request thing should fail and it didn't")
-	}
+		// This should fail because we've got an invalid URI
+		_, err = c.NewRequest("GET", "%gh&%ij", nil)
+		if err == nil {
+			t.Error("This terrible request thing should fail and it didn't")
+		}
 
-	// This should fail because there is no TOODLES! method :D
-	request, err = c.NewRequest("TOODLES!", "", nil)
-	_, err = c.Do(request, nil)
-	if err == nil {
-		t.Error("This terrible request thing should fail and it didn't")
+		// This should fail because there is no TOODLES! method :D
+		request, err = c.NewRequest("TOODLES!", "", nil)
+		_, err = c.Do(request, nil)
+		if err == nil {
+			t.Error("This terrible request thing should fail and it didn't")
+		}
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -590,15 +591,24 @@ func (ac AuthConfig) SignatureContent(vals map[string]string) (content string) {
 	return
 }
 
-// PrivateKeyFromString parses an RSA private key from a string
+// PrivateKeyFromString parses an private key from a string
 func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
 		return nil, fmt.Errorf("private key block size invalid")
 	}
-	rsaKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
+
+	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
+		return key, nil
 	}
-	return rsaKey, nil
+	if key, err := x509.ParsePKCS8PrivateKey(block.Bytes); err == nil {
+		switch key := key.(type) {
+		case *rsa.PrivateKey:
+			return key, nil
+		default:
+			return nil, errors.New("tls: found unknown private key type in PKCS#8 wrapping")
+		}
+	}
+
+	return nil, errors.New("tls: failed to parse private key")
 }

@@ -176,6 +176,6 @@ func TestEnvironmentsService_ListRecipes(t *testing.T) {
 
 	want := []string{"audit::default", "chef-client::default"}
 	if !reflect.DeepEqual(environments, want) {
-		t.Errorf("Environments.List returned %+v, want %+v", environments, want)
+		t.Errorf("Environments.ListRecipes returned %+v, want %+v", environments, want)
 	}
 }

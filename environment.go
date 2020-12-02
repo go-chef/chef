@@ -1,7 +1,9 @@
 package chef
 
-import "fmt"
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // Environment has a Reader, hey presto
 type EnvironmentService struct {
@@ -23,6 +25,8 @@ type Environment struct {
 }
 
 type EnvironmentCookbookResult map[string]CookbookVersions
+
+type EnvironmentRecipesResult []string
 
 func strMapToStr(e map[string]string) (out string) {
 	keys := make([]string, len(e))
@@ -103,6 +107,15 @@ func (e *EnvironmentService) Put(environment *Environment) (data *Environment, e
 // Chef API docs: https://docs.chef.io/api_chef_server.html#environments-name-cookbooks
 func (e *EnvironmentService) ListCookbooks(name string, numVersions string) (data EnvironmentCookbookResult, err error) {
 	path := versionParams(fmt.Sprintf("environments/%s/cookbooks", name), numVersions)
+	err = e.client.magicRequestDecoder("GET", path, nil, &data)
+	return
+}
+
+// ListRecipes get the recipes list of recipes available to a given environment.
+//
+// Chef API docs: https://docs.chef.io/api_chef_server/#get-33
+func (e *EnvironmentService) ListRecipes(name string) (data EnvironmentRecipesResult, err error) {
+	path := fmt.Sprintf("environments/%s/recipes", name)
 	err = e.client.magicRequestDecoder("GET", path, nil, &data)
 	return
 }

@@ -3,13 +3,14 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	_ "github.com/davecgh/go-spew/spew"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
+
+	_ "github.com/davecgh/go-spew/spew"
 )
 
 var (
@@ -157,5 +158,24 @@ func TestEnvironmentsService_EnvironmentCreateResultString(t *testing.T) {
 	want := "uri => http://localhost:4000/environments/dev\n"
 	if estr != want {
 		t.Errorf("EnvironmentResult.String returned %+v, want %+v", estr, want)
+	}
+}
+
+func TestEnvironmentsService_ListRecipes(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/environments/_default/recipes", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `["audit::default", "chef-client::default"]`)
+	})
+
+	environments, err := client.Environments.ListRecipes("_default")
+	if err != nil {
+		t.Errorf("Environments.ListRecipes returned error: %v", err)
+	}
+
+	want := []string{"audit::default", "chef-client::default"}
+	if !reflect.DeepEqual(environments, want) {
+		t.Errorf("Environments.ListRecipes returned %+v, want %+v", environments, want)
 	}
 }

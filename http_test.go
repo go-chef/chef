@@ -160,6 +160,7 @@ var (
 		"X-Ops-Sign",
 		"X-Ops-Content-Hash",
 		"X-Ops-Authorization-1",
+		"X-Ops-Request-Source",
 	}
 
 	mux      *http.ServeMux
@@ -858,5 +859,46 @@ func TestBasicAuth(t *testing.T) {
 	header := basicAuth("stduser", "stdpassword")
 	if header != "c3RkdXNlcjpzdGRwYXNzd29yZA==" {
 		t.Error("BasicAuth credentials not calculated properly")
+	}
+}
+
+func TestHeaderValue(t *testing.T) {
+	for _, keys := range keyPairs {
+		func() {
+			ac, err := makeAuthConfig(keys.private)
+			if err != nil {
+				t.Fatal(err)
+			}
+			setupWithKey(keys.private)
+			defer teardown()
+
+			// add 'X-Ops-Request-Source' header value as web if IsWebuiKey is true
+			client.IsWebuiKey = true
+
+			requestBody := strings.NewReader("somecoolbodytext")
+			request, err := client.NewRequest("GET", requestURL, requestBody)
+
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
+			if request.Header.Get("X-Ops-Request-Source") != "web" {
+				t.Errorf("didn't return header value")
+			}
+
+			// Should not add 'X-Ops-Request-Source' header value as web if IsWebuiKey is false
+			client.IsWebuiKey = false
+
+			requestBody = strings.NewReader("somecoolbodytext")
+			request, err = client.NewRequest("GET", requestURL, requestBody)
+
+			err = ac.SignRequest(request)
+			if err != nil {
+				t.Fatal("failed to generate RequestHeaders")
+			}
+			if request.Header.Get("X-Ops-Request-Source") != "" {
+				t.Errorf("Returned header value")
+			}
+		}()
 	}
 }

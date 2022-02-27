@@ -6,4 +6,5 @@ BASE=$(dirname $0)
 
 . ${BASE}/setup
 . ${BASE}/creds
+
 go run ${BASE}/../testcase/testcase.go role ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

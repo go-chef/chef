@@ -27,6 +27,15 @@ func Role() {
 	}
 	fmt.Printf("Added role1 %+v\n", roleAdd)
 
+	// Build a stucture to define a role
+	roleNR := create_role_norunlist()
+	// Add a new role
+	roleAdd, err = client.Roles.Create(&roleNR)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue adding roleNR:", err)
+	}
+	fmt.Printf("Added roleNR %+v\n", roleAdd)
+
 	// Add role again
 	roleAdd, err = client.Roles.Create(&role1)
 	if err != nil {
@@ -87,6 +96,12 @@ func Role() {
 	}
 	fmt.Printf("Delete role1 %+v\n", err)
 
+	err = client.Roles.Delete("roleNR")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting roleNR", err)
+	}
+	fmt.Printf("Delete roleNR %+v\n", err)
+
 	_, err = client.Environments.Delete("en1")
 
 	// Final list of roles
@@ -137,6 +152,15 @@ func create_role1() chef.Role {
 		},
 		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
 		OverrideAttributes: ovrAtt,
+	}
+	return role1
+}
+
+func create_role_norunlist() chef.Role {
+	role1 := chef.Role{
+		Name:              "roleNR",
+		Description:       "Test role",
+		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
 	}
 	return role1
 }

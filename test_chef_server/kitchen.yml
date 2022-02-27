@@ -12,7 +12,11 @@ verifier:
   name: inspec
 
 platforms:
-  - name: ubuntu-18.04
+  - name: ubuntu-20.04
+    driver_config:
+      customize:
+        cpus: 4
+        memory: 4096
 
 suites:
   - name: default

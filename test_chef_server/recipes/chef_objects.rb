@@ -3,11 +3,13 @@
 # Create an organization
 execute 'create test organization' do
   command '/opt/opscode/bin/chef-server-ctl org-create test test_org'
+  ignore_failure true
   not_if '/opt/opscode/bin/chef-server-ctl org-list | grep test'
 end
 
 execute 'get the ssl certificate for the chef server' do
   command 'knife ssl fetch'
+  ignore_failure true
   not_if { ::File.exist? '/root/.chef/trusted_certs/localhost' }
 end
 

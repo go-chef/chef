@@ -1,6 +1,21 @@
 package chef
 
-import "fmt"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+const metaRbName = "metadata.rb"
+const metaJsonName = "metadata.json"
+
+type metaFunc func(s []string, m *CookbookMeta)
+
+var metaRegistry map[string]metaFunc
 
 // CookbookService  is the service for interacting with chef server cookbooks endpoint
 type CookbookService struct {
@@ -38,23 +53,30 @@ type CookbookVersion struct {
 
 // CookbookMeta represents a Golang version of cookbook metadata
 type CookbookMeta struct {
-	Name            string                 `json:"name,omitempty"`
-	Version         string                 `json:"version,omitempty"`
-	Description     string                 `json:"description,omitempty"`
-	LongDescription string                 `json:"long_description,omitempty"`
-	Maintainer      string                 `json:"maintainer,omitempty"`
-	MaintainerEmail string                 `json:"maintainer_email,omitempty"`
-	License         string                 `json:"license,omitempty"`
-	Platforms       map[string]string      `json:"platforms,omitempty"`
-	Depends         map[string]string      `json:"dependencies,omitempty"`
-	Reccomends      map[string]string      `json:"recommendations,omitempty"`
-	Suggests        map[string]string      `json:"suggestions,omitempty"`
-	Conflicts       map[string]string      `json:"conflicting,omitempty"`
-	Provides        map[string]string      `json:"providing,omitempty"`
-	Replaces        map[string]string      `json:"replacing,omitempty"`
-	Attributes      map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
-	Groupings       map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
-	Recipes         map[string]string      `json:"recipes,omitempty"`
+	Name               string                 `json:"name,omitempty"`
+	Version            string                 `json:"version,omitempty"`
+	Description        string                 `json:"description,omitempty"`
+	LongDescription    string                 `json:"long_description,omitempty"`
+	Maintainer         string                 `json:"maintainer,omitempty"`
+	MaintainerEmail    string                 `json:"maintainer_email,omitempty"`
+	License            string                 `json:"license,omitempty"`
+	Platforms          map[string]string      `json:"platforms,omitempty"`
+	Depends            map[string]string      `json:"dependencies,omitempty"`
+	Reccomends         map[string]string      `json:"recommendations,omitempty"`
+	Suggests           map[string]string      `json:"suggestions,omitempty"`
+	Conflicts          map[string]string      `json:"conflicting,omitempty"`
+	Provides           map[string]string      `json:"providing,omitempty"`
+	Replaces           map[string]string      `json:"replacing,omitempty"`
+	Attributes         map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
+	Groupings          map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
+	Recipes            map[string]string      `json:"recipes,omitempty"`
+	SourceUrl          string                 `json:"source_url"`
+	IssueUrl           string                 `json:"issues_url"`
+	ChefVersion        string
+	OhaiVersion        string
+	Gems               []string `json:"gems"`
+	EagerLoadLibraries bool     `json:"eager_load_libraries"`
+	Privacy            bool     `json:"privacy"`
 }
 
 // CookbookAccess represents the permissions on a Cookbook
@@ -163,4 +185,201 @@ func (c *CookbookService) Delete(name, version string) (err error) {
 	path := fmt.Sprintf("cookbooks/%s/%s", name, version)
 	err = c.client.magicRequestDecoder("DELETE", path, nil, nil)
 	return
+}
+func ReadMetaData(path string) (m CookbookMeta, err error) {
+	fileName := filepath.Join(path, metaJsonName)
+	jsonType := true
+	if !isFileExists(fileName) {
+		jsonType = false
+		fileName = filepath.Join(path, metaRbName)
+
+	}
+	file, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	if jsonType {
+		return NewMetaDataFromJson(file)
+	} else {
+		return NewMetaData(string(file))
+	}
+
+}
+func trimQuotes(s string) string {
+	if len(s) >= 2 {
+		if c := s[len(s)-1]; s[0] == c && (c == '"' || c == '\'') {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
+}
+func getKeyValue(str string) (string, []string) {
+	c := strings.Split(str, " ")
+	if len(c) == 0 {
+		return "", nil
+	}
+	return strings.TrimSpace(c[0]), c[1:]
+}
+func isFileExists(name string) bool {
+	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
+}
+
+func clearWhiteSpace(s []string) (result []string) {
+	for _, i := range s {
+		if len(i) > 0 {
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
+func NewMetaData(data string) (m CookbookMeta, err error) {
+	linesData := strings.Split(data, "\n")
+	if len(linesData) < 3 {
+		return m, errors.New("not much info")
+	}
+	m.Depends = make(map[string]string, 1)
+	m.Platforms = make(map[string]string, 1)
+	for _, i := range linesData {
+		key, value := getKeyValue(strings.TrimSpace(i))
+		if fn, ok := metaRegistry[key]; ok {
+			fn(value, &m)
+		}
+	}
+	return m, err
+}
+
+func NewMetaDataFromJson(data []byte) (m CookbookMeta, err error) {
+	err = json.Unmarshal(data, &m)
+	return m, err
+}
+
+func StringParserForMeta(s []string) string {
+	str := strings.Join(s, " ")
+	return trimQuotes(strings.TrimSpace(str))
+}
+func metaNameParser(s []string, m *CookbookMeta) {
+	m.Name = StringParserForMeta(s)
+}
+func metaMaintainerParser(s []string, m *CookbookMeta) {
+	m.Maintainer = StringParserForMeta(s)
+}
+func metaMaintainerMailParser(s []string, m *CookbookMeta) {
+	m.MaintainerEmail = StringParserForMeta(s)
+}
+func metaLicenseParser(s []string, m *CookbookMeta) {
+	m.License = StringParserForMeta(s)
+}
+func metaDescriptionParser(s []string, m *CookbookMeta) {
+	m.Description = StringParserForMeta(s)
+}
+func metaLongDescriptionParser(s []string, m *CookbookMeta) {
+	m.LongDescription = StringParserForMeta(s)
+}
+func metaIssueUrlParser(s []string, m *CookbookMeta) {
+	m.IssueUrl = StringParserForMeta(s)
+}
+func metaSourceUrlParser(s []string, m *CookbookMeta) {
+	m.SourceUrl = StringParserForMeta(s)
+}
+func metaGemParser(s []string, m *CookbookMeta) {
+	m.Gems = append(m.Gems, StringParserForMeta(s))
+}
+
+func metaVersionParser(s []string, m *CookbookMeta) {
+	m.Version = StringParserForMeta(s)
+}
+func metaOhaiVersionParser(s []string, m *CookbookMeta) {
+	m.OhaiVersion = StringParserForMeta(s)
+}
+func metaChefVersionParser(s []string, m *CookbookMeta) {
+	m.ChefVersion = StringParserForMeta(s)
+}
+func metaPrivacyParser(s []string, m *CookbookMeta) {
+	if s[0] == "true" {
+		m.Privacy = true
+	}
+}
+func metaSupportsParser(s []string, m *CookbookMeta) {
+	s = clearWhiteSpace(s)
+	switch len(s) {
+	case 1:
+		if s[0] != "os" {
+			m.Platforms[strings.TrimSpace(s[0])] = ">= 0.0.0"
+		}
+	case 2:
+		m.Platforms[strings.TrimSpace(s[0])] = s[1]
+	case 3:
+		v := trimQuotes(s[1] + " " + s[2])
+		m.Platforms[strings.TrimSpace(s[0])] = v
+
+	}
+	if len(s) > 3 {
+		panic(`<<~OBSOLETED
+		The dependency specification syntax you are using is no longer valid. You may not
+		specify more than one version constraint for a particular cookbook.
+			Consult https://docs.chef.io/config_rb_metadata/ for the updated syntax.`)
+	}
+}
+func metaDependsParser(s []string, m *CookbookMeta) {
+	s = clearWhiteSpace(s)
+	switch len(s) {
+	case 1:
+		m.Depends[strings.TrimSpace(s[0])] = ">= 0.0.0"
+	case 2:
+		m.Depends[strings.TrimSpace(s[0])] = s[1]
+
+	case 3:
+		v := trimQuotes(s[1] + " " + s[2])
+		m.Depends[strings.TrimSpace(s[0])] = v
+
+	}
+	if len(s) > 3 {
+		panic(`<<~OBSOLETED
+		The dependency specification syntax you are using is no longer valid. You may not
+		specify more than one version constraint for a particular cookbook.
+			Consult https://docs.chef.io/config_rb_metadata/ for the updated syntax.`)
+	}
+}
+
+func metaSupportsRubyParser(s []string, m *CookbookMeta) {
+	if len(s) > 1 {
+		for _, i := range s {
+			switch i {
+			case ").each":
+				continue
+			case "do":
+				continue
+			case "|os|":
+				continue
+			default:
+				m.Platforms[strings.TrimSpace(s[0])] = ">= 0.0.0"
+			}
+		}
+	}
+}
+func init() {
+	metaRegistry = make(map[string]metaFunc, 15)
+	metaRegistry["name"] = metaNameParser
+	metaRegistry["maintainer"] = metaMaintainerParser
+	metaRegistry["maintainer_email"] = metaMaintainerMailParser
+	metaRegistry["license"] = metaLicenseParser
+	metaRegistry["description"] = metaDescriptionParser
+	metaRegistry["long_description"] = metaLongDescriptionParser
+	metaRegistry["source_url"] = metaSourceUrlParser
+	metaRegistry["issues_url"] = metaIssueUrlParser
+	metaRegistry["platforms"] = metaSupportsParser
+	metaRegistry["supports"] = metaSupportsParser
+	metaRegistry["%w("] = metaSupportsRubyParser
+	metaRegistry["privacy"] = metaPrivacyParser
+	metaRegistry["depends"] = metaDependsParser
+	metaRegistry["version"] = metaVersionParser
+	metaRegistry["chef_version"] = metaChefVersionParser
+	metaRegistry["ohai_version"] = metaOhaiVersionParser
+	metaRegistry["gem"] = metaGemParser
+
 }

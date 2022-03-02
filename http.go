@@ -267,6 +267,28 @@ func NewClient(cfg *Config) (*Client, error) {
 	return c, nil
 }
 
+func NewClientWithOutConfig(baseurl string) (*Client, error) {
+	baseUrl, _ := url.Parse(baseurl)
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	c := &Client{
+		client: &http.Client{
+			Transport: tr,
+			Timeout:   60 * time.Second,
+		},
+		BaseURL: baseUrl,
+	}
+
+	return c, nil
+}
 func (cfg *Config) VerifyVersion() (err error) {
 	if cfg.AuthenticationVersion != "1.3" {
 		cfg.AuthenticationVersion = "1.0"
@@ -357,6 +379,34 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 		return nil, err
 	}
 
+	return req, nil
+}
+
+// NoAuthNewRequest returns a request  suitable for public apis
+func (c *Client) NoAuthNewRequest(method string, requestUrl string, body io.Reader) (*http.Request, error) {
+	relativeUrl, err := url.Parse(requestUrl)
+	if err != nil {
+		return nil, err
+	}
+	u := c.BaseURL.ResolveReference(relativeUrl)
+
+	// NewRequest uses a new value object of body
+	req, err := http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse and encode Querystring Values
+	values := req.URL.Query()
+	req.URL.RawQuery = values.Encode()
+	debug("Encoded url %+v\n", u)
+
+	myBody := &Body{body}
+
+	if body != nil {
+		// Detect Content-type
+		req.Header.Set("Content-Type", myBody.ContentType())
+	}
 	return req, nil
 }
 
@@ -620,4 +670,20 @@ func PrivateKeyFromString(key []byte) (*rsa.PrivateKey, error) {
 	}
 
 	return nil, errors.New("tls: failed to parse private key")
+}
+
+func (c *Client) MagicRequestResponseDecoderWithOutAuth(url, method string, body io.Reader, v interface{}) error {
+	req, err := c.NoAuthNewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.Do(req, v)
+	if res != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return err
 }

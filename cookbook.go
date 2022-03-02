@@ -60,12 +60,12 @@ type CookbookMeta struct {
 	Maintainer         string                 `json:"maintainer,omitempty"`
 	MaintainerEmail    string                 `json:"maintainer_email,omitempty"`
 	License            string                 `json:"license,omitempty"`
-	Platforms          map[string]string      `json:"platforms,omitempty"`
+	Platforms          map[string]interface{} `json:"platforms,omitempty"`
 	Depends            map[string]string      `json:"dependencies,omitempty"`
 	Reccomends         map[string]string      `json:"recommendations,omitempty"`
 	Suggests           map[string]string      `json:"suggestions,omitempty"`
 	Conflicts          map[string]string      `json:"conflicting,omitempty"`
-	Provides           map[string]string      `json:"providing,omitempty"`
+	Provides           map[string]interface{} `json:"providing,omitempty"`
 	Replaces           map[string]string      `json:"replacing,omitempty"`
 	Attributes         map[string]interface{} `json:"attributes,omitempty"` // this has a format as well that could be typed, but blargh https://github.com/lob/chef/blob/master/cookbooks/apache2/metadata.json
 	Groupings          map[string]interface{} `json:"groupings,omitempty"`  // never actually seen this used.. looks like it should be map[string]map[string]string, but not sure http://docs.opscode.com/essentials_cookbook_metadata.html
@@ -243,7 +243,7 @@ func NewMetaData(data string) (m CookbookMeta, err error) {
 		return m, errors.New("not much info")
 	}
 	m.Depends = make(map[string]string, 1)
-	m.Platforms = make(map[string]string, 1)
+	m.Platforms = make(map[string]interface{}, 1)
 	for _, i := range linesData {
 		key, value := getKeyValue(strings.TrimSpace(i))
 		if fn, ok := metaRegistry[key]; ok {

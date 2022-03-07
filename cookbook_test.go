@@ -310,32 +310,14 @@ func TestReadCookbookMeta2(t *testing.T) {
 	os.Remove("/tmp/metadata.json")
 }
 func validateCookbookMetaData(md CookbookMeta, t *testing.T, funcName string) {
-	if md.Description != _Description {
-		t.Errorf("%s: invalid Description", funcName)
-	}
-	if md.IssueUrl != _IssueUrl {
-		t.Errorf("%s: invalid IssueUrl", funcName)
-	}
-	if md.Name != _Name {
-		t.Errorf("%s: invalid Name", funcName)
-	}
-	if md.Maintainer != _Maintainer {
-		t.Errorf("%s: invalid Maintainer", funcName)
-	}
-	if md.MaintainerEmail != _MaintainerEmail {
-		t.Errorf("%s: invalid MaintainerEmail", funcName)
-	}
-	if md.SourceUrl != _SourceUrl {
-		t.Errorf("%s: invalid SourceUrl", funcName)
-	}
-	if md.License != _License {
-		t.Errorf("%s: invalid License", funcName)
-	}
-	if md.Version != _Version {
-		t.Errorf("%s: invalid Version", funcName)
-	}
-	if md.ChefVersion != _ChefVersion {
-		t.Errorf("%s: invalid ChefVersion", funcName)
-	}
+	assert.Equal(t, _Description, md.Description)
+	assert.Equal(t, _IssueUrl, md.IssueUrl)
+	assert.Equal(t, _Name, md.Name)
+	assert.Equal(t, _Maintainer, md.Maintainer)
+	assert.Equal(t, _MaintainerEmail, md.MaintainerEmail)
+	assert.Equal(t, _SourceUrl, md.SourceUrl)
+	assert.Equal(t, _License, md.License)
+	assert.Equal(t, _Version, md.Version)
+	assert.Equal(t, _ChefVersion, md.ChefVersion)
 
 }

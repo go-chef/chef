@@ -2,9 +2,7 @@ package chef
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -15,7 +13,7 @@ type ConfigRb struct {
 	NodeName      string
 }
 
-type clientFunc func(s []string, path string, m *ConfigRb)
+type clientFunc func(s []string, path string, m *ConfigRb) error
 
 var clientRegistry map[string]clientFunc
 
@@ -34,12 +32,15 @@ func NewClientRb(data, path string) (c ConfigRb, err error) {
 	for _, i := range linesData {
 		key, value := getKeyValue(strings.TrimSpace(i))
 		if fn, ok := clientRegistry[key]; ok {
-			fn(value, path, &c)
+			err = fn(value, path, &c)
+			if err != nil {
+				return
+			}
 		}
 	}
 	return c, err
 }
-func configKeyParser(s []string, path string, c *ConfigRb) {
+func configKeyParser(s []string, path string, c *ConfigRb) error {
 	str := StringParserForMeta(s)
 	data := strings.Split(str, "/")
 	size := len(data)
@@ -47,15 +48,17 @@ func configKeyParser(s []string, path string, c *ConfigRb) {
 		keyPath := filepath.Join(path, data[size-1])
 		keyData, err := ioutil.ReadFile(keyPath)
 		if err != nil {
-			fmt.Println("error in reading pem file at: ", keyPath)
-			os.Exit(1)
+			return err
 		}
 		c.ClientKey = string(keyData)
 	}
+	return nil
 }
-func configServerParser(s []string, path string, c *ConfigRb) {
+func configServerParser(s []string, path string, c *ConfigRb) error {
 	c.ChefServerUrl = StringParserForMeta(s)
+	return nil
 }
-func configNodeNameParser(s []string, path string, c *ConfigRb) {
+func configNodeNameParser(s []string, path string, c *ConfigRb) error {
 	c.NodeName = StringParserForMeta(s)
+	return nil
 }

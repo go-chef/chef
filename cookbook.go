@@ -13,7 +13,7 @@ import (
 const metaRbName = "metadata.rb"
 const metaJsonName = "metadata.json"
 
-type metaFunc func(s []string, m *CookbookMeta)
+type metaFunc func(s []string, m *CookbookMeta) error
 
 var metaRegistry map[string]metaFunc
 
@@ -247,7 +247,10 @@ func NewMetaData(data string) (m CookbookMeta, err error) {
 	for _, i := range linesData {
 		key, value := getKeyValue(strings.TrimSpace(i))
 		if fn, ok := metaRegistry[key]; ok {
-			fn(value, &m)
+			err = fn(value, &m)
+			if err != nil {
+				return
+			}
 		}
 	}
 	return m, err
@@ -262,49 +265,62 @@ func StringParserForMeta(s []string) string {
 	str := strings.Join(s, " ")
 	return trimQuotes(strings.TrimSpace(str))
 }
-func metaNameParser(s []string, m *CookbookMeta) {
+func metaNameParser(s []string, m *CookbookMeta) error {
 	m.Name = StringParserForMeta(s)
+	return nil
 }
-func metaMaintainerParser(s []string, m *CookbookMeta) {
+func metaMaintainerParser(s []string, m *CookbookMeta) error {
 	m.Maintainer = StringParserForMeta(s)
+	return nil
 }
-func metaMaintainerMailParser(s []string, m *CookbookMeta) {
+func metaMaintainerMailParser(s []string, m *CookbookMeta) error {
 	m.MaintainerEmail = StringParserForMeta(s)
+	return nil
 }
-func metaLicenseParser(s []string, m *CookbookMeta) {
+func metaLicenseParser(s []string, m *CookbookMeta) error {
 	m.License = StringParserForMeta(s)
+	return nil
 }
-func metaDescriptionParser(s []string, m *CookbookMeta) {
+func metaDescriptionParser(s []string, m *CookbookMeta) error {
 	m.Description = StringParserForMeta(s)
+	return nil
 }
-func metaLongDescriptionParser(s []string, m *CookbookMeta) {
+func metaLongDescriptionParser(s []string, m *CookbookMeta) error {
 	m.LongDescription = StringParserForMeta(s)
+	return nil
 }
-func metaIssueUrlParser(s []string, m *CookbookMeta) {
+func metaIssueUrlParser(s []string, m *CookbookMeta) error {
 	m.IssueUrl = StringParserForMeta(s)
+	return nil
 }
-func metaSourceUrlParser(s []string, m *CookbookMeta) {
+func metaSourceUrlParser(s []string, m *CookbookMeta) error {
 	m.SourceUrl = StringParserForMeta(s)
+	return nil
 }
-func metaGemParser(s []string, m *CookbookMeta) {
+func metaGemParser(s []string, m *CookbookMeta) error {
 	m.Gems = append(m.Gems, StringParserForMeta(s))
+	return nil
 }
 
-func metaVersionParser(s []string, m *CookbookMeta) {
+func metaVersionParser(s []string, m *CookbookMeta) error {
 	m.Version = StringParserForMeta(s)
+	return nil
 }
-func metaOhaiVersionParser(s []string, m *CookbookMeta) {
+func metaOhaiVersionParser(s []string, m *CookbookMeta) error {
 	m.OhaiVersion = StringParserForMeta(s)
+	return nil
 }
-func metaChefVersionParser(s []string, m *CookbookMeta) {
+func metaChefVersionParser(s []string, m *CookbookMeta) error {
 	m.ChefVersion = StringParserForMeta(s)
+	return nil
 }
-func metaPrivacyParser(s []string, m *CookbookMeta) {
+func metaPrivacyParser(s []string, m *CookbookMeta) error {
 	if s[0] == "true" {
 		m.Privacy = true
 	}
+	return nil
 }
-func metaSupportsParser(s []string, m *CookbookMeta) {
+func metaSupportsParser(s []string, m *CookbookMeta) error {
 	s = clearWhiteSpace(s)
 	switch len(s) {
 	case 1:
@@ -319,13 +335,14 @@ func metaSupportsParser(s []string, m *CookbookMeta) {
 
 	}
 	if len(s) > 3 {
-		panic(`<<~OBSOLETED
+		return errors.New(`<<~OBSOLETED
 		The dependency specification syntax you are using is no longer valid. You may not
 		specify more than one version constraint for a particular cookbook.
 			Consult https://docs.chef.io/config_rb_metadata/ for the updated syntax.`)
 	}
+	return nil
 }
-func metaDependsParser(s []string, m *CookbookMeta) {
+func metaDependsParser(s []string, m *CookbookMeta) error {
 	s = clearWhiteSpace(s)
 	switch len(s) {
 	case 1:
@@ -339,14 +356,15 @@ func metaDependsParser(s []string, m *CookbookMeta) {
 
 	}
 	if len(s) > 3 {
-		panic(`<<~OBSOLETED
+		return errors.New(`<<~OBSOLETED
 		The dependency specification syntax you are using is no longer valid. You may not
 		specify more than one version constraint for a particular cookbook.
 			Consult https://docs.chef.io/config_rb_metadata/ for the updated syntax.`)
 	}
+	return nil
 }
 
-func metaSupportsRubyParser(s []string, m *CookbookMeta) {
+func metaSupportsRubyParser(s []string, m *CookbookMeta) error {
 	if len(s) > 1 {
 		for _, i := range s {
 			switch i {
@@ -361,6 +379,7 @@ func metaSupportsRubyParser(s []string, m *CookbookMeta) {
 			}
 		}
 	}
+	return nil
 }
 func init() {
 	metaRegistry = make(map[string]metaFunc, 15)

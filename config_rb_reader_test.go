@@ -3,13 +3,16 @@ package chef
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewClientRb(t *testing.T) {
-	clientRegistry["client_key"] = func(s []string, path string, m *ConfigRb) {
+	clientRegistry["client_key"] = func(s []string, path string, m *ConfigRb) error {
 		str := StringParserForMeta(s)
 		data := strings.Split(str, "/")
 		m.ClientKey = data[len(data)-1]
+		return nil
 	}
 	data := `current_dir = File.dirname(__FILE__)
 		log_level                :info
@@ -22,14 +25,7 @@ func TestNewClientRb(t *testing.T) {
 	if err != nil {
 		t.Error("unable to read config.rb file")
 	}
-	if cb.ClientKey != "test.pem" {
-		t.Error("client.pem have invalid path")
-	}
-	if cb.ChefServerUrl != "https://server/organizations/test" {
-		t.Error("invalid chef server url read from config.rb")
-	}
-	if cb.NodeName != "test" {
-		t.Error("invalid node name read from config.rb")
-
-	}
+	assert.Equal(t, "test.pem", cb.ClientKey)
+	assert.Equal(t, "https://server/organizations/test", cb.ChefServerUrl)
+	assert.Equal(t, "test", cb.NodeName)
 }

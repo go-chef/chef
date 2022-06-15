@@ -442,6 +442,10 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	var resBuf bytes.Buffer
 	resTee := io.TeeReader(res.Body, &resBuf)
 
+	// add the body back to the response so
+	// subsequent calls to res.Body contain data
+	res.Body = ioutil.NopCloser(&resBuf)
+
 	// no response interface specified
 	if v == nil {
 		if debug_on() {

@@ -452,6 +452,8 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			// show the response body as a string
 			resbody, _ := ioutil.ReadAll(resTee)
 			debug("Response body: %+v\n", string(resbody))
+		} else {
+			_, _ = ioutil.ReadAll(resTee)
 		}
 		debug("No response body requested\n")
 		return res, nil
@@ -471,12 +473,12 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			// show the response body as a string
 			resbody, _ := ioutil.ReadAll(&resBuf)
 			debug("Response body: %+v\n", string(resbody))
+			var repBuffer bytes.Buffer
+			repBuffer.Write(resbody)
+			res.Body = ioutil.NopCloser(&repBuffer)
 		}
-		debug("Response body specifies content as JSON: %+v Err:\n", v, err)
-		if err != nil {
-			return res, err
-		}
-		return res, nil
+		debug("Response body specifies content as JSON: %+v Err: %+v\n", v, err)
+		return res, err
 	}
 
 	// response interface, v, is type string and the content is plain text
@@ -497,12 +499,12 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		// show the response body as a string
 		resbody, _ := ioutil.ReadAll(&resBuf)
 		debug("Response body: %+v\n", string(resbody))
+		var repBuffer bytes.Buffer
+		repBuffer.Write(resbody)
+		res.Body = ioutil.NopCloser(&repBuffer)
 	}
-	debug("Response body defaulted to JSON parsing: %+v Err:\n", v, err)
-	if err != nil {
-		return res, err
-	}
-	return res, nil
+	debug("Response body defaulted to JSON parsing: %+v Err: %+v\n", v, err)
+	return res, err
 }
 
 func hasJsonContentType(res *http.Response) bool {

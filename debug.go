@@ -1,3 +1,4 @@
+//go:build debug
 // +build debug
 
 // Add -tags debug to go run or go build to turn on debug output

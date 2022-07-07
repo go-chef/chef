@@ -7,11 +7,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,7 +20,6 @@ import (
 	"time"
 
 	. "github.com/ctdk/goiardi/chefcrypto"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 type keyPair struct {
@@ -266,9 +266,7 @@ func makeAuthConfig(privateKey string) (*AuthConfig, error) {
 func TestAuthConfig(t *testing.T) {
 	for _, keys := range keyPairs {
 		_, err := makeAuthConfig(keys.private)
-		if err != nil {
-			t.Error("Failed to create AuthConfig struct from privatekeys and stuff", err)
-		}
+		assert.Nil(t, err, "Failed to create AuthConfig struct from privatekeys and stuff")
 	}
 }
 
@@ -284,6 +282,7 @@ func TestBase64BlockEncodeNoLimit(t *testing.T) {
 		signature, _ := GenerateSignature(ac.PrivateKey, content)
 		Base64BlockEncode(signature, 0)
 	}
+	// TODO: Test something
 }
 
 func TestSignRequestBadSignature(t *testing.T) {
@@ -293,9 +292,7 @@ func TestSignRequestBadSignature(t *testing.T) {
 		ac.PrivateKey.PublicKey.N = big.NewInt(23234728432324)
 
 		err = ac.SignRequest(request)
-		if err == nil {
-			t.Fatal("failed to generate failed signature")
-		}
+		assert.NotNil(t, err, "failed to generate failed signature")
 	}
 }
 
@@ -308,9 +305,7 @@ func TestSignRequestNoBody(t *testing.T) {
 			request, err := client.NewRequest("GET", requestURL, nil)
 
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
+			assert.Nil(t, err, "Generate Request Headers")
 			count := 0
 			for _, requiredHeader := range testRequiredHeaders {
 				for header := range request.Header {
@@ -320,9 +315,7 @@ func TestSignRequestNoBody(t *testing.T) {
 					}
 				}
 			}
-			if count != len(testRequiredHeaders) {
-				t.Errorf("apiRequestHeaders didn't return all of testRequiredHeaders received: %+v required %+v", request.Header, testRequiredHeaders)
-			}
+			assert.Equal(t, count, len(testRequiredHeaders), "All required headers returned")
 		}()
 	}
 }
@@ -356,9 +349,7 @@ func TestSignRequestBody(t *testing.T) {
 					}
 				}
 			}
-			if count != len(testRequiredHeaders) {
-				t.Error("apiRequestHeaders didn't return all of testRequiredHeaders")
-			}
+			assert.Equal(t, count, len(testRequiredHeaders), "Return all of the test required headers")
 		}()
 	}
 }
@@ -435,6 +426,7 @@ func checkHeader(key *keyPair, rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		fmt.Fprintf(rw, "unexpected header decryption error '%s' with crypto standard %s", err, key.kind)
 	}
+	// TODO: Test something
 }
 
 func TestRequest(t *testing.T) {
@@ -449,27 +441,18 @@ func TestRequest(t *testing.T) {
 			request, err := client.NewRequest("GET", server.URL, nil)
 
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
+			assert.Nil(t, err, "Generate request headers")
 
 			client := &http.Client{}
 			response, err := client.Do(request)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if response.StatusCode != 200 {
-				t.Error("Non 200 return code: " + response.Status)
-			}
+			assert.Nil(t, err, "Do error")
+			assert.Equal(t, http.StatusOK, response.StatusCode, "Response status")
 
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(response.Body)
 			bodyStr := buf.String()
 
-			if bodyStr != "" {
-				t.Error(bodyStr)
-			}
+			assert.Equal(t, "", bodyStr, "Expect empty string")
 		}()
 	}
 }
@@ -478,6 +461,7 @@ func TestRequestToEndpoint(t *testing.T) {
 	for _, keys := range keyPairs {
 		func() {
 			ac, err := makeAuthConfig(keys.private)
+			assert.Nil(t, err, "Build auth config")
 			server := createServer(&keys)
 			defer server.Close()
 
@@ -485,27 +469,17 @@ func TestRequestToEndpoint(t *testing.T) {
 			request, err := client.NewRequest("GET", server.URL+"/clients", requestBody)
 
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
+			assert.Nil(t, err, "Generate request headers")
 
 			client := &http.Client{}
 			response, err := client.Do(request)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if response.StatusCode != 200 {
-				t.Error("Non 200 return code: " + response.Status)
-			}
+			assert.Nil(t, err, "Response from Do")
+			assert.Equal(t, http.StatusOK, response.StatusCode, "Status from Do")
 
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(response.Body)
 			bodyStr := buf.String()
-
-			if bodyStr != "" {
-				t.Error(bodyStr)
-			}
+			assert.Equal(t, "", bodyStr, "Expect an empty return")
 		}()
 	}
 }
@@ -530,15 +504,11 @@ func TestTLSValidation(t *testing.T) {
 
 			request, err := chefClient.NewRequest("GET", server.URL, nil)
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
+			assert.Nil(t, err, "Generate request headers")
 
 			client := chefClient.client
 			response, err := client.Do(request)
-			if err == nil {
-				t.Fatal("Request should fail due to TLS certification validation failure")
-			}
+			assert.NotNil(t, err, "Invalid TLS certificate")
 
 			// Success with RootCAs containing the server's certificate
 			certPool := x509.NewCertPool()
@@ -552,27 +522,17 @@ func TestTLSValidation(t *testing.T) {
 
 			request, err = chefClient.NewRequest("GET", server.URL, nil)
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
+			assert.Nil(t, err, "generate request headers")
 
 			client = chefClient.client
 			response, err = client.Do(request)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if response.StatusCode != 200 {
-				t.Error("Non 200 return code: " + response.Status)
-			}
+			assert.Nil(t, err, "Do request should work")
+			assert.Equal(t, http.StatusOK, response.StatusCode, "Response code")
 
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(response.Body)
 			bodyStr := buf.String()
-
-			if bodyStr != "" {
-				t.Error(bodyStr)
-			}
+			assert.Equal(t, "", bodyStr, "Empty response body expected")
 		}()
 	}
 }
@@ -611,10 +571,7 @@ func assembleSignedHeader(r *http.Request) (string, error) {
 
 func TestGenerateHash(t *testing.T) {
 	input, output := HashStr("hi"), "witfkXg0JglCjW9RssWvTAveakI="
-
-	Convey("correctly hashes a given input string", t, func() {
-		So(input, ShouldEqual, output)
-	})
+	assert.Equal(t, input, output, "correctly hashes a given input string")
 }
 
 // BUG(fujin): @bradbeam: this doesn't make sense to me.
@@ -624,14 +581,8 @@ func TestGenerateSignatureError(t *testing.T) {
 
 		// BUG(fujin): what about the 'hi' string is not meant to be signable?
 		sig, err := GenerateSignature(ac.PrivateKey, "hi")
-
-		Convey("sig should be empty?", t, func() {
-			So(sig, ShouldNotBeEmpty)
-		})
-
-		Convey("errors for an unknown reason to fujin", t, func() {
-			So(err, ShouldBeNil)
-		})
+		assert.NotEqual(t, "", sig, "Generated sig should not be empty")
+		assert.Nil(t, err, "errors for an unknown reason to fujin")
 	}
 }
 
@@ -655,9 +606,7 @@ func TestSignatureContent(t *testing.T) {
 	expected := "Method:GET\nHashed Path:FaX3AVJLlDDqHB7giEG/2EbBsR0=\nX-Ops-Content-Hash:Content-Hash\nX-Ops-Timestamp:1990-12-31T15:59:60-08:00\nX-Ops-UserId:tester"
 
 	content := ac.SignatureContent(vals)
-	if expected != content {
-		t.Errorf("Unexpected content wanted: %+v\n delivered: %+v", expected, content)
-	}
+	assert.Equal(t, expected, content, "Signature content")
 }
 
 func TestRequestError(t *testing.T) {
@@ -671,58 +620,34 @@ func TestRequestError(t *testing.T) {
 	err := CheckResponse(resp)
 	cerr, err := ChefError(err)
 	matched, err := regexp.MatchString(`^GET http://127.0.0.1:\d+: 503`, cerr.Error())
-	if !matched {
-		t.Errorf("Request Error returned %+v instead of GET URL 503", cerr.Error())
-	}
-	if cerr.StatusCode() != http.StatusServiceUnavailable {
-		t.Errorf("Request Error returned code %+v instead of %+v\n", cerr.StatusCode(), http.StatusServiceUnavailable)
-	}
-	if cerr.StatusMethod() != "GET" {
-		t.Errorf("Request Error returned method %+v instead of %+v\n", cerr.StatusMethod(), "GET")
-	}
-	if cerr.StatusMsg() != "Not Available" {
-		t.Errorf("Request Error returned msg '%+v' instead of %+v\n", cerr.StatusMsg(), "Not Available")
-	}
-	if strings.TrimSpace(string(cerr.StatusText())) != `{"error":["Not Available"]}` {
-		t.Errorf("Request Error returned text %+v instead of %+v\n", string(cerr.StatusText()), "Not Available")
-	}
+	assert.True(t, matched, "match request error 503")
+	assert.Equal(t, http.StatusServiceUnavailable, cerr.StatusCode(), "Status code for 503")
+	assert.Equal(t, "GET", cerr.StatusMethod(), "method used for 503")
+	assert.Equal(t, "Not Available", cerr.StatusMsg(), "message returned for 503)")
+	assert.Equal(t, `{"error":["Not Available"]}`, strings.TrimSpace(string(cerr.StatusText())), "message text returned for 503")
 	matched, err = regexp.MatchString(`http://127.0.0.1:\d+`, cerr.StatusURL().String())
-	if !matched {
-		t.Errorf("Request Error returned URL %+v instead of %+v\n", cerr.StatusURL(), "http://127.0.0.1")
-	}
+	assert.True(t, matched, "Request Status returned URL with 503")
 	matched, err = regexp.MatchString(`http://127.0.0.1:\d+`, cerr.Error())
-	if !matched {
-		t.Errorf("Request URL returned %+v instead of %+v\n", cerr.StatusURL().String(), "http://127.0.0.1*")
-	}
+	assert.True(t, matched, "Request Error returned with 503")
 }
 
 func TestNewClient(t *testing.T) {
 	cfg := &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
 	c, err := NewClient(cfg)
-	if err != nil {
-		t.Error("Couldn't make a valid client...\n", err)
-	}
+	assert.Nil(t, err, "Make a valid client")
 	// simple validations on the created client
-	if c.Auth.ClientName != "testclient" {
-		t.Error("unexpected client name: ", c.Auth.ClientName)
-	}
-	if c.client.Timeout != time.Duration(1)*time.Second {
-		t.Error("unexpected timeout value: ", c.client.Timeout)
-	}
+	assert.Equal(t, "testclient", c.Auth.ClientName, "Valid client Name")
+	assert.Equal(t, time.Duration(1)*time.Second, c.client.Timeout, "Valid timeout value")
 
 	// Bad PEM should be an error
 	cfg = &Config{Name: "blah", Key: "not a key", SkipSSL: false}
 	c, err = NewClient(cfg)
-	if err == nil {
-		t.Error("Built a client from a bad key string")
-	}
+	assert.NotNil(t, err, "Build a client from a bad key string, bad PEM")
 
 	// Not a proper key should be an error
 	cfg = &Config{Name: "blah", Key: badPrivateKeyPKCS1, SkipSSL: false}
 	c, err = NewClient(cfg)
-	if err == nil {
-		t.Error("Built a client from a bad key string")
-	}
+	assert.NotNil(t, err, "Build a client from a bad key string, bad key")
 
 	// TODO: Test the value of Authentication assisgned
 }
@@ -736,27 +661,20 @@ func TestNewRequest(t *testing.T) {
 		defer server.Close()
 
 		request, err := c.NewRequest("GET", server.URL, nil)
-		if err != nil {
-			t.Error("HRRRM! we tried to make a request but it failed :`( ", err)
-		}
+		assert.Nil(t, err, "New request created")
 
 		resp, err := c.Do(request, nil)
-		if resp.StatusCode != 200 {
-			t.Error("Non 200 return code: ", resp.Status)
-		}
+		assert.Nil(t, err, "Do the request error return")
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "Do the request status code")
 
 		// This should fail because we've got an invalid URI
 		_, err = c.NewRequest("GET", "%gh&%ij", nil)
-		if err == nil {
-			t.Error("This terrible request thing should fail and it didn't")
-		}
+		assert.NotNil(t, err, "Create invalid request")
 
 		// This should fail because there is no TOODLES! method :D
 		request, err = c.NewRequest("TOODLES!", "", nil)
 		_, err = c.Do(request, nil)
-		if err == nil {
-			t.Error("This terrible request thing should fail and it didn't")
-		}
+		assert.NotNil(t, err, "Request has invalid method")
 	}
 }
 
@@ -771,9 +689,7 @@ func TestDo_badjson(t *testing.T) {
 	stupidData := struct{}{}
 	request, err := client.NewRequest("GET", "hashrocket", nil)
 	_, err = client.Do(request, &stupidData)
-	if err == nil {
-		t.Error(err)
-	}
+	assert.NotNil(t, err, "Request a return struct that doesn't match the data")
 }
 
 // Add Content-Type tests
@@ -789,14 +705,13 @@ func TestDoText(t *testing.T) {
 	})
 
 	var getdata string
-	request, err := client.NewRequest("GET", "hashrocket", nil)
-	_, err = client.Do(request, &getdata)
-	if err != nil {
-		t.Error(err)
-	}
-	if getdata != pigText {
-		t.Errorf("Plain text got unexpected string: %+v expected: %+v\n", getdata, pigText)
-	}
+	request, _ := client.NewRequest("GET", "hashrocket", nil)
+	res, err := client.Do(request, &getdata)
+	assert.Nil(t, err, "text request err")
+	assert.Equal(t, pigText, getdata, "Plain text returned in string")
+	resData, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err, "Read the response body")
+	assert.Equal(t, pigText, string(resData), "Plain text from the response body")
 }
 
 func TestDoJSON(t *testing.T) {
@@ -811,14 +726,13 @@ func TestDoJSON(t *testing.T) {
 
 	getdata := map[string]string{}
 	wantdata := map[string]string{"key": "value"}
-	request, err := client.NewRequest("GET", "hashrocket", nil)
-	_, err = client.Do(request, &getdata)
-	if err != nil {
-		t.Error(err)
-	}
-	if !reflect.DeepEqual(getdata, wantdata) {
-		t.Errorf("JSON data got unexpected string: %+v expected: %+v\n", getdata, wantdata)
-	}
+	request, _ := client.NewRequest("GET", "hashrocket", nil)
+	res, err := client.Do(request, &getdata)
+	assert.Nil(t, err, "Json returned")
+	assert.Equal(t, getdata, wantdata, "Json returned data")
+	resData, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err, "Read the response body")
+	assert.Equal(t, jsonText, string(resData), "Plain text from the response body")
 }
 
 func TestDoDefaultParse(t *testing.T) {
@@ -834,14 +748,56 @@ func TestDoDefaultParse(t *testing.T) {
 
 	getdata := map[string]string{}
 	wantdata := map[string]string{"key": "value"}
-	request, err := client.NewRequest("GET", "hashrocket", nil)
-	_, err = client.Do(request, &getdata)
-	if err != nil {
-		t.Error(err)
-	}
-	if !reflect.DeepEqual(getdata, wantdata) {
-		t.Errorf("JSON data got unexpected string: %+v expected: %+v\n", getdata, wantdata)
-	}
+	request, _ := client.NewRequest("GET", "hashrocket", nil)
+	res, err := client.Do(request, &getdata)
+	assert.Nil(t, err, "Default parse err")
+	assert.Equal(t, getdata, wantdata, "Default parse of json data")
+	resData, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err, "Read the response body")
+	assert.Equal(t, jsonText, string(resData), "Default parse text from the response body")
+}
+
+func TestDoNoResponseInterface(t *testing.T) {
+	setup()
+	defer teardown()
+
+	jsonText := `{"key": "value"}`
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		// Note: deliberately using a non standard text type
+		w.Header().Add("Content-Type", "none/here")
+		fmt.Fprintf(w, jsonText)
+	})
+
+	request, _ := client.NewRequest("GET", "hashrocket", nil)
+	res, err := client.Do(request, nil)
+	assert.Nil(t, err, "No interface parse err")
+	resData, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err, "Read the response body")
+	assert.Equal(t, jsonText, string(resData), "No Interface from the response body")
+}
+
+func TestDoIOWriter(t *testing.T) {
+	setup()
+	defer teardown()
+
+	jsonText := `{"key": "value"}`
+	mux.HandleFunc("/hashrocket", func(w http.ResponseWriter, r *http.Request) {
+		// Note: deliberately using a non standard text type
+		w.Header().Add("Content-Type", "none/here")
+		fmt.Fprintf(w, jsonText)
+	})
+
+	buf := new(bytes.Buffer)
+	request, _ := client.NewRequest("GET", "hashrocket", nil)
+	res, err := client.Do(request, buf)
+	assert.Nil(t, err, "No interface parse err")
+	byteData, err := ioutil.ReadAll(buf)
+	wantdata := string(byteData)
+	assert.Nil(t, err, "Readable IO stream")
+	assert.Equal(t, jsonText, wantdata, "IO writer parse")
+	resData, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err, "Read the response body")
+	assert.Equal(t, jsonText, string(resData), "IO Writer from the response body")
 }
 
 func TestBasicAuthHeader(t *testing.T) {
@@ -850,16 +806,12 @@ func TestBasicAuthHeader(t *testing.T) {
 	req, _ := client.NewRequest("GET", "http://dummy", nil)
 	basicAuthHeader(req, "stduser", "stdpassword")
 	basicHeader := req.Header.Get("Authorization")
-	if basicHeader != "Basic c3RkdXNlcjpzdGRwYXNzd29yZA==" {
-		t.Error("BasicAuthHeader credentials not calculated properly")
-	}
+	assert.Equal(t, "Basic c3RkdXNlcjpzdGRwYXNzd29yZA==", basicHeader, "BasicAuthHeader")
 }
 
 func TestBasicAuth(t *testing.T) {
 	header := basicAuth("stduser", "stdpassword")
-	if header != "c3RkdXNlcjpzdGRwYXNzd29yZA==" {
-		t.Error("BasicAuth credentials not calculated properly")
-	}
+	assert.Equal(t, "c3RkdXNlcjpzdGRwYXNzd29yZA==", header, "Basic auth credentials")
 }
 
 func TestHeaderValue(t *testing.T) {
@@ -879,12 +831,8 @@ func TestHeaderValue(t *testing.T) {
 			request, err := client.NewRequest("GET", requestURL, requestBody)
 
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
-			if request.Header.Get("X-Ops-Request-Source") != "web" {
-				t.Errorf("didn't return header value")
-			}
+			assert.Nil(t, err, "generate request headers")
+			assert.Equal(t, "web", request.Header.Get("X-Ops-Request-Source"), "Header source value")
 
 			// Should not add 'X-Ops-Request-Source' header value as web if IsWebuiKey is false
 			client.IsWebuiKey = false
@@ -893,12 +841,8 @@ func TestHeaderValue(t *testing.T) {
 			request, err = client.NewRequest("GET", requestURL, requestBody)
 
 			err = ac.SignRequest(request)
-			if err != nil {
-				t.Fatal("failed to generate RequestHeaders")
-			}
-			if request.Header.Get("X-Ops-Request-Source") != "" {
-				t.Errorf("Returned header value")
-			}
+			assert.Nil(t, err, "generate request headers")
+			assert.Equal(t, "", request.Header.Get("X-Ops-Request-Source"), "No X-Ops-Request-Source")
 		}()
 	}
 }

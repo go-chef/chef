@@ -8,7 +8,7 @@ execute 'create test organization' do
 end
 
 execute 'get the ssl certificate for the chef server' do
-  command 'knife ssl fetch'
+  command '/opt/opscode/bin/knife ssl fetch'
   ignore_failure true
   not_if { ::File.exist? '/root/.chef/trusted_certs/localhost' }
 end

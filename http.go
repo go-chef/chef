@@ -96,6 +96,9 @@ type Config struct {
 
 	// When set to true corresponding API is using webui key in the request
 	IsWebuiKey bool
+
+	// Proxy function to be used when making requests
+	Proxy func(*http.Request) (*url.URL, error)
 }
 
 /*
@@ -217,13 +220,18 @@ func NewClient(cfg *Config) (*Client, error) {
 		tlsConfig.RootCAs = cfg.RootCAs
 	}
 	tr := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}).Dial,
 		TLSClientConfig:     tlsConfig,
 		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	if cfg.Proxy != nil {
+		tr.Proxy = cfg.Proxy
+	} else {
+		tr.Proxy = http.ProxyFromEnvironment
 	}
 
 	c := &Client{

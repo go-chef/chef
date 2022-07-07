@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -725,6 +726,36 @@ func TestNewClient(t *testing.T) {
 	}
 
 	// TODO: Test the value of Authentication assisgned
+}
+
+func TestNewClientProxy(t *testing.T) {
+	// no proxy provided
+	cfg := &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
+	chefClient, err := NewClient(cfg)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	tr := chefClient.client.Transport.(*http.Transport)
+	if reflect.ValueOf(tr.Proxy).Pointer() != reflect.ValueOf(http.ProxyFromEnvironment).Pointer() {
+		t.Error("Expected default http.ProxyFromEnvironment")
+	}
+
+	// custom proxy provided
+	proxyFunc := func(req *http.Request) (*url.URL, error) {
+		return nil, nil
+	}
+
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Proxy: proxyFunc}
+	chefClient, err = NewClient(cfg)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	tr = chefClient.client.Transport.(*http.Transport)
+	if reflect.ValueOf(tr.Proxy).Pointer() != reflect.ValueOf(proxyFunc).Pointer() {
+		t.Error("Expected custom proxy function")
+	}
 }
 
 func TestNewRequest(t *testing.T) {

@@ -1,7 +1,7 @@
 package chef
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -10,19 +10,11 @@ var (
 )
 
 func TestNodeRunList(t *testing.T) {
-	Convey("Node.RunList() should be a RunList", t, func() {
-		So(rl, ShouldHaveSameTypeAs, RunList{})
-	})
-
-	Convey("Node.RunList() should be populated", t, func() {
-		So(rl, ShouldContain, "recipe[foo]")
-		So(rl, ShouldContain, "recipe[baz]")
-		So(rl, ShouldContain, "role[banana]")
-	})
+	assert.IsType(t, RunList{}, rl, "Runlist type")
+	assert.Contains(t, rl, "recipe[foo]", "Runlist contents")
+	assert.Contains(t, rl, "recipe[baz]", "Runlist contents")
+	assert.Contains(t, rl, "role[banana]", "Runlist contents")
 
 	rl = RunList{}
-	Convey("Empty RunList should be valid", t, func() {
-		So(rl, ShouldBeEmpty)
-	})
-
+	assert.Empty(t, rl, "Empty runlist")
 }

@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/r3labs/diff"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -29,13 +28,9 @@ var (
 )
 
 func TestRoleName(t *testing.T) {
-	// BUG(spheromak): Pull these constructors out into a Convey Decorator
 	n1 := testRole
 	name := n1.Name
-
-	Convey("Role name is 'test'", t, func() {
-		So(name, ShouldEqual, "test")
-	})
+	assert.Equal(t, "test", name, "Role name")
 }
 
 // BUG(fujin): re-do with goconvey

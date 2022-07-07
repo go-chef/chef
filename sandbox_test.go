@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	_ "reflect"
 	"testing"
@@ -90,7 +90,8 @@ func TestSandboxesPut(t *testing.T) {
 		},
 	}
 
-	Convey("Sandbox Equality", t, func() {
-		So(sandbox, ShouldResemble, expected)
-	})
+	assert.Equal(t, expected, sandbox, "Sandbox contents")
+	// Convey("Sandbox Equality", t, func() {
+	// So(sandbox, ShouldResemble, expected)
+	// })
 }

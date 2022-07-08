@@ -96,6 +96,9 @@ type Config struct {
 
 	// When set to true corresponding API is using webui key in the request
 	IsWebuiKey bool
+
+	// Proxy function to be used when making requests
+	Proxy func(*http.Request) (*url.URL, error)
 }
 
 /*
@@ -224,6 +227,10 @@ func NewClient(cfg *Config) (*Client, error) {
 		}).Dial,
 		TLSClientConfig:     tlsConfig,
 		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	if cfg.Proxy != nil {
+		tr.Proxy = cfg.Proxy
 	}
 
 	c := &Client{

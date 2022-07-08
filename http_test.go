@@ -13,6 +13,9 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -650,6 +653,44 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, err, "Build a client from a bad key string, bad key")
 
 	// TODO: Test the value of Authentication assisgned
+}
+
+func TestNewClientProxy(t *testing.T) {
+	// no proxy provided
+	cfg := &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
+	chefClient, err := NewClient(cfg)
+	assert.Nil(t, err, "Create client")
+	request, err := chefClient.NewRequest("GET", "https://test.com", nil)
+	assert.Nil(t, err, "Create request")
+	trfunc, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
+	assert.Nil(t, trfunc, "no proxy")
+
+	//test proxy from environment variable
+	os.Setenv("https_proxy", "https://8.8.8.8:8000")
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
+	assert.Nil(t, cfg.Proxy, "default proxy should be nil")
+	chefClient, err = NewClient(cfg)
+	assert.Nil(t, err, "Create client")
+	tr := chefClient.client.Transport.(*http.Transport)
+	assert.Equal(t, reflect.ValueOf(tr.Proxy).Pointer(),
+		reflect.ValueOf(http.ProxyFromEnvironment).Pointer(),
+		"Proxy set from supplied function")
+
+	// custom proxy provided
+	proxyFunc := func(req *http.Request) (*url.URL, error) {
+		url, _ := url.Parse("https://proxy.com:9000")
+		return url, nil
+	}
+
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Proxy: proxyFunc}
+	chefClient, err = NewClient(cfg)
+	assert.Nil(t, err, "Create client")
+	request, err = chefClient.NewRequest("GET", "https://test.com", nil)
+	assert.Nil(t, err, "Create request")
+	trurl, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
+	assert.Nil(t, err, "Proxy execution")
+	eurl := &url.URL{Scheme: "https", Host: "proxy.com:9000"}
+	assert.Equal(t, *eurl, *trurl, "Proxy set from supplied function")
 }
 
 func TestNewRequest(t *testing.T) {

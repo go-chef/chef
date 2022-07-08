@@ -158,9 +158,9 @@ func create_role1() chef.Role {
 
 func create_role_norunlist() chef.Role {
 	role1 := chef.Role{
-		Name:              "roleNR",
-		Description:       "Test role",
-		RunList:            []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
+		Name:        "roleNR",
+		Description: "Test role",
+		RunList:     []string{"recipe[foo]", "recipe[baz]", "role[banana]"},
 	}
 	return role1
 }

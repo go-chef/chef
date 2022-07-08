@@ -1,4 +1,4 @@
-'ll add some doc about testing and development. I'll take the request as a really good suggestion.
+I'll add some doc about testing and development. I'll take the request as a really good suggestion.
 Thanks
 
 Basic ideas for adding an endpoint, assume you will repeat this process and each step multiple times:

@@ -226,6 +226,10 @@ func NewClient(cfg *Config) (*Client, error) {
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
 
+	if cfg.Proxy != nil {
+		tr.Proxy = cfg.Proxy
+	}
+
 	c := &Client{
 		Auth: &AuthConfig{
 			PrivateKey:            pk,

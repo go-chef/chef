@@ -13,7 +13,7 @@ This is a Library that you can use to write tools to interact with the chef serv
   
     go get -t github.com/go-chef/chef
     go test -v github.com/go-chef/chef
-    examples::chefapi_tester kitchen verify 
+    test_chef_server: kitchen verify  # integration tests
 
 ## SSL
 
@@ -65,15 +65,16 @@ func main() {
 ```
 
 ## Chef API Error Status
-To get tthhe error status and error message returned from calls to the Chef API Server
-you cane use ChefError to unwind the ErrorResponse and access the original http error.
+To get the error status and error message returned from calls to the Chef API Server
+you can use ChefError to unwind the ErrorResponse and access the original http error.
 These methods are available to get specific information from the the error.
-Error() returns a formatted error message with the URL and status code.
-StatusCode() returns the original return status code.
-StatusMsg() returns the error message extracted from the error message body.
-StatusText() returns the returned error message body, usually JSON.
-StatusMethod() returns the name of the method used for the request.
-StatusURL() returns the URL object used for the request.
+
+* Error() returns a formatted error message with the URL and status code.
+* StatusCode() returns the original return status code.
+* StatusMsg() returns the error message extracted from the error message body.
+* StatusText() returns the returned error message body, usually JSON.
+* StatusMethod() returns the name of the method used for the request.
+* StatusURL() returns the URL object used for the request.
 
 ## CONTRIBUTING
 

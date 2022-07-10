@@ -14,8 +14,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -664,17 +662,6 @@ func TestNewClientProxy(t *testing.T) {
 	assert.Nil(t, err, "Create request")
 	trfunc, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
 	assert.Nil(t, trfunc, "no proxy")
-
-	//test proxy from environment variable
-	os.Setenv("https_proxy", "https://8.8.8.8:8000")
-	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1}
-	assert.Nil(t, cfg.Proxy, "default proxy should be nil")
-	chefClient, err = NewClient(cfg)
-	assert.Nil(t, err, "Create client")
-	tr := chefClient.client.Transport.(*http.Transport)
-	assert.Equal(t, reflect.ValueOf(tr.Proxy).Pointer(),
-		reflect.ValueOf(http.ProxyFromEnvironment).Pointer(),
-		"Proxy set from supplied function")
 
 	// custom proxy provided
 	proxyFunc := func(req *http.Request) (*url.URL, error) {

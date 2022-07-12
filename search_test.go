@@ -1,10 +1,10 @@
 package chef
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,18 +27,14 @@ func TestSearch_Get(t *testing.T) {
 	})
 
 	indexes, err := client.Search.Indexes()
-	if err != nil {
-		t.Errorf("Search.Get returned error: %+v", err)
-	}
+	assert.Nil(t, err, "Search.Get returned error")
 	wantedIdx := map[string]string{
 		"node":   "http://localhost:4000/search/node",
 		"role":   "http://localhost:4000/search/role",
 		"client": "http://localhost:4000/search/client",
 		"users":  "http://localhost:4000/search/users",
 	}
-	if !reflect.DeepEqual(indexes, wantedIdx) {
-		t.Errorf("Search.Get returned %+v, want %+v", indexes, wantedIdx)
-	}
+	assert.Equal(t, wantedIdx, indexes, "Search for indexes")
 }
 
 func TestSearch_ExecDo(t *testing.T) {
@@ -51,6 +47,8 @@ func TestSearch_ExecDo(t *testing.T) {
 	    "start": 0,
 	    "rows": [
 	       {
+			"url": "path1",
+			"data": {
 	        "overrides": {"hardware_type": "laptop"},
 	        "name": "latte",
 	        "chef_type": "node",
@@ -58,6 +56,7 @@ func TestSearch_ExecDo(t *testing.T) {
 	        "attributes": {"hardware_type": "laptop"},
 	        "run_list": ["recipe[unicorn]"],
 	        "defaults": {}
+			}
 	       }
 				 ]
 		}`)
@@ -65,32 +64,22 @@ func TestSearch_ExecDo(t *testing.T) {
 
 	// test the fail case
 	_, err := client.Search.NewQuery("foo", "failsauce")
-	if err == nil {
-		t.Error("Bad query wasn't caught")
-	}
+	assert.NotNil(t, err, "Bad query wasn't caught, NewQuery")
 
 	// test the fail case
 	_, err = client.Search.Exec("foo", "failsauce")
-	if err == nil {
-		t.Error("Bad query wasn't caught")
-	}
+	assert.NotNil(t, err, "Bad query wasn't caught, Exec")
 
 	// test the positive case
 	query, err := client.Search.NewQuery("nodes", "name:latte")
-	if err != nil {
-		t.Error("failed to create query")
-	}
+	assert.Nil(t, err, "failed to create query")
 
 	// for now we aren't testing the result..
 	_, err = query.Do(client)
-	if err != nil {
-		t.Errorf("Search.Exec failed err: %+v", err)
-	}
+	assert.Nil(t, err, "Search Do failed")
 
 	_, err = client.Search.Exec("nodes", "name:latte")
-	if err != nil {
-		t.Errorf("Search.Exec failed err: %+v", err)
-	}
+	assert.Nil(t, err, "Search Exec failed")
 
 }
 
@@ -104,6 +93,8 @@ func TestSearch_PartialExec(t *testing.T) {
 			"start": 0,
 			"rows": [
 			   {
+				"url": "path2",
+				"data": {
 				"overrides": {"hardware_type": "laptop"},
 				"name": "latte",
 				"chef_type": "node",
@@ -114,6 +105,7 @@ func TestSearch_PartialExec(t *testing.T) {
 				"attributes": {"hardware_type": "laptop"},
 				"run_list": ["recipe[unicorn]"],
 				"defaults": {}
+				}
 			   }
 					 ]
 			}`)
@@ -126,12 +118,13 @@ func TestSearch_PartialExec(t *testing.T) {
 		"policy_revision": []string{"policy_revision"},
 	}
 
-	pres, err := client.Search.PartialExec("node", "*.*", query)
-	if err != nil {
-		t.Errorf("Search.PartialExec failed err: %+v", err)
-	}
+	pres, err := client.Search.PartialExecJSON("node", "*.*", query)
+	assert.Nil(t, err, "Search.PartialExecJSON failed")
 
-	assert.Equal(t, "grafana", pres.Rows[0].(map[string]interface{})["policy_name"])
+	assert.Len(t, pres.Rows, 1)
+	actualNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[0].Data, &actualNode))
+	assert.Equal(t, "grafana", actualNode.PolicyName)
 
 }
 
@@ -140,14 +133,10 @@ func TestSearch_PartialExecMultipleCalls(t *testing.T) {
 	defer teardown()
 
 	searchResponseOne, err := ioutil.ReadFile(partialSearchResponseFile_1)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.Nil(t, err, "Read response file 1 failed")
 
 	searchResponseTwo, err := ioutil.ReadFile(partialSearchResponseFile_2)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.Nil(t, err, "Read response file 2 failed")
 
 	mux.HandleFunc("/search/node", func(w http.ResponseWriter, r *http.Request) {
 
@@ -172,13 +161,16 @@ func TestSearch_PartialExecMultipleCalls(t *testing.T) {
 		"policy_revision": []string{"policy_revision"},
 	}
 
-	pres, err := client.Search.PartialExec("node", "*.*", query)
-	if err != nil {
-		t.Errorf("Search.PartialExec failed err: %+v", err)
-	}
+	pres, err := client.Search.PartialExecJSON("node", "*.*", query)
+	assert.Nil(t, err, "Search.PartialExec failed")
+	assert.Len(t, pres.Rows, 12)
 
-	assert.Equal(t, 1185, len(pres.Rows))
-	assert.Equal(t, "node1", pres.Rows[0].(map[string]interface{})["name"])
-	assert.Equal(t, "node1185", pres.Rows[len(pres.Rows)-1].(map[string]interface{})["name"])
+	firstNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[0].Data, &firstNode))
+	assert.Equal(t, "node1", firstNode.Name)
+
+	lastNode := Node{}
+	assert.NoError(t, json.Unmarshal(pres.Rows[len(pres.Rows)-1].Data, &lastNode))
+	assert.Equal(t, "node12", lastNode.Name)
 
 }

@@ -11,4 +11,9 @@ describe command('/go/src/testapi/bin/search') do
   its('stdout') { should match(/^List nodes from Exec query \{Total:1 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from all nodes Exec query \{Total:4 Start:0 Rows:\[/) }
   its('stdout') { should match(/^List nodes from partial search \{Total:4 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^List nodes from query JSON format \{Total:2 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^List 2nd set of nodes from query JSON format \{Total:2 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^List nodes from Exec query JSON format \{Total:1 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^List nodes from all nodes Exec query JSON format \{Total:4 Start:0 Rows:\[/) }
+  its('stdout') { should match(/^Partial search JSON format row: 0 rawjson: {"name":"node0"}/) }
 end

@@ -45,7 +45,14 @@ func Search() {
 	}
 	fmt.Printf("List nodes from query %+v\n", res)
 
-	// TODO: Get the next page of results
+	// Run the query, JSON output
+	jres, err := query.DoJSON(client)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running query ", err)
+	}
+	fmt.Printf("List nodes from query JSON format %+v\n", jres)
+
+	// Get the next page of results
 	fmt.Printf("Query after the call %+v\n", query)
 	query.Start = query.Start + query.Rows
 	res, err = query.Do(client)
@@ -53,6 +60,14 @@ func Search() {
 		fmt.Fprintln(os.Stderr, "Issue running 2nd query ", err)
 	}
 	fmt.Printf("List 2nd set of nodes from query %+v\n", res)
+
+	// Get the next page of results again, in JSON format
+	query.Start = query.Start - query.Rows
+	jres, err = query.DoJSON(client)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running 2nd query ", err)
+	}
+	fmt.Printf("List 2nd set of nodes from query JSON format %+v\n", jres)
 
 	// You can also use the service to run a query
 	res, err = client.Search.Exec("node", "name:node1")
@@ -72,14 +87,42 @@ func Search() {
 	}
 	fmt.Printf("List nodes from all nodes Exec query %+v\n", res)
 
+	// You can also use the service to run a query JSON Format
+	jres, err = client.Search.ExecJSON("node", "name:node1")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running Search.Exec() ", err)
+	}
+	fmt.Printf("List nodes from Exec query JSON format %+v\n", jres)
+	// dump out results back in json as an example
+	fmt.Println("JSON output example")
+	os.Stdout.WriteString("\n")
+
+	jres, err = client.Search.ExecJSON("node", "name:*")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running Search.Exec() ", err)
+	}
+	fmt.Printf("List nodes from all nodes Exec query JSON format %+v\n", jres)
+
 	// Partial search
 	part := make(map[string]interface{})
 	part["name"] = []string{"name"}
-	pres, err := client.Search.PartialExec("node", "*:*", part)
+	jpres, err := client.Search.PartialExecJSON("node", "*:*", part)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue running Search.PartialExec()", err)
 	}
-	fmt.Printf("List nodes from partial search %+v\n", pres)
+	fmt.Printf("List nodes from partial search %+v\n", jpres)
+
+	// Partial search JSON format
+	part = make(map[string]interface{})
+	part["name"] = []string{"name"}
+	jpres, err = client.Search.PartialExecJSON("node", "*:*", part)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue running Search.PartialExec()", err)
+	}
+	fmt.Printf("List nodes from partial search JSON format %+v\n", jpres)
+	for i, row := range jpres.Rows {
+		fmt.Fprintf(os.Stdout, "Partial search JSON format row: %v rawjson: %v\n", i, string(row.Data))
+	}
 
 	// Clean up nodes
 	deleteNodes(client)

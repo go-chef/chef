@@ -1,6 +1,14 @@
 package chef
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrPathNotFound   = errors.New("attributte path not found")
+	ErrNoPathProvided = errors.New("no path was provided")
+)
 
 type NodeService struct {
 	client *Client
@@ -20,6 +28,46 @@ type Node struct {
 	RunList     []string `json:"run_list,omitempty"`
 	PolicyName  string   `json:"policy_name,omitempty"`
 	PolicyGroup string   `json:"policy_group,omitempty"`
+}
+
+// GetAttribute will fetch an attribute from that provided path considering the right attribute precedence.
+func (e *Node) GetAttribute(paths ...string) (interface{}, error) {
+	// this follows the Chef attribute precedence: https://docs.chef.io/attribute_precedence/
+	attrList := []map[string]interface{}{e.AutomaticAttributes, e.OverrideAttributes, e.NormalAttributes, e.DefaultAttributes}
+
+	for _, attrs := range attrList {
+		attr, err := lookupAttribute(attrs, paths...)
+		if err != nil {
+			if errors.Is(err, ErrPathNotFound) {
+				continue
+			}
+
+			return nil, err
+		}
+
+		return attr, nil
+	}
+
+	return nil, ErrPathNotFound
+}
+
+// looks up a complete path in the provided attribute map.
+func lookupAttribute(attrs map[string]interface{}, paths ...string) (interface{}, error) {
+	if len(paths) <= 0 {
+		return nil, ErrNoPathProvided
+	}
+
+	currentPath, remainingPaths := paths[0], paths[1:]
+
+	if attr, ok := attrs[currentPath]; ok {
+		if fmt.Sprintf("%T", attr) != "map[string]interface {}" {
+			return attr, nil
+		}
+
+		return lookupAttribute(attr.(map[string]interface{}), remainingPaths...)
+	}
+
+	return nil, ErrPathNotFound
 }
 
 type NodeResult struct {

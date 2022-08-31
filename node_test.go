@@ -286,6 +286,21 @@ func TestGetAttribute(t *testing.T) {
 			"foobar",
 			nil,
 		},
+		{
+			"incomplete path",
+			Node{
+				NormalAttributes: map[string]interface{}{
+					"foo": map[string]interface{}{
+						"bar": map[string]interface{}{
+							"foobar": "buzz",
+						},
+					},
+				},
+			},
+			[]string{"foo", "bar"},
+			map[string]interface{}{"foobar": "buzz"},
+			nil,
+		},
 	}
 
 	for _, tt := range tests {

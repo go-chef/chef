@@ -32,6 +32,10 @@ type Node struct {
 
 // GetAttribute will fetch an attribute from that provided path considering the right attribute precedence.
 func (e *Node) GetAttribute(paths ...string) (interface{}, error) {
+	if len(paths) <= 0 {
+		return nil, ErrNoPathProvided
+	}
+
 	// this follows the Chef attribute precedence: https://docs.chef.io/attribute_precedence/
 	attrList := []map[string]interface{}{e.AutomaticAttributes, e.OverrideAttributes, e.NormalAttributes, e.DefaultAttributes}
 
@@ -54,16 +58,17 @@ func (e *Node) GetAttribute(paths ...string) (interface{}, error) {
 // looks up a complete path in the provided attribute map.
 func lookupAttribute(attrs map[string]interface{}, paths ...string) (interface{}, error) {
 	if len(paths) <= 0 {
-		return nil, ErrNoPathProvided
+		return nil, ErrPathNotFound
 	}
 
 	currentPath, remainingPaths := paths[0], paths[1:]
 
 	if attr, ok := attrs[currentPath]; ok {
-		if fmt.Sprintf("%T", attr) != "map[string]interface {}" {
-			return attr, nil
+		if len(remainingPaths) <= 0 {
+			return attr, nil // we are at the last provided part of the path
 		}
 
+		// otherwise keep looking until we reach the end
 		return lookupAttribute(attr.(map[string]interface{}), remainingPaths...)
 	}
 

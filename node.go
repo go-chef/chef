@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrPathNotFound   = errors.New("attributte path not found")
+	ErrPathNotFound   = errors.New("attribute path not found")
 	ErrNoPathProvided = errors.New("no path was provided")
 )
 
@@ -30,7 +30,7 @@ type Node struct {
 	PolicyGroup string   `json:"policy_group,omitempty"`
 }
 
-// GetAttribute will fetch an attribute from that provided path considering the right attribute precedence.
+// GetAttribute will fetch an attribute from the provided path considering the right attribute precedence.
 func (e *Node) GetAttribute(paths ...string) (interface{}, error) {
 	if len(paths) <= 0 {
 		return nil, ErrNoPathProvided

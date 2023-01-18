@@ -38,8 +38,9 @@ func Cookbook() {
 	nothere, err := client.Cookbooks.Get("nothere")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Issue getting cookbook nothere:", err)
+	} else {
+		fmt.Printf("Get cookbook nothere %+v\n", nothere)
 	}
-	fmt.Printf("Get cookbook nothere %+v\n", nothere)
 
 	// list available versions of a cookbook
 	testbookversions, err := client.Cookbooks.GetAvailableVersions("testbook", "0")
@@ -56,11 +57,11 @@ func Cookbook() {
 	fmt.Printf("Get cookbook versions sampbook %+v\n", sampbookversions)
 
 	// get specific versions of a cookbook
-	testbookversions1, err := client.Cookbooks.GetVersion("testbook", "0.1.0")
+	testbookv1, err := client.Cookbooks.GetVersion("testbook", "0.1.0")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue getting specific cookbook versions for testbook:", err)
+		fmt.Fprintln(os.Stderr, "Issue getting specific cookbook version for testbook:", err)
 	}
-	fmt.Printf("Get specific cookbook version testbook %+v\n", testbookversions1)
+	fmt.Printf("Get specific cookbook version testbook %+v\n", testbookv1)
 
 	// list all recipes
 	allRecipes, err := client.Cookbooks.ListAllRecipes()
@@ -68,6 +69,71 @@ func Cookbook() {
 		fmt.Fprintln(os.Stderr, "Issue getting all recipes:", err)
 	}
 	fmt.Printf("Get all recipes %+v\n", allRecipes)
+
+        // Verify the returned cookbook  metadata
+        if len(testbookv1.Metadata.Gems) != 1 {
+		fmt.Fprintln(os.Stderr, "No gems found for cookbook testbook")
+        }
+        if len(testbookv1.Metadata.Gems) != 1 || len(testbookv1.Metadata.Gems[0]) != 2 {
+ 		fmt.Fprintln(os.Stderr, "gem json not found for cookbook testbook")
+        }
+
+	// delete version
+	err = client.Cookbooks.Delete("testbook", "0.1.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.1.0:", err)
+	}
+	fmt.Printf("Delete testbook 0.1.0 %+v\n", err)
+
+	// delete version
+	err = client.Cookbooks.Delete("testbook", "0.2.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.2.0:", err)
+	}
+	fmt.Printf("Delete testbook 0.2.0 %+v\n", err)
+
+	// List cookbooks
+	cookList, err = client.Cookbooks.List()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue listing cookbooks:", err)
+	}
+	fmt.Printf("Final cookbook list %+v\n", cookList)
+
+	// list available versions of a cookbook
+	sampbookversions, err = client.Cookbooks.GetAvailableVersions("sampbook", "0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue getting cookbook versions for sampbook:", err)
+	}
+	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
+
+	// delete version
+	err = client.Cookbooks.Delete("testbook", "0.1.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.1.0:", err)
+	}
+	fmt.Printf("Delete testbook 0.1.0 %+v\n", err)
+
+	// delete version
+	err = client.Cookbooks.Delete("testbook", "0.2.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.2.0:", err)
+	}
+	fmt.Printf("Delete testbook 0.2.0 %+v\n", err)
+
+	// List cookbooks
+	cookList, err = client.Cookbooks.List()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue listing cookbooks:", err)
+	}
+	fmt.Printf("Final cookbook list %+v\n", cookList)
+
+	// list available versions of a cookbook
+	sampbookversions, err = client.Cookbooks.GetAvailableVersions("sampbook", "0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue getting cookbook versions for sampbook:", err)
+	}
+	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
+
 
 	// delete version
 	err = client.Cookbooks.Delete("testbook", "0.1.0")

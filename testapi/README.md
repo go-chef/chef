@@ -19,6 +19,6 @@ to access the bin directory and run any of the commands to run the api sample us
 the results. Running the bin commands by adding the -tags debug option will show more detail.
 
 ## Creating a client
-On the test image /go/src/chefapi_test/testapi/testapi.go has code that creates a client
+On the test image /go/src/github.com/go-chef/chef/testapi/testapi.go has code that creates a client
 for use by other api calls. For the purposes of testing it uses the pivotal user and key
 for all the tests.

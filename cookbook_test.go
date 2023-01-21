@@ -22,6 +22,8 @@ const _Version = "0.1.0"
 const _ChefVersion = ">= 15.0"
 const _Description = "Installs/Configures apache"
 
+var _Gems = [][]string{[]string{"foobar"}, []string{"aws-sdk-ec2", "~> 1.214.0"}}
+
 func TestGetVersion(t *testing.T) {
 	setup()
 	defer teardown()
@@ -297,7 +299,7 @@ func TestReadCookbookMeta2(t *testing.T) {
 		t.Error("unable to create to metadata.rb", err)
 	}
 	defer file.Close()
-	data := `{"name":"apache","description":"Installs/Configures apache","long_description":"","maintainer":"The Authors","maintainer_email":"you@example.com","license":"All Rights Reserved","platforms":{},"dependencies":{},"providing":null,"recipes":null,"version":"0.1.0","source_url":"https://github.com/\u003cinsert_org_here\u003e/apache","issues_url":"https://github.com/\u003cinsert_org_here\u003e/apache/issues","ChefVersion":"\u003e= 15.0","OhaiVersion":"","gems":null,"eager_load_libraries":false,"privacy":false}`
+	data := `{"name":"apache","description":"Installs/Configures apache","long_description":"","maintainer":"The Authors","maintainer_email":"you@example.com","license":"All Rights Reserved","platforms":{},"dependencies":{},"providing":null,"recipes":null,"version":"0.1.0","source_url":"https://github.com/\u003cinsert_org_here\u003e/apache","issues_url":"https://github.com/\u003cinsert_org_here\u003e/apache/issues","ChefVersion":"\u003e= 15.0","OhaiVersion":"","gems":[["foobar"], ["aws-sdk-ec2", "~> 1.214.0"]],"eager_load_libraries":false,"privacy":false}`
 	_, err = file.WriteString(data)
 	if err != nil {
 		t.Error("error in creating tmp file for metadata.json", err)
@@ -307,6 +309,7 @@ func TestReadCookbookMeta2(t *testing.T) {
 		t.Error("error in reading tmp file for metadata.json", err)
 	}
 	validateCookbookMetaData(md, t, "TestReadMetaData")
+	validateCookbookGem(md, t, "TestReadMetaData")
 	os.Remove("/tmp/metadata.json")
 }
 func validateCookbookMetaData(md CookbookMeta, t *testing.T, funcName string) {
@@ -319,5 +322,8 @@ func validateCookbookMetaData(md CookbookMeta, t *testing.T, funcName string) {
 	assert.Equal(t, _License, md.License)
 	assert.Equal(t, _Version, md.Version)
 	assert.Equal(t, _ChefVersion, md.ChefVersion)
+}
 
+func validateCookbookGem(md CookbookMeta, t *testing.T, funcName string) {
+	assert.Equal(t, _Gems, md.Gems)
 }

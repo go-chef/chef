@@ -74,9 +74,9 @@ type CookbookMeta struct {
 	IssueUrl           string                 `json:"issues_url"`
 	ChefVersion        string
 	OhaiVersion        string
-	Gems               []string `json:"gems"`
-	EagerLoadLibraries bool     `json:"eager_load_libraries"`
-	Privacy            bool     `json:"privacy"`
+	Gems               [][]string `json:"gems"`
+	EagerLoadLibraries bool       `json:"eager_load_libraries"`
+	Privacy            bool       `json:"privacy"`
 }
 
 // CookbookAccess represents the permissions on a Cookbook
@@ -298,7 +298,7 @@ func metaSourceUrlParser(s []string, m *CookbookMeta) error {
 	return nil
 }
 func metaGemParser(s []string, m *CookbookMeta) error {
-	m.Gems = append(m.Gems, StringParserForMeta(s))
+	m.Gems = append(m.Gems, s)
 	return nil
 }
 

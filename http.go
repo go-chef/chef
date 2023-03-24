@@ -99,6 +99,9 @@ type Config struct {
 
 	// Proxy function to be used when making requests
 	Proxy func(*http.Request) (*url.URL, error)
+
+	// Pointer to an HTTP Client to use instead of the default
+	Client *http.Client
 }
 
 /*
@@ -239,11 +242,16 @@ func NewClient(cfg *Config) (*Client, error) {
 			ClientName:            cfg.Name,
 			AuthenticationVersion: cfg.AuthenticationVersion,
 		},
-		client: &http.Client{
+		BaseURL: baseUrl,
+	}
+
+	if cfg.Client != nil {
+		c.client = cfg.Client
+	} else {
+		c.client = &http.Client{
 			Transport: tr,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
-		},
-		BaseURL: baseUrl,
+		}
 	}
 	c.IsWebuiKey = cfg.IsWebuiKey
 	c.ACLs = &ACLService{client: c}

@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -650,7 +651,15 @@ func TestNewClient(t *testing.T) {
 	c, err = NewClient(cfg)
 	assert.NotNil(t, err, "Build a client from a bad key string, bad key")
 
-	// TODO: Test the value of Authentication assisgned
+	// Verify using a supplied http client works
+	crt := retryablehttp.NewClient()
+	crt.RetryMax = 10
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	c, err = NewClient(cfg)
+	assert.Nil(t, err, "Build a client with a supplied http client")
+	assert.Equal(t, c.client, crt.StandardClient(), "Client uses a supplied http client")
+
+	// TODO: Test the value of Authentication assigned
 }
 
 func TestNewClientProxy(t *testing.T) {

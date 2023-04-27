@@ -22,6 +22,12 @@ func TestACLService_Get(t *testing.T) {
           "clients",
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "read": {
@@ -33,6 +39,12 @@ func TestACLService_Get(t *testing.T) {
           "clients",
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "update": {
@@ -43,6 +55,12 @@ func TestACLService_Get(t *testing.T) {
         "groups": [
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "delete": {
@@ -53,6 +71,12 @@ func TestACLService_Get(t *testing.T) {
         "groups": [
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "grant": {
@@ -62,6 +86,12 @@ func TestACLService_Get(t *testing.T) {
         ],
         "groups": [
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       }
     }
@@ -74,11 +104,11 @@ func TestACLService_Get(t *testing.T) {
 	}
 
 	want := ACL{
-		"create": ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"read":   ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"update": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"delete": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"grant":  ACLitems{Groups: []string{"admins"}, Actors: []string{"hostname", "pivotal"}},
+		"create": ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"read":   ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"update": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"delete": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"grant":  ACLitems{Groups: []string{"admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
 	}
 
 	if !reflect.DeepEqual(acl, want) {
@@ -94,7 +124,7 @@ func TestACLService_Put(t *testing.T) {
 		fmt.Fprintf(w, ``)
 	})
 
-	acl := NewACL("create", []string{"pivotal"}, []string{"admins"})
+	acl := NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"pivotal"}, []string{})
 	err := client.ACLs.Put("nodes", "hostname", "create", acl)
 	if err != nil {
 		t.Errorf("ACL.Put returned error: %v", err)

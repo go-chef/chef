@@ -7,6 +7,7 @@ import (
 )
 
 var cases = map[string]func(){
+	"acl":                 testapi.ACL,
 	"association":         testapi.Association,
 	"association_cleanup": testapi.AssociationCleanup,
 	"association_setup":   testapi.AssociationSetup,

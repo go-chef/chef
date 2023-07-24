@@ -1,6 +1,4 @@
-//
 // Test the go-chef/chef chef server api /required_recipe endpoint against a live server
-//
 package testapi
 
 import (

@@ -30,7 +30,8 @@ type Body struct {
 }
 
 // AuthConfig representing a client and a private key used for encryption
-//  This is embedded in the Client type
+//
+//	This is embedded in the Client type
 type AuthConfig struct {
 	PrivateKey            *rsa.PrivateKey
 	ClientName            string
@@ -109,8 +110,9 @@ An ErrorResponse reports one or more errors caused by an API request.
 Thanks to https://github.com/google/go-github
 
 The Response structure includes:
-        Status string
-	StatusCode int
+
+	        Status string
+		StatusCode int
 */
 type ErrorResponse struct {
 	Response *http.Response // HTTP response that caused this error
@@ -479,8 +481,8 @@ func extractErrorMsg(data []byte) string {
 	return ""
 }
 
-//  ChefError tries to unwind a chef client err return embedded in an error
-//  Unwinding allows easy access the StatusCode, StatusMethod and StatusURL functions
+// ChefError tries to unwind a chef client err return embedded in an error
+// Unwinding allows easy access the StatusCode, StatusMethod and StatusURL functions
 func ChefError(err error) (cerr *ErrorResponse, nerr error) {
 	if err == nil {
 		return cerr, err

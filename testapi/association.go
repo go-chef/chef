@@ -1,7 +1,5 @@
-//
 // Test the go-chef/chef chef server api /organization/:org/user and /organization/:org/association_requests
 // endpoints against a live server
-//
 package testapi
 
 import (

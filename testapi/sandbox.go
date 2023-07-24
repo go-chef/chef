@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-//random_data makes random byte slice for building junk sandbox data
+// random_data makes random byte slice for building junk sandbox data
 func random_data(size int) (b []byte) {
 	b = make([]byte, size)
 	rand.Read(b)

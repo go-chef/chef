@@ -73,7 +73,8 @@ func (c *PolicyService) List() (data PoliciesGetResponse, err error) {
 }
 
 // Get returns details for a specific policy
-//  GET /policies/name
+//
+//	GET /policies/name
 func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 	path := fmt.Sprintf("policies/%s", name)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
@@ -81,7 +82,8 @@ func (c *PolicyService) Get(name string) (data PolicyGetResponse, err error) {
 }
 
 // Delete deletes a policy
-//  DELETE /policies/name
+//
+//	DELETE /policies/name
 func (c *PolicyService) Delete(policyName string) (data PolicyGetResponse, err error) {
 	path := fmt.Sprintf("policies/%s", policyName)
 	err = c.client.magicRequestDecoder("DELETE", path, nil, &data)
@@ -89,7 +91,8 @@ func (c *PolicyService) Delete(policyName string) (data PolicyGetResponse, err e
 }
 
 // GetRevisionDetails returns details of a specific revision from Chef Server
-//  GET /policies/<policy-name>/revisions/<revision-id>
+//
+//	GET /policies/<policy-name>/revisions/<revision-id>
 func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
 	err = c.client.magicRequestDecoder("GET", path, nil, &data)
@@ -97,7 +100,8 @@ func (c *PolicyService) GetRevisionDetails(policyName string, revisionID string)
 }
 
 // DeleteRevision deletes a revisiom from a policy
-//  GET /policies/<policy-name>/revisions/<revision-id>
+//
+//	GET /policies/<policy-name>/revisions/<revision-id>
 func (c *PolicyService) DeleteRevision(policyName string, revisionID string) (data RevisionDetailsResponse, err error) {
 	path := fmt.Sprintf("policies/%s/revisions/%s", policyName, revisionID)
 	err = c.client.magicRequestDecoder("DELETE", path, nil, &data)

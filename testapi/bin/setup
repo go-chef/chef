@@ -1,1 +1,1 @@
-export GOPATH=/go
+export GOPATH=/go:/go/src/github.com/go-chef/chef/testapi

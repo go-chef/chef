@@ -1,6 +1,4 @@
-//
 // Test the go-chef/chef chef server api /users/USERNAME/keys endpoints against a live chef server
-//
 package testapi
 
 import (

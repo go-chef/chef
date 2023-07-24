@@ -1,6 +1,4 @@
-//
 // Test the go-chef/chef chef server api /organizations/*/cookbooks endpoints against a live chef server
-//
 package testapi
 
 import (
@@ -70,13 +68,13 @@ func Cookbook() {
 	}
 	fmt.Printf("Get all recipes %+v\n", allRecipes)
 
-        // Verify the returned cookbook  metadata
-        if len(testbookv1.Metadata.Gems) != 1 {
+	// Verify the returned cookbook  metadata
+	if len(testbookv1.Metadata.Gems) != 1 {
 		fmt.Fprintln(os.Stderr, "No gems found for cookbook testbook")
-        }
-        if len(testbookv1.Metadata.Gems) != 1 || len(testbookv1.Metadata.Gems[0]) != 2 {
- 		fmt.Fprintln(os.Stderr, "gem json not found for cookbook testbook")
-        }
+	}
+	if len(testbookv1.Metadata.Gems) != 1 || len(testbookv1.Metadata.Gems[0]) != 2 {
+		fmt.Fprintln(os.Stderr, "gem json not found for cookbook testbook")
+	}
 
 	// delete version
 	err = client.Cookbooks.Delete("testbook", "0.1.0")
@@ -106,62 +104,6 @@ func Cookbook() {
 	}
 	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
 
-	// delete version
-	err = client.Cookbooks.Delete("testbook", "0.1.0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.1.0:", err)
-	}
-	fmt.Printf("Delete testbook 0.1.0 %+v\n", err)
-
-	// delete version
-	err = client.Cookbooks.Delete("testbook", "0.2.0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.2.0:", err)
-	}
-	fmt.Printf("Delete testbook 0.2.0 %+v\n", err)
-
-	// List cookbooks
-	cookList, err = client.Cookbooks.List()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue listing cookbooks:", err)
-	}
-	fmt.Printf("Final cookbook list %+v\n", cookList)
-
-	// list available versions of a cookbook
-	sampbookversions, err = client.Cookbooks.GetAvailableVersions("sampbook", "0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue getting cookbook versions for sampbook:", err)
-	}
-	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
-
-
-	// delete version
-	err = client.Cookbooks.Delete("testbook", "0.1.0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.1.0:", err)
-	}
-	fmt.Printf("Delete testbook 0.1.0 %+v\n", err)
-
-	// delete version
-	err = client.Cookbooks.Delete("testbook", "0.2.0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue deleting testbook 0.2.0:", err)
-	}
-	fmt.Printf("Delete testbook 0.2.0 %+v\n", err)
-
-	// List cookbooks
-	cookList, err = client.Cookbooks.List()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue listing cookbooks:", err)
-	}
-	fmt.Printf("Final cookbook list %+v\n", cookList)
-
-	// list available versions of a cookbook
-	sampbookversions, err = client.Cookbooks.GetAvailableVersions("sampbook", "0")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Issue getting cookbook versions for sampbook:", err)
-	}
-	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
 }
 
 func addSampleCookbooks() (err error) {

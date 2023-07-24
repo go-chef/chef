@@ -2,8 +2,8 @@ package chef
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
-	"reflect"
 	"testing"
 )
 
@@ -22,6 +22,12 @@ func TestACLService_Get(t *testing.T) {
           "clients",
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "read": {
@@ -33,6 +39,12 @@ func TestACLService_Get(t *testing.T) {
           "clients",
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "update": {
@@ -43,6 +55,12 @@ func TestACLService_Get(t *testing.T) {
         "groups": [
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "delete": {
@@ -53,6 +71,12 @@ func TestACLService_Get(t *testing.T) {
         "groups": [
           "users",
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       },
       "grant": {
@@ -62,6 +86,12 @@ func TestACLService_Get(t *testing.T) {
         ],
         "groups": [
           "admins"
+        ],
+        "users": [
+          "pivotal"
+        ],
+        "clients": [
+          "hostname"
         ]
       }
     }
@@ -69,21 +99,59 @@ func TestACLService_Get(t *testing.T) {
 	})
 
 	acl, err := client.ACLs.Get("nodes", "hostname")
-	if err != nil {
-		t.Errorf("ACL.Get returned error: %v", err)
-	}
+	assert.Nil(t, err, "Get returned error")
 
 	want := ACL{
-		"create": ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"read":   ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"update": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"delete": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}},
-		"grant":  ACLitems{Groups: []string{"admins"}, Actors: []string{"hostname", "pivotal"}},
+		"create": ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"read":   ACLitems{Groups: []string{"clients", "users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"update": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"delete": ACLitems{Groups: []string{"users", "admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
+		"grant":  ACLitems{Groups: []string{"admins"}, Actors: []string{"hostname", "pivotal"}, Users: []string{"pivotal"}, Clients: []string{"hostname"}},
 	}
 
-	if !reflect.DeepEqual(acl, want) {
-		t.Errorf("ACL.Get returned %+v, want %+v", acl, want)
-	}
+	assert.Equal(t, want, acl, "Get Return")
+
+}
+
+func TestNewACL(t *testing.T) {
+
+}
+
+func TestACLAdminAccess(t *testing.T) {
+	acl := NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"pivotal", "user"}, []string{"client"})
+	err := ACLAdminAccess(acl)
+	assert.Nil(t, err, fmt.Sprintf("Pivotal missing %+v\n", acl))
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"pivotal", "folks", "other"}, []string{})
+	err = ACLAdminAccess(acl)
+	assert.Nil(t, err, fmt.Sprintf("Pivotal first %+v\n", acl))
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"other", "pivotal", "folks"}, []string{})
+	err = ACLAdminAccess(acl)
+	assert.Nil(t, err, fmt.Sprintf("Pivotal first %+v\n", acl))
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"other", "folks", "pivotal"}, []string{})
+	err = ACLAdminAccess(acl)
+	assert.Nil(t, err, fmt.Sprintf("Pivotal last %+v\n", acl))
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{}, []string{})
+	err = ACLAdminAccess(acl)
+	assert.NotNil(t, err, fmt.Sprintf("Pivotal not there %+v\n", acl))
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, nil, []string{})
+	err = ACLAdminAccess(acl)
+	assert.NotNil(t, err, fmt.Sprintf("Nil user array %+v\n", acl))
+
+	myacl := *NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"pivotal"}, []string{})
+	myacl["read"] = *NewACLItems([]string{"pivotal"}, []string{"admins"}, []string{"pivotal"}, []string{})
+	myacl["destroy"] = *NewACLItems([]string{"pivotal"}, []string{"admins"}, []string{"pivotal"}, []string{})
+	err = ACLAdminAccess(&myacl)
+	assert.Nil(t, err, fmt.Sprintf("mutliple types ok %+v\n", myacl))
+
+	myacl["read"] = *NewACLItems([]string{"pivotal"}, []string{"admins"}, []string{}, []string{})
+	err = ACLAdminAccess(&myacl)
+	assert.NotNil(t, err, fmt.Sprintf("mutliple types missing pivotal %+v\n", myacl))
+
 }
 
 func TestACLService_Put(t *testing.T) {
@@ -94,9 +162,11 @@ func TestACLService_Put(t *testing.T) {
 		fmt.Fprintf(w, ``)
 	})
 
-	acl := NewACL("create", []string{"pivotal"}, []string{"admins"})
+	acl := NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{"pivotal"}, []string{})
 	err := client.ACLs.Put("nodes", "hostname", "create", acl)
-	if err != nil {
-		t.Errorf("ACL.Put returned error: %v", err)
-	}
+	assert.Nil(t, err, "Put returned error")
+
+	acl = NewACL("create", []string{"pivotal"}, []string{"admins"}, []string{}, []string{})
+	err = client.ACLs.Put("nodes", "hostname", "create", acl)
+	assert.NotNil(t, err, "Put should return error, pivotal not in users list")
 }

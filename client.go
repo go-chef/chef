@@ -7,7 +7,6 @@ type ApiClientService struct {
 }
 
 // ApiClient represents the native Go version of the deserialized Client type
-//
 type ApiClient struct {
 	Name       string `json:"name"`
 	ClientName string `json:"clientname"`

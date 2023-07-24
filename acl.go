@@ -15,7 +15,8 @@ type ACLService struct {
 
 // ACL represents the native Go version of the deserialized ACL type
 // The key string will be one of:
-//  create, delete, grant, read, update
+//
+//	create, delete, grant, read, update
 //
 // indicating the type of access granted to an accessor in the ACLitems lists
 type ACL map[string]ACLitems
@@ -83,13 +84,15 @@ func ACLAdminAccess(acl *ACL) (err error) {
 //
 // Subkind can be one of: clients, containers, cookbook_artifacts, cookbooks, data, environments, groups, nodes, roles, policies, policy_groups.
 //
-//*
+// *
 // map[create:{Groups:[admins clients users] Actors:[] Users:[pivotal] Clients:[]}
-//     delete:{Groups:[admins users] Actors:[] Users:[pivotal] Clients:[]}
-//     grant:{Groups:[admins] Actors:[] Users:[pivotal] Clients:[]}
-//     read:{Groups:[admins clients users] Actors:[] Users:[pivotal] Clients:[]}
-//     update:{Groups:[admins users] Actors:[] Users:[pivotal] Clients:[]}]
-//*
+//
+//	delete:{Groups:[admins users] Actors:[] Users:[pivotal] Clients:[]}
+//	grant:{Groups:[admins] Actors:[] Users:[pivotal] Clients:[]}
+//	read:{Groups:[admins clients users] Actors:[] Users:[pivotal] Clients:[]}
+//	update:{Groups:[admins users] Actors:[] Users:[pivotal] Clients:[]}]
+//
+// *
 // Returns the ACL for multiple perms (create, read, update, delete, grant).
 // Older versions of the Chef server only include ACLs for "groups" and "actors."
 // If you're using a more recent version then the contents of "actors" is split up in "users" and "clients."

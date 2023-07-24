@@ -7,13 +7,12 @@ type ContainerService struct {
 }
 
 // Container represents the native Go version of the deserialized Container type
-//
 type Container struct {
 	ContainerName string `json:"containername"`
 	ContainerPath string `json:"containerpath"`
 }
 
-//NewContainerResult
+// NewContainerResult
 type ContainerCreateResult struct {
 	Uri string `json:"uri,omitempty"`
 }

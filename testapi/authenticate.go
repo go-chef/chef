@@ -1,6 +1,4 @@
-//
 // Test the go-chef/chef chef authenticate_user api endpoint against a live server
-//
 package testapi
 
 import (

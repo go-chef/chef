@@ -62,11 +62,12 @@ func (e *UserService) VerboseList(filters ...string) (userlist map[string]UserVe
 
 // Create Creates a User on the chef server
 // /users POST
-//  201 =  success
-//  400 - invalid  (missing display_name, email,( password or external) among other things)
-//        username must be lower case without spaces
-//  403 - unauthorized
-//  409 - already exists
+//
+//	201 =  success
+//	400 - invalid  (missing display_name, email,( password or external) among other things)
+//	      username must be lower case without spaces
+//	403 - unauthorized
+//	409 - already exists
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users
 func (e *UserService) Create(user User) (data UserResult, err error) {
@@ -81,10 +82,11 @@ func (e *UserService) Create(user User) (data UserResult, err error) {
 
 // Delete removes a user on the Chef server
 // /users/USERNAME DELETE
-//  200 - deleted
-//  401 - not authenticated
-//  403 - not authorized
-//  404 - not found
+//
+//	200 - deleted
+//	401 - not authenticated
+//	403 - not authorized
+//	404 - not found
 //
 // Chef API docs: https://docs.chef.io/api_chef_server.html#users-name
 func (e *UserService) Delete(name string) (err error) {

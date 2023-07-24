@@ -16,7 +16,7 @@ workflows:
 jobs:
   update_tag:
     docker:
-      - image: cimg/go:1.13
+      - image: cimg/go:1.20
     working_directory: ~/go/src/github.com/go-chef/chef
     steps:
       - add_ssh_keys:
@@ -28,7 +28,7 @@ jobs:
       - run: git push --tags origin
   tester:
     docker:
-      - image: cimg/go:1.13
+      - image: cimg/go:1.20
       #### TEMPLATE_NOTE: go expects specific checkout path representing url
       #### expecting it in the form of
       ####   /go/src/github.com/circleci/go-tool

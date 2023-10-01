@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -599,7 +598,7 @@ func TestSignatureContent(t *testing.T) {
 		"Method":                   "GET",
 		"Accept":                   "application/json",
 		"Hashed Path":              "FaX3AVJLlDDqHB7giEG/2EbBsR0=",
-		"X-Chef-Version":           ChefVersion,
+		"X-Chef-Version":           DefaultChefVersion,
 		"X-Ops-Server-API-Version": "1",
 		"X-Ops-Timestamp":          "1990-12-31T15:59:60-08:00",
 		"X-Ops-UserId":             ac.ClientName,
@@ -746,7 +745,7 @@ func TestDoText(t *testing.T) {
 	res, err := client.Do(request, &getdata)
 	assert.Nil(t, err, "text request err")
 	assert.Equal(t, pigText, getdata, "Plain text returned in string")
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	assert.Nil(t, err, "Read the response body")
 	assert.Equal(t, pigText, string(resData), "Plain text from the response body")
 }
@@ -767,7 +766,7 @@ func TestDoJSON(t *testing.T) {
 	res, err := client.Do(request, &getdata)
 	assert.Nil(t, err, "Json returned")
 	assert.Equal(t, getdata, wantdata, "Json returned data")
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	assert.Nil(t, err, "Read the response body")
 	assert.Equal(t, jsonText, string(resData), "Plain text from the response body")
 }
@@ -789,7 +788,7 @@ func TestDoDefaultParse(t *testing.T) {
 	res, err := client.Do(request, &getdata)
 	assert.Nil(t, err, "Default parse err")
 	assert.Equal(t, getdata, wantdata, "Default parse of json data")
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	assert.Nil(t, err, "Read the response body")
 	assert.Equal(t, jsonText, string(resData), "Default parse text from the response body")
 }
@@ -808,7 +807,7 @@ func TestDoNoResponseInterface(t *testing.T) {
 	request, _ := client.NewRequest("GET", "hashrocket", nil)
 	res, err := client.Do(request, nil)
 	assert.Nil(t, err, "No interface parse err")
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	assert.Nil(t, err, "Read the response body")
 	assert.Equal(t, jsonText, string(resData), "No Interface from the response body")
 }
@@ -828,11 +827,11 @@ func TestDoIOWriter(t *testing.T) {
 	request, _ := client.NewRequest("GET", "hashrocket", nil)
 	res, err := client.Do(request, buf)
 	assert.Nil(t, err, "No interface parse err")
-	byteData, err := ioutil.ReadAll(buf)
+	byteData, err := io.ReadAll(buf)
 	wantdata := string(byteData)
 	assert.Nil(t, err, "Readable IO stream")
 	assert.Equal(t, jsonText, wantdata, "IO writer parse")
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	assert.Nil(t, err, "Read the response body")
 	assert.Equal(t, jsonText, string(resData), "IO Writer from the response body")
 }

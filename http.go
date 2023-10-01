@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -21,8 +20,16 @@ import (
 	"time"
 )
 
-// ChefVersion that we pretend to emulate
-const ChefVersion = "14.0.0"
+// AuthVersion of server authentication
+type AuthVersion = string
+
+const (
+	AuthVersion10 AuthVersion = "1.0"
+	AuthVersion13 AuthVersion = "1.3"
+)
+
+// DefaultChefVersion that we pretend to emulate
+const DefaultChefVersion = "14.0.0"
 
 // Body wraps io.Reader and adds methods for calculating hashes and detecting content
 type Body struct {
@@ -35,7 +42,8 @@ type Body struct {
 type AuthConfig struct {
 	PrivateKey            *rsa.PrivateKey
 	ClientName            string
-	AuthenticationVersion string
+	AuthenticationVersion AuthVersion
+	ServerVersion         string
 }
 
 // Client is vessel for public methods used against the chef-server
@@ -93,7 +101,10 @@ type Config struct {
 	Timeout int
 
 	// Authentication Protocol Version
-	AuthenticationVersion string
+	AuthenticationVersion AuthVersion
+
+	// Chef Server Version
+	ServerVersion string
 
 	// When set to true corresponding API is using webui key in the request
 	IsWebuiKey bool
@@ -133,7 +144,7 @@ func (body *Body) Buffer() *bytes.Buffer {
 		return &b
 	}
 
-	b.ReadFrom(body.Reader)
+	_, _ = b.ReadFrom(body.Reader)
 	_, err := body.Reader.(io.Seeker).Seek(0, 0)
 	if err != nil {
 		log.Fatal(err)
@@ -208,17 +219,15 @@ func (r *ErrorResponse) StatusURL() *url.URL {
 // It is a simple constructor for the Client struct intended as a easy interface for issuing
 // signed requests
 func NewClient(cfg *Config) (*Client, error) {
-
-	// Verify Config settings
-	// Authentication version = 1.0 or 1.3, default to 1.0
-	cfg.VerifyVersion()
-
 	pk, err := PrivateKeyFromString([]byte(cfg.Key))
 	if err != nil {
 		return nil, err
 	}
 
-	baseUrl, _ := url.Parse(cfg.BaseURL)
+	baseUrl, err := url.Parse(cfg.BaseURL)
+	if err != nil {
+		return nil, err
+	}
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
 	if cfg.RootCAs != nil {
@@ -226,10 +235,10 @@ func NewClient(cfg *Config) (*Client, error) {
 	}
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
-		}).Dial,
+		}).DialContext,
 		TLSClientConfig:     tlsConfig,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
@@ -238,11 +247,20 @@ func NewClient(cfg *Config) (*Client, error) {
 		tr.Proxy = cfg.Proxy
 	}
 
+	if cfg.AuthenticationVersion == "" {
+		cfg.AuthenticationVersion = AuthVersion10
+	}
+
+	if cfg.ServerVersion == "" {
+		cfg.ServerVersion = DefaultChefVersion
+	}
+
 	c := &Client{
 		Auth: &AuthConfig{
 			PrivateKey:            pk,
 			ClientName:            cfg.Name,
 			AuthenticationVersion: cfg.AuthenticationVersion,
+			ServerVersion:         cfg.ServerVersion,
 		},
 		BaseURL: baseUrl,
 	}
@@ -288,10 +306,10 @@ func NewClientWithOutConfig(baseurl string) (*Client, error) {
 	baseUrl, _ := url.Parse(baseurl)
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
-		}).Dial,
+		}).DialContext,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
@@ -305,12 +323,6 @@ func NewClientWithOutConfig(baseurl string) (*Client, error) {
 	}
 
 	return c, nil
-}
-func (cfg *Config) VerifyVersion() (err error) {
-	if cfg.AuthenticationVersion != "1.3" {
-		cfg.AuthenticationVersion = "1.0"
-	}
-	return
 }
 
 // basicRequestDecoder performs a request on an endpoint, and decodes the response into the passed in Type
@@ -327,7 +339,9 @@ func (c *Client) basicRequestDecoder(method, path string, body io.Reader, v inte
 	debug("\n\nRequest: %+v \n", req)
 	res, err := c.Do(req, v)
 	if res != nil {
-		defer res.Body.Close()
+		defer func() {
+			_ = res.Body.Close()
+		}()
 	}
 	debug("Response: %+v\n", res)
 	if err != nil {
@@ -346,7 +360,9 @@ func (c *Client) magicRequestDecoder(method, path string, body io.Reader, v inte
 	debug("\n\nRequest: %+v \n", req)
 	res, err := c.Do(req, v)
 	if res != nil {
-		defer res.Body.Close()
+		defer func() {
+			_ = res.Body.Close()
+		}()
 	}
 	debug("Response: %+v\n", res)
 	if err != nil {
@@ -382,7 +398,7 @@ func (c *Client) NewRequest(method string, requestUrl string, body io.Reader) (*
 	}
 
 	// Calculate the body hash
-	if c.Auth.AuthenticationVersion == "1.3" {
+	if c.Auth.AuthenticationVersion == AuthVersion13 {
 		req.Header.Set("X-Ops-Content-Hash", myBody.Hash256())
 	} else {
 		req.Header.Set("X-Ops-Content-Hash", myBody.Hash())
@@ -446,7 +462,7 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 	errorResponse := &ErrorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	debug("Response Error Body: %+v\n", string(data))
 	if err == nil && data != nil {
 		json.Unmarshal(data, errorResponse)
@@ -511,16 +527,16 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	// add the body back to the response so
 	// subsequent calls to res.Body contain data
-	res.Body = ioutil.NopCloser(&resBuf)
+	res.Body = io.NopCloser(&resBuf)
 
 	// no response interface specified
 	if v == nil {
 		if debug_on() {
 			// show the response body as a string
-			resbody, _ := ioutil.ReadAll(resTee)
+			resbody, _ := io.ReadAll(resTee)
 			debug("Response body: %+v\n", string(resbody))
 		} else {
-			_, _ = ioutil.ReadAll(resTee)
+			_, _ = io.ReadAll(resTee)
 		}
 		debug("No response body requested\n")
 		return res, nil
@@ -538,11 +554,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		err = json.NewDecoder(resTee).Decode(v)
 		if debug_on() {
 			// show the response body as a string
-			resbody, _ := ioutil.ReadAll(&resBuf)
+			resbody, _ := io.ReadAll(&resBuf)
 			debug("Response body: %+v\n", string(resbody))
 			var repBuffer bytes.Buffer
 			repBuffer.Write(resbody)
-			res.Body = ioutil.NopCloser(&repBuffer)
+			res.Body = io.NopCloser(&repBuffer)
 		}
 		debug("Response body specifies content as JSON: %+v Err: %+v\n", v, err)
 		return res, err
@@ -550,7 +566,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	// response interface, v, is type string and the content is plain text
 	if _, ok := v.(*string); ok && hasTextContentType(res) {
-		resbody, _ := ioutil.ReadAll(resTee)
+		resbody, _ := io.ReadAll(resTee)
 		if err != nil {
 			return res, err
 		}
@@ -564,11 +580,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	err = json.NewDecoder(resTee).Decode(v)
 	if debug_on() {
 		// show the response body as a string
-		resbody, _ := ioutil.ReadAll(&resBuf)
+		resbody, _ := io.ReadAll(&resBuf)
 		debug("Response body: %+v\n", string(resbody))
 		var repBuffer bytes.Buffer
 		repBuffer.Write(resbody)
-		res.Body = ioutil.NopCloser(&repBuffer)
+		res.Body = io.NopCloser(&repBuffer)
 	}
 	debug("Response body defaulted to JSON parsing: %+v Err: %+v\n", v, err)
 	return res, err
@@ -586,8 +602,11 @@ func hasTextContentType(res *http.Response) bool {
 
 // SignRequest modifies headers of an http.Request
 func (ac AuthConfig) SignRequest(request *http.Request) error {
-	var request_headers []string
-	var endpoint string
+	var (
+		requestHeaders []string
+		endpoint       string
+	)
+
 	if request.URL.Path != "" {
 		endpoint = path.Clean(request.URL.Path)
 		request.URL.Path = endpoint
@@ -598,7 +617,7 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	vals := map[string]string{
 		"Method":                   request.Method,
 		"Accept":                   "application/json",
-		"X-Chef-Version":           ChefVersion,
+		"X-Chef-Version":           ac.ServerVersion,
 		"X-Ops-Server-API-Version": "1",
 		"X-Ops-Timestamp":          time.Now().UTC().Format(time.RFC3339),
 		"X-Ops-Content-Hash":       request.Header.Get("X-Ops-Content-Hash"),
@@ -606,18 +625,18 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		"X-Ops-Request-Source":     request.Header.Get("X-Ops-Request-Source"),
 	}
 
-	if ac.AuthenticationVersion == "1.3" {
+	if ac.AuthenticationVersion == AuthVersion13 {
 		vals["Path"] = endpoint
-		vals["X-Ops-Sign"] = "version=1.3"
-		request_headers = []string{"Method", "Path", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign", "X-Ops-Request-Source"}
+		vals["X-Ops-Sign"] = "version=" + AuthVersion13
+		requestHeaders = []string{"Method", "Path", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign", "X-Ops-Request-Source"}
 	} else {
 		vals["Hashed Path"] = HashStr(endpoint)
-		vals["X-Ops-Sign"] = "algorithm=sha1;version=1.0"
-		request_headers = []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign", "X-Ops-Request-Source"}
+		vals["X-Ops-Sign"] = "algorithm=sha1;version=" + AuthVersion10
+		requestHeaders = []string{"Method", "Accept", "X-Chef-Version", "X-Ops-Server-API-Version", "X-Ops-Timestamp", "X-Ops-UserId", "X-Ops-Sign", "X-Ops-Request-Source"}
 	}
 
 	// Add the vals to the request
-	for _, key := range request_headers {
+	for _, key := range requestHeaders {
 		request.Header.Set(key, vals[key])
 	}
 
@@ -626,7 +645,7 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// generate signed string of headers
 	var signature []byte
 	var err error
-	if ac.AuthenticationVersion == "1.3" {
+	if ac.AuthenticationVersion == AuthVersion13 {
 		signature, err = GenerateDigestSignature(ac.PrivateKey, content)
 		if err != nil {
 			fmt.Printf("Error from signature %+v\n", err)
@@ -643,9 +662,9 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 	// Signature is made up of n 60 length chunks
 	base64sig := Base64BlockEncode(signature, 60)
 
-	// roll over the auth slice and add the apropriate header
+	// roll over the auth slice and add the appropriate header
 	for index, value := range base64sig {
-		request.Header.Set(fmt.Sprintf("X-Ops-Authorization-%d", index+1), string(value))
+		request.Header.Set(fmt.Sprintf("X-Ops-Authorization-%d", index+1), value)
 	}
 
 	return nil
@@ -656,16 +675,16 @@ func (ac AuthConfig) SignatureContent(vals map[string]string) (content string) {
 	// chef-server doesn't support '//' in the Hash Path.
 
 	// The signature is very particular, the exact headers and the order they are included in the signature matter
-	var signed_headers []string
+	var signedHeaders []string
 
-	if ac.AuthenticationVersion == "1.3" {
-		signed_headers = []string{"Method", "Path", "X-Ops-Content-Hash", "X-Ops-Sign", "X-Ops-Timestamp",
+	if ac.AuthenticationVersion == AuthVersion13 {
+		signedHeaders = []string{"Method", "Path", "X-Ops-Content-Hash", "X-Ops-Sign", "X-Ops-Timestamp",
 			"X-Ops-UserId", "X-Ops-Server-API-Version"}
 	} else {
-		signed_headers = []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"}
+		signedHeaders = []string{"Method", "Hashed Path", "X-Ops-Content-Hash", "X-Ops-Timestamp", "X-Ops-UserId"}
 	}
 
-	for _, key := range signed_headers {
+	for _, key := range signedHeaders {
 		content += fmt.Sprintf("%s:%s\n", key, vals[key])
 	}
 
@@ -703,7 +722,9 @@ func (c *Client) MagicRequestResponseDecoderWithOutAuth(url, method string, body
 
 	res, err := c.Do(req, v)
 	if res != nil {
-		defer res.Body.Close()
+		defer func() {
+			_ = res.Body.Close()
+		}()
 	}
 	if err != nil {
 		return err

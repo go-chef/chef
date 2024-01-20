@@ -5,7 +5,6 @@
 package chef
 
 import (
-	"crypto/md5"
 	"fmt"
 	"io"
 	"os"
@@ -131,23 +130,4 @@ func (c *CookbookService) downloadCookbookFile(item CookbookItem, localPath stri
 		filePath,
 		item.Checksum,
 	)
-}
-
-func verifyMD5Checksum(filePath, checksum string) bool {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-
-	hash := md5.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		return false
-	}
-
-	md5String := fmt.Sprintf("%x", hash.Sum(nil))
-	if md5String == checksum {
-		return true
-	}
-	return false
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,8 +105,39 @@ type Cookbook struct {
 	Providers    []CookbookItem `json:"providers,omitempty"`
 	Resources    []CookbookItem `json:"resources,omitempty"`
 	RootFiles    []CookbookItem `json:"root_files,omitempty"`
+	otherFiles   []CookbookItem
 	Metadata     CookbookMeta   `json:"metadata,omitempty"`
 	Access       CookbookAccess `json:"access,omitempty"`
+}
+
+// Returns a slice of all items in the cookbook
+func (c *Cookbook) AllItems() []CookbookItem {
+	var allItems []CookbookItem
+
+	allItems = append(allItems, c.Files...)
+	allItems = append(allItems, c.Templates...)
+	allItems = append(allItems, c.Attributes...)
+	allItems = append(allItems, c.Recipes...)
+	allItems = append(allItems, c.Definitions...)
+	allItems = append(allItems, c.Libraries...)
+	allItems = append(allItems, c.Providers...)
+	allItems = append(allItems, c.Resources...)
+	allItems = append(allItems, c.RootFiles...)
+	allItems = append(allItems, c.otherFiles...)
+
+	return allItems
+}
+
+// Returns a map of all items in the cookbook keyed by the item checksum
+func (c *Cookbook) AllItemsByChecksum() map[string]CookbookItem {
+	itemMap := make(map[string]CookbookItem)
+	allItems := c.AllItems()
+
+	for _, item := range allItems {
+		itemMap[item.Checksum] = item
+	}
+
+	return itemMap
 }
 
 // String makes CookbookListResult implement the string result
@@ -198,7 +229,7 @@ func ReadMetaData(path string) (m CookbookMeta, err error) {
 		fileName = filepath.Join(path, metaRbName)
 
 	}
-	file, err := ioutil.ReadFile(fileName)
+	file, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -239,6 +270,204 @@ func clearWhiteSpace(s []string) (result []string) {
 		}
 	}
 	return result
+}
+
+func clearComments(s []string) (result []string) {
+	for _, i := range s {
+		if len(i) > 0 {
+			// once a comment is found, break out of line parsing
+			if i == "#" {
+				break
+			}
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
+func clearQuotesAndCommas(s []string) (result []string) {
+	for _, i := range s {
+		i = strings.Trim(i, ",")
+		i = trimQuotes(i)
+
+		result = append(result, i)
+	}
+	return result
+}
+
+// Creates a new Cookbook object from a given cookbook path.
+// Parses in the cookbook's metadata and all cookbook files, respecting ChefIgnore.
+func NewCookbookFromPath(cookbookPath string) (*Cookbook, error) {
+	cookbook := Cookbook{
+		JsonClass: "Chef::CookbookVersion",
+		ChefType:  "cookbook_version",
+	}
+
+	// Parse cookbook metadata
+	meta, err := ReadMetaData(cookbookPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update cookbook with metadata information
+	cookbook.Version = meta.Version
+	cookbook.CookbookName = meta.Name
+	cookbook.Name = fmt.Sprintf("%s-%s", cookbook.CookbookName, cookbook.Version)
+	cookbook.Metadata = meta
+
+	chefignore := NewChefignore(filepath.Join(cookbookPath, "chefignore"))
+
+	// Find all files in the cookbook and classify them.
+	// Allowed types:
+	//
+	// * Attributes (attributes/)
+	// * Definitions (definitions/)
+	// * Files (files/)
+	// * Libraries (libraries/)
+	// * Providers (providers/)
+	// * Recipes (recipes/)
+	// * Resources (resources/)
+	// * RootFiles (/)
+	// * Templates (templates/)
+	//
+	// Gather directories under the root of the cookbook and root files.
+	rootPaths, _ := filepath.Glob(filepath.Join(cookbookPath, "*"))
+	var rootDirs []string
+
+	for _, rootPath := range rootPaths {
+		fileInfo, err := os.Stat(rootPath)
+		if err != nil {
+			return nil, err
+		}
+
+		basePath := filepath.Base(rootPath)
+
+		if chefignore.Ignore(basePath) {
+			continue
+		}
+
+		if fileInfo.Mode().IsDir() {
+			rootDirs = append(rootDirs, basePath)
+		} else if fileInfo.Mode().IsRegular() {
+			checksum, err := fileMD5Checksum(rootPath)
+			if err != nil {
+				return nil, err
+			}
+
+			// Add the file as a root file
+			newItem := CookbookItem{
+				Path:        basePath,
+				Name:        "root_files/" + basePath,
+				Specificity: "default",
+				Checksum:    checksum,
+			}
+			cookbook.RootFiles = append(cookbook.RootFiles, newItem)
+		}
+	}
+
+	for _, rootDir := range rootDirs {
+		fullPath := filepath.Join(cookbookPath, rootDir)
+		items, err := walkCookbookDir(fullPath, &chefignore)
+
+		if err != nil {
+			return nil, err
+		}
+
+		switch rootDir {
+		case "attributes":
+			cookbook.Attributes = items
+		case "definitions":
+			cookbook.Definitions = items
+		case "files":
+			cookbook.Files = items
+		case "libraries":
+			cookbook.Libraries = items
+		case "providers":
+			cookbook.Providers = items
+		case "recipes":
+			cookbook.Recipes = items
+		case "resources":
+			cookbook.Resources = items
+		case "templates":
+			cookbook.Templates = items
+		default:
+			// Store other non-standard files for use with V2 manifests
+			cookbook.otherFiles = append(cookbook.otherFiles, items...)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &cookbook, nil
+}
+
+// Walks a cookbook directory to parse cookbook items from a given path
+func walkCookbookDir(dir string, chefignore *Chefignore) ([]CookbookItem, error) {
+	baseDir := filepath.Base(dir)
+	parentDir := filepath.Dir(dir)
+	var items []CookbookItem
+
+	err := filepath.WalkDir(dir, func(path string, file fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if file.Type().IsRegular() {
+			// Path should be relative to the target directory
+			chefPath, err := filepath.Rel(parentDir, path)
+			if err != nil {
+				return err
+			}
+
+			if chefignore.Ignore(chefPath) {
+				// Return early for ignored files
+				return nil
+			}
+
+			// Parse specificity from path if template or cookbook file
+			specificity := "default"
+			if baseDir == "templates" || baseDir == "files" {
+				splitPath := splitCookbookDir(chefPath)
+				if len(splitPath) == 2 {
+					specificity = "root_default"
+				} else if len(splitPath) > 2 {
+					specificity = splitPath[1]
+				}
+			}
+
+			itemChecksum, err := fileMD5Checksum(path)
+			if err != nil {
+				return err
+			}
+
+			newItem := CookbookItem{
+				Path:        chefPath,
+				Name:        baseDir + "/" + filepath.Base(path),
+				Specificity: specificity,
+				Checksum:    itemChecksum,
+			}
+			items = append(items, newItem)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// Splits the cookbook directory into a slice of strings by directory separator
+func splitCookbookDir(path string) []string {
+	dir, last := filepath.Split(path)
+	if dir == "" {
+		return []string{last}
+	}
+	return append(splitCookbookDir(filepath.Clean(dir)), last)
 }
 
 func NewMetaData(data string) (m CookbookMeta, err error) {
@@ -302,6 +531,10 @@ func metaSourceUrlParser(s []string, m *CookbookMeta) error {
 	return nil
 }
 func metaGemParser(s []string, m *CookbookMeta) error {
+	s = clearWhiteSpace(s)
+	s = clearComments(s)
+	s = clearQuotesAndCommas(s)
+
 	m.Gems = append(m.Gems, s)
 	return nil
 }
@@ -326,37 +559,51 @@ func metaPrivacyParser(s []string, m *CookbookMeta) error {
 }
 func metaSupportsParser(s []string, m *CookbookMeta) error {
 	s = clearWhiteSpace(s)
+	s = clearComments(s)
+
+	// Remove surrounding spaces, commas, and quotes from keys
+	k := strings.TrimSpace(s[0])
+	k = strings.Trim(k, ",")
+	k = trimQuotes(k)
+
 	switch len(s) {
 	case 1:
 		if s[0] != "os" {
-			m.Platforms[strings.TrimSpace(s[0])] = ">= 0.0.0"
+			m.Platforms[k] = ">= 0.0.0"
 		}
 	case 2:
-		m.Platforms[strings.TrimSpace(s[0])] = s[1]
+		m.Platforms[k] = s[1]
 	case 3:
 		v := trimQuotes(s[1] + " " + s[2])
-		m.Platforms[strings.TrimSpace(s[0])] = v
+		m.Platforms[k] = v
 
 	}
 	if len(s) > 3 {
 		return errors.New(`<<~OBSOLETED
-		The dependency specification syntax you are using is no longer valid. You may not
-		specify more than one version constraint for a particular cookbook.
+		The supports specification syntax you are using is no longer valid. You may not
+		specify more than one version constraint for a particular supported platform.
 			Consult https://docs.chef.io/config_rb_metadata/ for the updated syntax.`)
 	}
 	return nil
 }
 func metaDependsParser(s []string, m *CookbookMeta) error {
 	s = clearWhiteSpace(s)
+	s = clearComments(s)
+
+	// Remove surrounding spaces, commas, and quotes from keys
+	k := strings.TrimSpace(s[0])
+	k = strings.Trim(k, ",")
+	k = trimQuotes(k)
+
 	switch len(s) {
 	case 1:
-		m.Depends[strings.TrimSpace(s[0])] = ">= 0.0.0"
+		m.Depends[k] = ">= 0.0.0"
 	case 2:
-		m.Depends[strings.TrimSpace(s[0])] = s[1]
+		m.Depends[k] = s[1]
 
 	case 3:
 		v := trimQuotes(s[1] + " " + s[2])
-		m.Depends[strings.TrimSpace(s[0])] = v
+		m.Depends[k] = v
 
 	}
 	if len(s) > 3 {
@@ -385,6 +632,7 @@ func metaSupportsRubyParser(s []string, m *CookbookMeta) error {
 	}
 	return nil
 }
+
 func init() {
 	metaRegistry = make(map[string]metaFunc, 15)
 	metaRegistry["name"] = metaNameParser
@@ -404,5 +652,4 @@ func init() {
 	metaRegistry["chef_version"] = metaChefVersionParser
 	metaRegistry["ohai_version"] = metaOhaiVersionParser
 	metaRegistry["gem"] = metaGemParser
-
 }

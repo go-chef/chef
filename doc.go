@@ -15,7 +15,6 @@ This is an example code generating a new node on a Chef Infra Server:
 			import (
 				"encoding/json"
 				"fmt"
-				"io/ioutil"
 				"log"
 				"os"
 
@@ -24,7 +23,7 @@ This is an example code generating a new node on a Chef Infra Server:
 
 			func main() {
 				// read a client key
-				key, err := ioutil.ReadFile("key.pem")
+				key, err := os.ReadFile("key.pem")
 				if err != nil {
 					fmt.Println("Couldn't read key.pem:", err)
 					os.Exit(1)

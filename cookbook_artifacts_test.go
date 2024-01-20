@@ -2,8 +2,8 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ func TestListCBA(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(CBAListResponseFile)
+	file, err := os.ReadFile(CBAListResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,7 +53,7 @@ func TestGetCBA(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(CBAGetResponseFile)
+	file, err := os.ReadFile(CBAGetResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -87,7 +87,7 @@ func TestGetVersionCBA(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(CBAGetVersionResponseFile)
+	file, err := os.ReadFile(CBAGetVersionResponseFile)
 	if err != nil {
 		t.Error(err)
 	}

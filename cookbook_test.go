@@ -2,7 +2,6 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const _testdepsCookbookPath = "test/cookbooks/testdeps"
 const cookbookListResponseFile = "test/cookbooks_response.json"
 const cookbookResponseFile = "test/cookbook.json"
 const _IssueUrl = "https://github.com/<insert_org_here>/apache/issues"
@@ -22,13 +22,142 @@ const _Version = "0.1.0"
 const _ChefVersion = ">= 15.0"
 const _Description = "Installs/Configures apache"
 
-var _Gems = [][]string{[]string{"foobar"}, []string{"aws-sdk-ec2", "~> 1.214.0"}}
+var _Gems = [][]string{{"foobar"}, {"aws-sdk-ec2", "~> 1.214.0"}}
+
+func TestNewCookbookFromPath(t *testing.T) {
+	cookbook, err := NewCookbookFromPath(_testdepsCookbookPath)
+	assert.Nil(t, err)
+	assert.Equal(t, "testdeps", cookbook.CookbookName)
+	assert.Equal(
+		t,
+		[]CookbookItem{{
+			Name:        "attributes/default.rb",
+			Path:        "attributes/default.rb",
+			Checksum:    "553637b4fba46b5148f88d6dd3877e2f",
+			Specificity: "default",
+		}},
+		cookbook.Attributes,
+	)
+	assert.Equal(t, "cookbook_version", cookbook.ChefType)
+	assert.Nil(t, cookbook.Definitions)
+	assert.Nil(t, cookbook.Files)
+	assert.False(t, cookbook.Frozen)
+	assert.Equal(t, "Chef::CookbookVersion", cookbook.JsonClass)
+	assert.Nil(t, cookbook.Libraries)
+	assert.Equal(
+		t,
+		CookbookMeta{
+			Name:            "testdeps",
+			Version:         "0.1.0",
+			Description:     "Installs/Configures testdeps",
+			Maintainer:      "The Authors",
+			MaintainerEmail: "you@example.com",
+			License:         "All Rights Reserved",
+			Platforms: map[string]interface{}{
+				"redhat": ">= 0.0.0",
+				"ubuntu": ">= 20.04",
+			},
+			Depends: map[string]string{
+				"lvm":     "~> 6.1",
+				"vagrant": ">= 4.0.14",
+			},
+			ChefVersion:        ">= 18.0",
+			EagerLoadLibraries: false,
+			Gems: [][]string{
+				{"json", ">1.0.0"},
+			},
+		},
+		cookbook.Metadata,
+	)
+	assert.Equal(t, "testdeps-0.1.0", cookbook.Name)
+	assert.Nil(t, cookbook.Providers)
+	assert.Equal(
+		t,
+		[]CookbookItem{{
+			Name:        "recipes/default.rb",
+			Path:        "recipes/default.rb",
+			Checksum:    "4e15b1e5593d717685323c5dac86b99e",
+			Specificity: "default",
+		}},
+		cookbook.Recipes,
+	)
+	assert.Nil(t, cookbook.Resources)
+	assert.Equal(
+		t,
+		[]CookbookItem{{
+			Name:        "root_files/metadata.rb",
+			Path:        "metadata.rb",
+			Checksum:    "ba208d0ffc0dd8cbe9c71fb40fb207b2",
+			Specificity: "default",
+		}},
+		cookbook.RootFiles,
+	)
+	assert.Nil(t, cookbook.Templates)
+	assert.Equal(t, "0.1.0", cookbook.Version)
+	assert.Equal(t, "testdeps", cookbook.CookbookName)
+}
+
+func TestCookbookAllItems(t *testing.T) {
+	cookbook, _ := NewCookbookFromPath(_testdepsCookbookPath)
+
+	allItems := cookbook.AllItems()
+
+	assert.Len(t, allItems, 3)
+	assert.Contains(t, allItems, CookbookItem{
+		Name:        "root_files/metadata.rb",
+		Path:        "metadata.rb",
+		Checksum:    "ba208d0ffc0dd8cbe9c71fb40fb207b2",
+		Specificity: "default",
+	})
+
+	assert.Contains(t, allItems, CookbookItem{
+		Name:        "recipes/default.rb",
+		Path:        "recipes/default.rb",
+		Checksum:    "4e15b1e5593d717685323c5dac86b99e",
+		Specificity: "default",
+	})
+
+	assert.Contains(t, allItems, CookbookItem{
+		Name:        "attributes/default.rb",
+		Path:        "attributes/default.rb",
+		Checksum:    "553637b4fba46b5148f88d6dd3877e2f",
+		Specificity: "default",
+	})
+}
+
+func TestCookbookAllItemsByChecksum(t *testing.T) {
+	cookbook, _ := NewCookbookFromPath(_testdepsCookbookPath)
+
+	allItemsByChecksum := cookbook.AllItemsByChecksum()
+
+	assert.Equal(t,
+		map[string]CookbookItem{
+			"ba208d0ffc0dd8cbe9c71fb40fb207b2": {
+				Name:        "root_files/metadata.rb",
+				Path:        "metadata.rb",
+				Checksum:    "ba208d0ffc0dd8cbe9c71fb40fb207b2",
+				Specificity: "default",
+			},
+			"4e15b1e5593d717685323c5dac86b99e": {
+				Name:        "recipes/default.rb",
+				Path:        "recipes/default.rb",
+				Checksum:    "4e15b1e5593d717685323c5dac86b99e",
+				Specificity: "default",
+			},
+			"553637b4fba46b5148f88d6dd3877e2f": {
+				Name:        "attributes/default.rb",
+				Path:        "attributes/default.rb",
+				Checksum:    "553637b4fba46b5148f88d6dd3877e2f",
+				Specificity: "default",
+			},
+		}, allItemsByChecksum)
+}
 
 func TestGetVersion(t *testing.T) {
 	setup()
 	defer teardown()
 
-	cbookResp, err := ioutil.ReadFile(cookbookResponseFile)
+	cbookResp, err := os.ReadFile(cookbookResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +212,7 @@ func TestCookbookList(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(cookbookListResponseFile)
+	file, err := os.ReadFile(cookbookListResponseFile)
 	if err != nil {
 		t.Error(err)
 	}

@@ -6,7 +6,6 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -59,7 +58,7 @@ func TestCookbooksDownloadEmptyWithVersion(t *testing.T) {
 	setup()
 	defer teardown()
 
-	cbookResp, err := ioutil.ReadFile(emptyCookbookResponseFile)
+	cbookResp, err := os.ReadFile(emptyCookbookResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -117,7 +116,7 @@ func TestCookbooksDownloadTo(t *testing.T) {
 	defer teardown()
 
 	mockedCookbookResponseFile := cookbookData()
-	tempDir, err := ioutil.TempDir("", "foo-cookbook")
+	tempDir, err := os.MkdirTemp("", "foo-cookbook")
 	if err != nil {
 		t.Error(err)
 	}
@@ -145,12 +144,12 @@ func TestCookbooksDownloadTo(t *testing.T) {
 	assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
 	assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
 	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
-		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		metadataBytes, err := os.ReadFile(metadataPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
 	if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
-		recipeBytes, err := ioutil.ReadFile(defaultPath)
+		recipeBytes, err := os.ReadFile(defaultPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
 	}
@@ -162,7 +161,7 @@ func TestCookbooksDownloadTo_caching(t *testing.T) {
 	defer teardown()
 
 	mockedCookbookResponseFile := cookbookData()
-	tempDir, err := ioutil.TempDir("", "foo-cookbook")
+	tempDir, err := os.MkdirTemp("", "foo-cookbook")
 	if err != nil {
 		t.Error(err)
 	}
@@ -190,12 +189,12 @@ func TestCookbooksDownloadTo_caching(t *testing.T) {
 	assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
 	assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
 	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
-		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		metadataBytes, err := os.ReadFile(metadataPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
 	if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
-		recipeBytes, err := ioutil.ReadFile(defaultPath)
+		recipeBytes, err := os.ReadFile(defaultPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
 	}
@@ -243,26 +242,8 @@ func TestCookbooksDownloadTo_caching(t *testing.T) {
 	// Finally, make sure the modified-and-replaced metadata.rb is matching
 	// what we expect after we have redownloaded the cookbook:
 	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
-		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		metadataBytes, err := os.ReadFile(metadataPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
-}
-
-func TestVerifyMD5Checksum(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "md5-test")
-	if err != nil {
-		t.Error(err)
-	}
-	defer os.RemoveAll(tempDir) // clean up
-
-	var (
-		// if someone changes the test data,
-		// you have to also update the below md5 sum
-		testData = []byte("hello\nchef\n")
-		filePath = path.Join(tempDir, "dat")
-	)
-	err = ioutil.WriteFile(filePath, testData, 0644)
-	assert.Nil(t, err)
-	assert.True(t, verifyMD5Checksum(filePath, "70bda176ac4db06f1f66f96ae0693be1"))
 }

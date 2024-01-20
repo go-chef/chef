@@ -2,7 +2,7 @@ package chef
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -46,7 +46,7 @@ func configKeyParser(s []string, path string, c *ConfigRb) error {
 	size := len(data)
 	if size > 0 {
 		keyPath := filepath.Join(path, data[size-1])
-		keyData, err := ioutil.ReadFile(keyPath)
+		keyData, err := os.ReadFile(keyPath)
 		if err != nil {
 			return err
 		}

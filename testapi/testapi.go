@@ -4,7 +4,6 @@ package testapi
 import (
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -53,7 +52,7 @@ func buildClient(user string, keyfile string, baseurl string, skipssl bool, vers
 
 // clientKey reads the pem file containing the credentials needed to use the chef client.
 func clientKey(filepath string) string {
-	key, err := ioutil.ReadFile(filepath)
+	key, err := os.ReadFile(filepath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read key.pem: %+v, %+v", filepath, err)
 		os.Exit(1)
@@ -70,7 +69,7 @@ func chefCerts() *x509.CertPool {
 		certPool = x509.NewCertPool()
 	}
 	// Read in the cert file
-	certs, err := ioutil.ReadFile(localCertFile)
+	certs, err := os.ReadFile(localCertFile)
 	if err != nil {
 		log.Fatalf("Failed to append %q to RootCAs: %v", localCertFile, err)
 	}

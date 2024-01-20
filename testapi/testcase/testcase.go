@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/go-chef/chef/testapi"
+	"os"
 )
 
 var cases = map[string]func(){

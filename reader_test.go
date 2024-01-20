@@ -2,7 +2,6 @@ package chef
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -14,7 +13,7 @@ type TestEncoder struct {
 }
 
 func TestEncoderJSONReader(t *testing.T) {
-	f, err := ioutil.TempFile("test/", "reader")
+	f, err := os.CreateTemp("test/", "reader")
 	if err != nil {
 		t.Error(err)
 	}

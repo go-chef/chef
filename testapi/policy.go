@@ -3,8 +3,9 @@ package testapi
 
 import (
 	"fmt"
-	"github.com/go-chef/chef"
 	"os"
+
+	"github.com/go-chef/chef"
 )
 
 // policy exercise the chef server api
@@ -65,7 +66,7 @@ func firstPolicy(policyList chef.PoliciesGetResponse) (string, chef.Policy) {
 }
 
 func firstRevision(policy chef.Policy) string {
-	for key, _ := range policy.Revisions {
+	for key := range policy.Revisions {
 		return key
 	}
 	return ""

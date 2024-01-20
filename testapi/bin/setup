@@ -1,1 +1,4 @@
 export GOPATH=/go:/go/src/github.com/go-chef/chef/testapi
+
+# Ensure we can locate the chef module
+cd /go/src/github.com/go-chef/chef

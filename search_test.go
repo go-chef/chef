@@ -3,8 +3,8 @@ package chef
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,10 +132,10 @@ func TestSearch_PartialExecMultipleCalls(t *testing.T) {
 	setup()
 	defer teardown()
 
-	searchResponseOne, err := ioutil.ReadFile(partialSearchResponseFile_1)
+	searchResponseOne, err := os.ReadFile(partialSearchResponseFile_1)
 	assert.Nil(t, err, "Read response file 1 failed")
 
-	searchResponseTwo, err := ioutil.ReadFile(partialSearchResponseFile_2)
+	searchResponseTwo, err := os.ReadFile(partialSearchResponseFile_2)
 	assert.Nil(t, err, "Read response file 2 failed")
 
 	mux.HandleFunc("/search/node", func(w http.ResponseWriter, r *http.Request) {

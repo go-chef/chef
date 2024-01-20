@@ -1,0 +1,148 @@
+{
+  "all_files": [
+    {
+      "name": "templates/template.txt.erb",
+      "path": "templates/default/template.txt.erb",
+      "checksum": "9fa6c96ead0d25afb74a7269c581f6bf",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/templates/default/template.txt.erb"
+    },
+    {
+      "name": "templates/template.txt.erb",
+      "path": "templates/windows/template.txt.erb",
+      "checksum": "65599b78af4e8a01eb9cbe4ef4bfee18",
+      "specificity": "windows",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/templates/windows/template.txt.erb"
+    },
+    {
+      "name": "attributes/default.rb",
+      "path": "attributes/default.rb",
+      "checksum": "c286b84ab6605c49692fcad18e92ac63",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/attributes/default.rb"
+    },
+    {
+      "name": "root_files/metadata.rb",
+      "path": "metadata.rb",
+      "checksum": "d35110e2a5617dccfecd5e1c24a73181",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/metadata.rb"
+    },
+    {
+      "name": "other/otherfile.txt",
+      "path": "other/otherfile.txt",
+      "checksum": "e7ae50f38eb44cf66440397beffa072f",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/other/otherfile.txt"
+    },
+    {
+      "name": "definitions/write_a_file.rb",
+      "path": "definitions/write_a_file.rb",
+      "checksum": "7fb4867a82c2463045a21298d4759944",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/definitions/write_a_file.rb"
+    },
+    {
+      "name": "providers/provider_resource.rb",
+      "path": "providers/provider_resource.rb",
+      "checksum": "92f62e7f709d8367dc184a0270938711",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/providers/provider_resource.rb"
+    },
+    {
+      "name": "recipes/default.rb",
+      "path": "recipes/default.rb",
+      "checksum": "37b0d4fee115fbdcc48941d49707d924",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/recipes/default.rb"
+    },
+    {
+      "name": "recipes/test.rb",
+      "path": "recipes/test.rb",
+      "checksum": "da333f01b6f5896d3b73be14be36acff",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/recipes/test.rb"
+    },
+    {
+      "name": "libraries/testlib.rb",
+      "path": "libraries/testlib.rb",
+      "checksum": "6999b70bad7055c842018196a319ad44",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/libraries/testlib.rb"
+    },
+    {
+      "name": "resources/a_resource.rb",
+      "path": "resources/a_resource.rb",
+      "checksum": "ca753be0661ba6217b8f4c544ccb37ae",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/resources/a_resource.rb"
+    },
+    {
+      "name": "resources/provider_resource.rb",
+      "path": "resources/provider_resource.rb",
+      "checksum": "ddd4a4df29e395bc2e20b9c93fdcbf07",
+      "specificity": "default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/resources/provider_resource.rb"
+    },
+    {
+      "name": "files/test.txt",
+      "path": "files/test.txt",
+      "checksum": "3047c9959bd06478aba8574a8716adba",
+      "specificity": "root_default",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/files/test.txt"
+    },
+    {
+      "name": "files/test.txt",
+      "path": "files/windows/test.txt",
+      "checksum": "2b38ee6807f71ac34103818dc8a1d641",
+      "specificity": "windows",
+      "full_path": "/home/matty/go/chef/test/cookbooks/testcomplex/files/windows/test.txt"
+    }
+  ],
+  "metadata": {
+    "name": "testcomplex",
+    "description": "Installs/Configures testcomplex",
+    "long_description": "",
+    "maintainer": "The Authors",
+    "maintainer_email": "you@example.com",
+    "license": "All Rights Reserved",
+    "platforms": {
+      "ubuntu": ">= 20.04",
+      "redhat": ">= 0.0.0"
+    },
+    "dependencies": {
+      "lvm": "~> 6.1",
+      "vagrant": ">= 4.0.14"
+    },
+    "providing": {
+      "testcomplex": ">= 0.0.0",
+      "testcomplex::test": ">= 0.0.0"
+    },
+    "recipes": {
+      "testcomplex": "",
+      "testcomplex::test": ""
+    },
+    "version": "1.2.3",
+    "source_url": "",
+    "issues_url": "",
+    "privacy": false,
+    "chef_versions": [
+      [
+        ">= 18.0"
+      ]
+    ],
+    "ohai_versions": [],
+    "gems": [
+      [
+        "json",
+        ">1.0.0"
+      ]
+    ],
+    "eager_load_libraries": true
+  },
+  "version": "1.2.3",
+  "name": "testcomplex-1.2.3",
+  "cookbook_name": "testcomplex",
+  "chef_type": "cookbook_version",
+  "json_class": "Chef::CookbookVersion"
+}

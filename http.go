@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -23,6 +22,9 @@ import (
 
 // ChefVersion that we pretend to emulate
 const ChefVersion = "14.0.0"
+
+// Default to Server API version 1. Current Chef server API versions include 0, 1, and 2.
+const DefaultServerApiVersion = "1"
 
 // Body wraps io.Reader and adds methods for calculating hashes and detecting content
 type Body struct {
@@ -36,6 +38,7 @@ type AuthConfig struct {
 	PrivateKey            *rsa.PrivateKey
 	ClientName            string
 	AuthenticationVersion string
+	ServerApiVersion      string
 }
 
 // Client is vessel for public methods used against the chef-server
@@ -91,6 +94,9 @@ type Config struct {
 
 	// Time to wait in seconds before giving up on a request to the server
 	Timeout int
+
+	// Server API Version
+	ServerApiVersion string
 
 	// Authentication Protocol Version
 	AuthenticationVersion string
@@ -238,11 +244,16 @@ func NewClient(cfg *Config) (*Client, error) {
 		tr.Proxy = cfg.Proxy
 	}
 
+	if cfg.ServerApiVersion == "" {
+		cfg.ServerApiVersion = DefaultServerApiVersion
+	}
+
 	c := &Client{
 		Auth: &AuthConfig{
 			PrivateKey:            pk,
 			ClientName:            cfg.Name,
 			AuthenticationVersion: cfg.AuthenticationVersion,
+			ServerApiVersion:      cfg.ServerApiVersion,
 		},
 		BaseURL: baseUrl,
 	}
@@ -446,7 +457,7 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 	errorResponse := &ErrorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	debug("Response Error Body: %+v\n", string(data))
 	if err == nil && data != nil {
 		json.Unmarshal(data, errorResponse)
@@ -511,16 +522,16 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	// add the body back to the response so
 	// subsequent calls to res.Body contain data
-	res.Body = ioutil.NopCloser(&resBuf)
+	res.Body = io.NopCloser(&resBuf)
 
 	// no response interface specified
 	if v == nil {
 		if debug_on() {
 			// show the response body as a string
-			resbody, _ := ioutil.ReadAll(resTee)
+			resbody, _ := io.ReadAll(resTee)
 			debug("Response body: %+v\n", string(resbody))
 		} else {
-			_, _ = ioutil.ReadAll(resTee)
+			_, _ = io.ReadAll(resTee)
 		}
 		debug("No response body requested\n")
 		return res, nil
@@ -538,11 +549,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		err = json.NewDecoder(resTee).Decode(v)
 		if debug_on() {
 			// show the response body as a string
-			resbody, _ := ioutil.ReadAll(&resBuf)
+			resbody, _ := io.ReadAll(&resBuf)
 			debug("Response body: %+v\n", string(resbody))
 			var repBuffer bytes.Buffer
 			repBuffer.Write(resbody)
-			res.Body = ioutil.NopCloser(&repBuffer)
+			res.Body = io.NopCloser(&repBuffer)
 		}
 		debug("Response body specifies content as JSON: %+v Err: %+v\n", v, err)
 		return res, err
@@ -550,7 +561,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	// response interface, v, is type string and the content is plain text
 	if _, ok := v.(*string); ok && hasTextContentType(res) {
-		resbody, _ := ioutil.ReadAll(resTee)
+		resbody, _ := io.ReadAll(resTee)
 		if err != nil {
 			return res, err
 		}
@@ -564,11 +575,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	err = json.NewDecoder(resTee).Decode(v)
 	if debug_on() {
 		// show the response body as a string
-		resbody, _ := ioutil.ReadAll(&resBuf)
+		resbody, _ := io.ReadAll(&resBuf)
 		debug("Response body: %+v\n", string(resbody))
 		var repBuffer bytes.Buffer
 		repBuffer.Write(resbody)
-		res.Body = ioutil.NopCloser(&repBuffer)
+		res.Body = io.NopCloser(&repBuffer)
 	}
 	debug("Response body defaulted to JSON parsing: %+v Err: %+v\n", v, err)
 	return res, err
@@ -599,7 +610,7 @@ func (ac AuthConfig) SignRequest(request *http.Request) error {
 		"Method":                   request.Method,
 		"Accept":                   "application/json",
 		"X-Chef-Version":           ChefVersion,
-		"X-Ops-Server-API-Version": "1",
+		"X-Ops-Server-API-Version": ac.ServerApiVersion,
 		"X-Ops-Timestamp":          time.Now().UTC().Format(time.RFC3339),
 		"X-Ops-Content-Hash":       request.Header.Get("X-Ops-Content-Hash"),
 		"X-Ops-UserId":             ac.ClientName,

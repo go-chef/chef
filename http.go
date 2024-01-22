@@ -220,24 +220,6 @@ func NewClient(cfg *Config) (*Client, error) {
 
 	baseUrl, _ := url.Parse(cfg.BaseURL)
 
-	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
-	if cfg.RootCAs != nil {
-		tlsConfig.RootCAs = cfg.RootCAs
-	}
-	tr := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSClientConfig:     tlsConfig,
-		TLSHandshakeTimeout: 10 * time.Second,
-	}
-
-	if cfg.Proxy != nil {
-		tr.Proxy = cfg.Proxy
-	}
-
 	c := &Client{
 		Auth: &AuthConfig{
 			PrivateKey:            pk,
@@ -250,6 +232,24 @@ func NewClient(cfg *Config) (*Client, error) {
 	if cfg.Client != nil {
 		c.client = cfg.Client
 	} else {
+		tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
+		if cfg.RootCAs != nil {
+			tlsConfig.RootCAs = cfg.RootCAs
+		}
+		tr := &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSClientConfig:     tlsConfig,
+			TLSHandshakeTimeout: 10 * time.Second,
+		}
+
+		if cfg.Proxy != nil {
+			tr.Proxy = cfg.Proxy
+		}
+
 		c.client = &http.Client{
 			Transport: tr,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,

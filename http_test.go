@@ -659,7 +659,36 @@ func TestNewClient(t *testing.T) {
 	assert.Nil(t, err, "Build a client with a supplied http client")
 	assert.Equal(t, c.client, crt.StandardClient(), "Client uses a supplied http client")
 
+	// Verify using a supplied RoundTripper factory works
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, RoundTripper: newTestRt}
+	c, err = NewClient(cfg)
+	assert.Nil(t, err, "Build a client with a supplied RoundTripper factory")
+	assert.IsType(t, &http.Client{}, c.client, "The inner client should be an *http.Client")
+	rt, correct_type := c.client.Transport.(*testRt)
+	assert.True(t, correct_type, "Client Transport should be a *testRt")
+	assert.IsType(t, &http.Transport{}, rt.next, "Client Transport should wrap a *http.Transport")
+
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, Client: crt.StandardClient(), RoundTripper: newTestRt}
+	c, err = NewClient(cfg)
+	assert.NotNil(t, err, "Build a client with both Client and RoundTripper")
+
 	// TODO: Test the value of Authentication assigned
+}
+
+type testRt struct {
+	req_count int
+	err_count int
+	next      http.RoundTripper
+}
+
+func newTestRt(next http.RoundTripper) http.RoundTripper { return &testRt{next: next} }
+func (this *testRt) RoundTrip(req *http.Request) (*http.Response, error) {
+	this.req_count++
+	res, err := this.next.RoundTrip(req)
+	if err != nil {
+		this.err_count++
+	}
+	return res, err
 }
 
 func TestNewClientProxy(t *testing.T) {

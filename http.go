@@ -103,6 +103,10 @@ type Config struct {
 
 	// Pointer to an HTTP Client to use instead of the default
 	Client *http.Client
+
+	// A function which wraps an existing RoundTripper.
+	// Cannot be used if Client is set.
+	RoundTripper func(http.RoundTripper) http.RoundTripper
 }
 
 /*
@@ -230,6 +234,9 @@ func NewClient(cfg *Config) (*Client, error) {
 	}
 
 	if cfg.Client != nil {
+		if cfg.RoundTripper != nil {
+			return nil, errors.New("NewClient: cannot set both Client and RoundTripper")
+		}
 		c.client = cfg.Client
 	} else {
 		tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
@@ -250,8 +257,13 @@ func NewClient(cfg *Config) (*Client, error) {
 			tr.Proxy = cfg.Proxy
 		}
 
+		var transport http.RoundTripper = tr
+		if cfg.RoundTripper != nil {
+			transport = cfg.RoundTripper(tr)
+		}
+
 		c.client = &http.Client{
-			Transport: tr,
+			Transport: transport,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		}
 	}

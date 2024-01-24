@@ -1,0 +1,1 @@
+This is a file outside of the usual structure.

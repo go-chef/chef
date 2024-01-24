@@ -6,6 +6,8 @@ describe command('/go/src/testapi/bin/cookbook') do
   its('stderr') { should_not match(/testbook/) }
   its('stderr') { should_not match(/sampbook/) }
   its('stderr') { should_not match(/Issue loading/) }
+  its('stderr') { should_not match(/Issue uploading/) }
+  its('stderr') { should_not match(/Issue finding/) }
   its('stdout') { should match(%r{^List initial cookbooks (?=.*sampbook => https://testhost/organizations/test/cookbooks/sampbook\n\s*\* 0.2.0)(?=.*testbook => https://testhost/organizations/test/cookbooks/testbook\n\s*\* 0.2.0).*EndInitialList}m) }
   # output from get cookbook is odd
   its('stdout') { should match(/^Get cookbook testbook/) }
@@ -16,4 +18,8 @@ describe command('/go/src/testapi/bin/cookbook') do
   its('stdout') { should match(/^Delete testbook 0.1.0 <nil>/) }
   its('stdout') { should match(%r{^Final cookbook list sampbook => https://testhost/organizations/test/cookbooks/sampbook\n\s*\* 0.2.0}m) }
   its('stdout') { should match(%r{^Final cookbook versions sampbook sampbook => https://testhost/organizations/test/cookbooks/sampbook\n\s*\* 0.2.0\n\s*\* 0.1.0}m) }
+  its('stdout') { should match(/Uploaded cookbook name: testdeps-0\.1\.0/) }
+  its('stdout') { should match(/^Delete testdeps 0.1.0 <nil>/) }
+  its('stdout') { should match(/Uploaded V2 cookbook name: testcomplex-1\.2\.3/) }
+  its('stdout') { should match(/^Delete testcomplex 1.2.3 <nil>/) }
 end

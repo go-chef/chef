@@ -104,6 +104,46 @@ func Cookbook() {
 	}
 	fmt.Printf("Final cookbook versions sampbook %+v\n", sampbookversions)
 
+	// Upload a cookbook from a file path
+	_, err = client.Cookbooks.UploadFrom("/go/src/github.com/go-chef/chef/test/cookbooks/testdeps", false, false)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue uploading cookbook testdeps to Chef server:", err)
+	}
+
+	uploadedCookbook, err := client.Cookbooks.GetVersion("testdeps", "0.1.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue finding uploaded cookbook testdeps on Chef server:", err)
+	}
+
+	fmt.Printf("Uploaded cookbook name: %s\n", uploadedCookbook.Name)
+
+	// Test API V2 upload
+	client.Auth.ServerApiVersion = "2"
+
+	_, err = client.Cookbooks.UploadFrom("/go/src/github.com/go-chef/chef/test/cookbooks/testcomplex", false, false)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue uploading cookbook testcomplex to Chef server with V2 API:", err)
+	}
+
+	uploadedCookbook, err = client.Cookbooks.GetVersion("testcomplex", "1.2.3")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue finding uploaded cookbook testcomplex on Chef server:", err)
+	}
+
+	fmt.Printf("Uploaded V2 cookbook name: %s\n", uploadedCookbook.Name)
+
+	// Cleanup cookbook
+	err = client.Cookbooks.Delete("testdeps", "0.1.0")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testdeps 0.1.0:", err)
+	}
+	fmt.Printf("Delete testdeps 0.1.0 %+v\n", err)
+
+	err = client.Cookbooks.Delete("testcomplex", "1.2.3")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Issue deleting testcomplex 1.2.3:", err)
+	}
+	fmt.Printf("Delete testcomplex 1.2.3 %+v\n", err)
 }
 
 func addSampleCookbooks() (err error) {

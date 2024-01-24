@@ -56,8 +56,8 @@ func TestAssociationMethods(t *testing.T) {
 		t.Errorf("Associations.List returned error: %v", err)
 	}
 	listWant := []Invite{
-		Invite{Id: "1f", UserName: "jollystranger"},
-		Invite{Id: "2b", UserName: "fredhamlet"},
+		{Id: "1f", UserName: "jollystranger"},
+		{Id: "2b", UserName: "fredhamlet"},
 	}
 	if !reflect.DeepEqual(invites, listWant) {
 		t.Errorf("Associations.InviteList returned %+v, want %+v", invites, listWant)

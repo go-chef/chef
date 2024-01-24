@@ -20,4 +20,6 @@ describe command('/go/src/testapi/bin/cookbook') do
   its('stdout') { should match(%r{^Final cookbook versions sampbook sampbook => https://testhost/organizations/test/cookbooks/sampbook\n\s*\* 0.2.0\n\s*\* 0.1.0}m) }
   its('stdout') { should match(/Uploaded cookbook name: testdeps-0\.1\.0/) }
   its('stdout') { should match(/^Delete testdeps 0.1.0 <nil>/) }
+  its('stdout') { should match(/Uploaded V2 cookbook name: testcomplex-1\.2\.3/) }
+  its('stdout') { should match(/^Delete testcomplex 1.2.3 <nil>/) }
 end

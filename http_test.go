@@ -677,6 +677,40 @@ func TestNewClient(t *testing.T) {
 	assert.Equal(t, "1.0", c.Auth.AuthenticationVersion, "AuthVersion blank")
 
 	// ServerVersion tests
+	// Test the value of Authentication assigned
+	// Test value of authentication version.
+	//  1.0, 1.3, 4.0 => 1.0
+	cfg = &Config{AuthenticationVersion: "1.0", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	c, err = NewClient(cfg)
+	assert.Nil(t, err, "Make a valid client authversion 1.0")
+	assert.Equal(t, c.Auth.AuthenticationVersion, "1.0", "AuthVersion 1.0")
+	//
+	cfg = &Config{AuthenticationVersion: "1.3", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	c, err = NewClient(cfg)
+	assert.Nil(t, err, "Make a valid client authversion 1.3")
+	assert.Equal(t, c.Auth.AuthenticationVersion, "1.3", "AuthVersion 1.3")
+	//
+	cfg = &Config{AuthenticationVersion: "", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	c, err = NewClient(cfg)
+	assert.Nil(t, err, "Make a valid client authversion blank")
+	assert.Equal(t, "1.0", c.Auth.AuthenticationVersion, "AuthVersion blank")
+
+}
+
+type testRt struct {
+	req_count int
+	err_count int
+	next      http.RoundTripper
+}
+
+func newTestRt(next http.RoundTripper) http.RoundTripper { return &testRt{next: next} }
+func (this *testRt) RoundTrip(req *http.Request) (*http.Response, error) {
+	this.req_count++
+	res, err := this.next.RoundTrip(req)
+	if err != nil {
+		this.err_count++
+	}
+	return res, err
 }
 
 func TestNewClientProxy(t *testing.T) {

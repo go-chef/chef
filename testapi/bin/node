@@ -3,8 +3,9 @@
 # Node testing
 
 BASE=$(dirname $0)
+cd ${BASE}
 
 . ${BASE}/setup
 . ${BASE}/creds
 
-go run ${BASE}/../testcase/testcase.go node ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run ${BASE}/../../testcase/testcase.go node ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

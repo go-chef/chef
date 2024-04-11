@@ -1,7 +1,7 @@
 # Inspec tests for the user chef api go module
 #
 
-describe command('/go/src/testapi/bin/user') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/user') do
   its('stderr') { should match(%r{^Issue creating user POST https://testhost/users: 409}) }
   its('stderr') { should match(%r{^Issue creating user err: POST https://testhost/users: 409}) }
   its('stderr') { should match(/^Issue creating user code: 409/) }

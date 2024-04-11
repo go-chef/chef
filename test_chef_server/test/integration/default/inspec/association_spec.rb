@@ -1,6 +1,6 @@
 # Inspec tests for the associations chef api go module
 #
-describe command('/go/src/testapi/bin/association') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/association') do
   its('stderr') { should match(/^Issue inviting a user \{User:nouser\} .* 404/) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stderr') { should_not match(/testbook/) }

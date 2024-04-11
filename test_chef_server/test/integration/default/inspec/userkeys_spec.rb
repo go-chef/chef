@@ -1,7 +1,7 @@
 # Inspec tests for the user chef api go module
 #
 
-describe command('/go/src/testapi/bin/userkeys') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/userkeys') do
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }
   its('stderr') { should match(%r{Error displaying key detail GET https://testhost/users/usr1/keys/default: 404}) }
   its('stdout') { should match(%r{^List initial user usr1 keys \[\{Name:default Uri:https://testhost/users/usr1/keys/default Expired:false\}\]}) }

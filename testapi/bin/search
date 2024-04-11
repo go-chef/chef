@@ -3,7 +3,8 @@
 # Group testing
 
 BASE=$(dirname $0)
+cd ${BASE}
 
 . ${BASE}/setup
 . ${BASE}/creds
-go run ${BASE}/../testcase/testcase.go search ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run ${BASE}/../../testcase/testcase.go search ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

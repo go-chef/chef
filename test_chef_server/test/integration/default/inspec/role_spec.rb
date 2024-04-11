@@ -1,7 +1,7 @@
 # Inspec tests for the role chef api go module
 #
 
-describe command('/go/src/testapi/bin/role') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/role') do
   its('stderr') { should match(%r{^Issue recreating role1: POST https://testhost/organizations/test/roles: 409}) }
   its('stderr') { should match(/^Issue recreating role1: 409/) }
   its('stderr') { should match(%r{^Issue getting nothere: GET https://testhost/organizations/test/roles/nothere: 404}) }

@@ -1,7 +1,7 @@
 # Inspec tests for the group chef api go module
 #
 
-describe command('/go/src/testapi/bin/group') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/group') do
   its('stderr') { should match(%r{^Issue recreating group1. POST https://testhost/organizations/test/groups: 409}) }
   its('stderr') { should match(/^Issue recreating group1. 409/) }
   its('stderr') { should_not match(/error|no such file|cannot find|not used|undefined/) }

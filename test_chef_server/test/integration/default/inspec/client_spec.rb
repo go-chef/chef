@@ -1,7 +1,7 @@
 # Inspec tests for the client chef api go module
 #
 
-describe command('/go/src/testapi/bin/client') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/client') do
   its('stderr') { should match(%r{^Couldn't recreate client client1.  POST https://testhost/organizations/test/clients: 409}) }
   its('stderr') { should match(/^Couldn't recreate client client1. Code 409/) }
   its('stderr') { should match(/^Couldn't recreate client client1. Msg Client already exists/) }

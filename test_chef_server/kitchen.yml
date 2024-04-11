@@ -4,6 +4,7 @@ driver:
   synced_folders:
     - ['../', '/go/src/github.com/go-chef/chef']
     - ['../testapi', '/go/src/testapi']
+    - ['../testcase', '/go/src/testcase']
 
 provisioner:
   name: chef_zero
@@ -12,7 +13,7 @@ verifier:
   name: inspec
 
 platforms:
-  - name: ubuntu-20.04
+  - name: ubuntu-22.04
     driver_config:
       customize:
         cpus: 4

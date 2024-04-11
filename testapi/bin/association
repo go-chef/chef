@@ -3,9 +3,10 @@
 # Group testing
 
 BASE=$(dirname $0)
+cd ${BASE}
 
 . ${BASE}/setup
 . ${BASE}/creds
-go run ${BASE}/../testcase/testcase.go association_setup ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}
-go run ${BASE}/../testcase/testcase.go association ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS} 
-go run ${BASE}/../testcase/testcase.go association_cleanup ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}
+go run ${BASE}/../../testcase/testcase.go association_setup ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}
+go run ${BASE}/../../testcase/testcase.go association ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS} 
+go run ${BASE}/../../testcase/testcase.go association_cleanup ${CHEFUSER} ${KEYFILE} ${CHEFGLOBALURL} ${SSLBYPASS}

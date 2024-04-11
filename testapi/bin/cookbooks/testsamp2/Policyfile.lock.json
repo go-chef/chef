@@ -14,7 +14,16 @@
       "dotted_decimal_identifier": "6895049418725208.66175251102589781.58708194447420",
       "source": ".",
       "cache_key": null,
-      "scm_info": null,
+      "scm_info": {
+        "scm": "git",
+        "remote": null,
+        "revision": "ba94c3aa2d8007531cd76cb1e9841eac8a490d57",
+        "working_tree_clean": false,
+        "published": false,
+        "synchronized_remote_branches": [
+
+        ]
+      },
       "source_options": {
         "path": "."
       }

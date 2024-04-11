@@ -1,2 +1,2 @@
-export PATH=/snap/go/current/bin:$PATHg
+export PATH=/snap/go/current/bin:$PATH
 export GOPATH=/go:/go/src/github.com/go-chef/chef/testapi

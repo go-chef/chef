@@ -6,6 +6,6 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	os.Args = []string{"main","bogusapi"}
+	os.Args = []string{"main", "bogusapi"}
 	main()
 }

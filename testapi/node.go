@@ -11,6 +11,11 @@ import (
 func Node() {
 	// Use the default test org
 	client := Client()
+	fmt.Printf("Client settings %+v\n client auth %+n\n", client, client.Auth)
+	version := "1.0"
+	if len(os.Args) > 6 {
+		version = os.Args[6]
+	}
 
 	// List initial nodes
 	nodeList, err := client.Nodes.List()
@@ -20,7 +25,7 @@ func Node() {
 	fmt.Println("List initial nodes", nodeList)
 
 	// Define a Node object
-	node1 := chef.NewNode("node1")
+	node1 := chef.NewNode("node1" + version)
 	node1.RunList = []string{"pwn"}
 	node1.AutomaticAttributes = map[string]interface{}{
 		"attr": "value",
@@ -56,14 +61,14 @@ func Node() {
 	fmt.Println("Added node1", nodeResult)
 
 	// Read node1 information
-	serverNode, err := client.Nodes.Get("node1")
+	serverNode, err := client.Nodes.Get(node1.Name)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Couldn't get node: ", err)
 	}
 	fmt.Printf("Get node1 %+v\n", serverNode)
 
 	// Check node1 exits
-	err = client.Nodes.Head("node1")
+	err = client.Nodes.Head(node1.Name)
 	fmt.Println("Head node node1:", err)
 
 	// Check nothere exits
@@ -80,7 +85,7 @@ func Node() {
 	fmt.Println("Update node1", updateNode)
 
 	// Info after update
-	serverNode, err = client.Nodes.Get("node1")
+	serverNode, err = client.Nodes.Get(node1.Name)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Couldn't get node: ", err)
 	}

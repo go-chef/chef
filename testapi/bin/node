@@ -8,4 +8,11 @@ cd ${BASE}
 . ${BASE}/setup
 . ${BASE}/creds
 
+# Chef protocol version 1
 go run ${BASE}/../../testcase/testcase.go node ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+
+# Chef protocol version 1.3
+echo
+echo "Node protocol version 1.3"
+echo
+go run ${BASE}/../../testcase/testcase.go node ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS} "1.3"

@@ -2,8 +2,8 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -14,7 +14,7 @@ func TestListPolicies(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(policyListResponseFile)
+	file, err := os.ReadFile(policyListResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -86,7 +86,7 @@ func TestGetPolicyRevision(t *testing.T) {
 	const policyName = "base"
 	const policyRevision = "8228b0e381fe1de3ee39bf51e93029dbbdcecc61fb5abea4ca8c82591c0b529b"
 
-	file, err := ioutil.ReadFile(policyRevisionResponseFile)
+	file, err := os.ReadFile(policyRevisionResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -139,7 +139,7 @@ func TestDeletePolicyRevision(t *testing.T) {
 	const policyName = "base"
 	const policyRevision = "8228b0e381fe1de3ee39bf51e93029dbbdcecc61fb5abea4ca8c82591c0b529b"
 
-	file, err := ioutil.ReadFile(policyRevisionResponseFile)
+	file, err := os.ReadFile(policyRevisionResponseFile)
 	if err != nil {
 		t.Error(err)
 	}

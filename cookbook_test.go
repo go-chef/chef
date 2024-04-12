@@ -2,7 +2,6 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -28,7 +27,7 @@ func TestGetVersion(t *testing.T) {
 	setup()
 	defer teardown()
 
-	cbookResp, err := ioutil.ReadFile(cookbookResponseFile)
+	cbookResp, err := os.ReadFile(cookbookResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +82,7 @@ func TestCookbookList(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(cookbookListResponseFile)
+	file, err := os.ReadFile(cookbookListResponseFile)
 	if err != nil {
 		t.Error(err)
 	}

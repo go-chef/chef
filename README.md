@@ -28,15 +28,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-
 	"github.com/go-chef/chef"
 )
 
 func main() {
 	// read a client key
-	key, err := ioutil.ReadFile("key.pem")
+	key, err := os.ReadFile("key.pem")
 	if err != nil {
 		fmt.Println("Couldn't read key.pem:", err)
 		os.Exit(1)

@@ -2,7 +2,6 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -30,7 +29,7 @@ func TestCBADownloadTo(t *testing.T) {
 	defer teardown()
 
 	mockedCBAResponseFile := cbaData()
-	tempDir, err := ioutil.TempDir("", "seven_zip-cookbook")
+	tempDir, err := os.MkdirTemp("", "seven_zip-cookbook")
 	if err != nil {
 		t.Error(err)
 	}
@@ -58,12 +57,12 @@ func TestCBADownloadTo(t *testing.T) {
 	assert.DirExistsf(t, cookbookPath, "the cookbook directory should exist")
 	assert.DirExistsf(t, recipesPath, "the recipes directory should exist")
 	if assert.FileExistsf(t, metadataPath, "a metadata.rb file should exist") {
-		metadataBytes, err := ioutil.ReadFile(metadataPath)
+		metadataBytes, err := os.ReadFile(metadataPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "name 'foo'", string(metadataBytes))
 	}
 	if assert.FileExistsf(t, defaultPath, "the default.rb recipes should exist") {
-		recipeBytes, err := ioutil.ReadFile(defaultPath)
+		recipeBytes, err := os.ReadFile(defaultPath)
 		assert.Nil(t, err)
 		assert.Equal(t, "log 'this is a resource'", string(recipeBytes))
 	}

@@ -704,6 +704,7 @@ type testRt struct {
 }
 
 func newTestRt(next http.RoundTripper) http.RoundTripper { return &testRt{next: next} }
+
 func (this *testRt) RoundTrip(req *http.Request) (*http.Response, error) {
 	this.req_count++
 	res, err := this.next.RoundTrip(req)

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/go-chef/chef/testapi"
+	"os"
 )
 
 var cases = map[string]func(){
@@ -42,11 +42,15 @@ var cases = map[string]func(){
 
 // Invoke the requested testapi test function
 func main() {
-	testcase := os.Args[1]
-	fn, ok := cases[testcase]
-	if ok {
-		fn()
+	if len(os.Args) < 2 {
+		fmt.Fprintf(os.Stderr, "Usage: specify the test case name arg length %v  values %+v\n", len(os.Args), os.Args)
 	} else {
-		fmt.Fprintf(os.Stderr, "Requested case %+s was not found\n", testcase)
+		testcase := os.Args[1]
+		fn, ok := cases[testcase]
+		if ok {
+			fn()
+		} else {
+			fmt.Fprintf(os.Stderr, "Requested case %+s was not found\n", testcase)
+		}
 	}
 }

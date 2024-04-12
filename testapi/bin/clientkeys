@@ -3,7 +3,8 @@
 # Client testing
 
 BASE=$(dirname $0)
+cd ${BASE}
 
 . ${BASE}/setup
 . ${BASE}/creds
-go run ${BASE}/../testcase/testcase.go clientkey ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}
+go run ${BASE}/../../testcase/testcase.go clientkey ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

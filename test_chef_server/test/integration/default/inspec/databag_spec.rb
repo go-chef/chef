@@ -1,7 +1,7 @@
 # Inspec tests for the databag chef api go module
 #
 
-describe command('/go/src/testapi/bin/databag') do
+describe command('/go/src/github.com/go-chef/chef/testapi/bin/databag') do
   its('stderr') { should match(%r{^Issue recreating databag1. POST https://testhost/organizations/test/data: 409}) }
   its('stderr') { should match(/^Issue recreating databag1. 409/) }
   its('stderr') { should match(%r{^Issue getting nothere. GET https://testhost/organizations/test/data/nothere: 404}) }

@@ -2,8 +2,8 @@ package chef
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestPolicyGroupList(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(policyGroupResponseFile)
+	file, err := os.ReadFile(policyGroupResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,7 +47,7 @@ func TestPolicyGroupGet(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(policyGroupFile)
+	file, err := os.ReadFile(policyGroupFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func TestPolicyGroupDelete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(policyGroupFile)
+	file, err := os.ReadFile(policyGroupFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +95,7 @@ func TestPolicyGroupGetPolicy(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(revisionDetailsResponseFile)
+	file, err := os.ReadFile(revisionDetailsResponseFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -119,7 +119,7 @@ func TestPolicyGroupDeletePolicy(t *testing.T) {
 	setup()
 	defer teardown()
 
-	file, err := ioutil.ReadFile(revisionDetailsResponseFile)
+	file, err := os.ReadFile(revisionDetailsResponseFile)
 	if err != nil {
 		t.Error(err)
 	}

@@ -22,7 +22,12 @@ file '/etc/chef/accepted_licenses/chef_workstation' do
     file_format: 1"
 end
 
+execute 'Get chef workstation' do
+  command 'wget https://packages.chef.io/files/stable/chef-workstation/21.10.640/ubuntu/20.04/chef-workstation_21.10.640-1_amd64.deb'
+  not_if 'test -x /opt/chef-workstation/bin/chef'
+end
+
 execute 'Install chef workstation' do
-  command 'curl --silent --show-error https://omnitruck.chef.io/install.sh | sudo -E bash -s -- -c stable -P chef-workstation --chef-license accept'
+  command 'dpkg -i chef-workstation_21.10.640-1_amd64.deb'
   not_if 'test -x /opt/chef-workstation/bin/chef'
 end

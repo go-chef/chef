@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -198,7 +197,7 @@ func ReadMetaData(path string) (m CookbookMeta, err error) {
 		fileName = filepath.Join(path, metaRbName)
 
 	}
-	file, err := ioutil.ReadFile(fileName)
+	file, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

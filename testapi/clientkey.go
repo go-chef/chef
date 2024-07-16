@@ -10,7 +10,7 @@ import (
 
 // clientkey exercise the chef server api
 func Clientkey() {
-	client := Client()
+	client := Client(nil)
 
 	// Create a new private key when adding the client
 	clnt1 := chef.ApiNewClient{

@@ -10,7 +10,7 @@ import (
 // cookbook exercise the chef server api
 func Cookbook() {
 	// Create a client for user access
-	client := Client()
+	client := Client(nil)
 
 	// Prep by adding a couple versions of some cookbooks before running this code
 	err := addSampleCookbooks()

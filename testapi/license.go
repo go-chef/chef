@@ -8,7 +8,7 @@ import (
 // license exercise the chef server api
 func License() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	license, err := client.License.Get()
 	if err != nil {

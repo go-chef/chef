@@ -19,6 +19,7 @@ var cases = map[string]func(){
 	"databag":             testapi.Databag,
 	"environment":         testapi.Environment,
 	"group":               testapi.Group,
+	"http":                testapi.Http,
 	"license":             testapi.License,
 	"node":                testapi.Node,
 	"organization":        testapi.Organization,

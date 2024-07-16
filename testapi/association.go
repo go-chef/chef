@@ -10,7 +10,7 @@ import (
 
 // association exercise the chef server api
 func Association() {
-	client := Client()
+	client := Client(nil)
 
 	// Build stuctures to invite users
 	invite := chef.Request{

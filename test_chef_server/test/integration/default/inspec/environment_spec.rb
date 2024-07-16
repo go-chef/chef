@@ -5,5 +5,5 @@ describe command('/go/src/github.com/go-chef/chef/testapi/bin/environment') do
   its('stderr') { should_not match(/testbook/) }
   its('stderr') { should_not match(/sampbook/) }
   its('stderr') { should_not match(/Issue loading/) }
-  its('stdout') { should match(%r{^List initial environments\s*$}) }
+  its('stdout') { should match(%r{^List initial environments _default =>.*_default*$}) }
 end

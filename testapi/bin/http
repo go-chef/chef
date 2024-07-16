@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Http testing
+
+BASE=$(dirname $0)
+cd ${BASE}
+
+. ${BASE}/setup
+. ${BASE}/creds
+go run ${BASE}/../../testcase/testcase.go http ${CHEFUSER} ${KEYFILE} ${CHEFORGANIZATIONURL} ${SSLBYPASS}

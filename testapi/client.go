@@ -10,7 +10,7 @@ import (
 // client test the chef api
 func ApiClient() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	// List initial clients
 	clientList, err := client.Clients.List()

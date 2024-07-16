@@ -10,7 +10,7 @@ import (
 
 // ACL exercise the chef server api
 func ACL() {
-	client := Client()
+	client := Client(nil)
 
 	// Create a node
 
@@ -34,7 +34,7 @@ func ACL() {
 
 	// We want exactly the same test API client but with a different key.
 
-	client2 := Client()
+	client2 := Client(nil)
 	client2.Auth.ClientName = "acltest"
 	private, err := chef.PrivateKeyFromString([]byte(aclClient.ChefKey.PrivateKey))
 	if err != nil {

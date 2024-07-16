@@ -26,10 +26,10 @@ func TestNewClientProxy2(t *testing.T) {
 	assert.Nil(t, err, "Create request")
 
 	eurl := &url.URL{Scheme: "https", Host: "8.8.8.8:8000"}
-	trurl, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
+	trurl, err := chefClient.Client.Transport.(*http.Transport).Proxy(request)
 	assert.Equal(t, *eurl, *trurl, "proxy value from environment variable")
 
-	tr := chefClient.client.Transport.(*http.Transport)
+	tr := chefClient.Client.Transport.(*http.Transport)
 	assert.Equal(t, reflect.ValueOf(tr.Proxy).Pointer(),
 		reflect.ValueOf(http.ProxyFromEnvironment).Pointer(),
 		"Proxy set from http proxyfromenvironment function")

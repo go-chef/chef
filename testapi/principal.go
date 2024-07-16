@@ -10,7 +10,7 @@ import (
 // principle test the chef api
 func Principals() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	// Create a client
 	client1 := chef.ApiNewClient{

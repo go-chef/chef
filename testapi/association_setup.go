@@ -10,7 +10,7 @@ import (
 
 // association_setup exercise the chef server api
 func AssociationSetup() {
-	client := Client()
+	client := Client(nil)
 
 	// Create a user
 	var usr chef.User

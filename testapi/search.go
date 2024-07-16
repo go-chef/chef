@@ -12,7 +12,7 @@ import (
 // search exercise the chef api
 func Search() {
 	// Add nodes
-	client := Client()
+	client := Client(nil)
 	addNodes(client)
 	// Give the nodes time to end up in all of the data bases.  An immediate search will show no nodes
 	time.Sleep(10 * time.Second)

@@ -9,7 +9,7 @@ import (
 
 // databog exercise the chef server api
 func Databag() {
-	client := Client()
+	client := Client(nil)
 
 	// List the current databags
 	BagList, err := client.DataBags.List()

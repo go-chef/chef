@@ -8,7 +8,7 @@ import (
 // universe exercise the chef server api
 func Universe() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	universe, err := client.Universe.Get()
 	if err != nil {

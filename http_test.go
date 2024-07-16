@@ -507,7 +507,7 @@ func TestTLSValidation(t *testing.T) {
 			err = ac.SignRequest(request)
 			assert.Nil(t, err, "Generate request headers")
 
-			client := chefClient.client
+			client := chefClient.Client
 			response, err := client.Do(request)
 			assert.NotNil(t, err, "Invalid TLS certificate")
 
@@ -525,7 +525,7 @@ func TestTLSValidation(t *testing.T) {
 			err = ac.SignRequest(request)
 			assert.Nil(t, err, "generate request headers")
 
-			client = chefClient.client
+			client = chefClient.Client
 			response, err = client.Do(request)
 			assert.Nil(t, err, "Do request should work")
 			assert.Equal(t, http.StatusOK, response.StatusCode, "Response code")
@@ -638,7 +638,7 @@ func TestNewClient(t *testing.T) {
 	assert.Nil(t, err, "Make a valid client")
 	// simple validations on the created client
 	assert.Equal(t, "testclient", c.Auth.ClientName, "Valid client Name")
-	assert.Equal(t, time.Duration(1)*time.Second, c.client.Timeout, "Valid timeout value")
+	assert.Equal(t, time.Duration(1)*time.Second, c.Client.Timeout, "Valid timeout value")
 
 	// Bad PEM should be an error
 	cfg = &Config{Name: "blah", Key: "not a key", SkipSSL: false}
@@ -656,28 +656,22 @@ func TestNewClient(t *testing.T) {
 	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
 	c, err = NewClient(cfg)
 	assert.Nil(t, err, "Build a client with a supplied http client")
-	assert.Equal(t, c.client, crt.StandardClient(), "Client uses a supplied http client")
+	assert.Equal(t, c.Client, crt.StandardClient(), "Client uses a supplied http client")
 
-	// Test the value of Authentication assigned
-	// Test value of authentication version.
-	//  1.0, 1.3, 4.0 => 1.0
-	cfg = &Config{AuthenticationVersion: "1.0", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	// Verify using a supplied RoundTripper factory works
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, RoundTripper: newTestRt}
 	c, err = NewClient(cfg)
-	assert.Nil(t, err, "Make a valid client authversion 1.0")
-	assert.Equal(t, c.Auth.AuthenticationVersion, "1.0", "AuthVersion 1.0")
-	//
-	cfg = &Config{AuthenticationVersion: "1.3", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
+	assert.Nil(t, err, "Build a client with a supplied RoundTripper factory")
+	assert.IsType(t, &http.Client{}, c.Client, "The inner client should be an *http.Client")
+	rt, correct_type := c.Client.Transport.(*testRt)
+	assert.True(t, correct_type, "Client Transport should be a *testRt")
+	assert.IsType(t, &http.Transport{}, rt.next, "Client Transport should wrap a *http.Transport")
+
+	cfg = &Config{Name: "testclient", Key: privateKeyPKCS1, Client: crt.StandardClient(), RoundTripper: newTestRt}
 	c, err = NewClient(cfg)
-	assert.Nil(t, err, "Make a valid client authversion 1.3")
-	assert.Equal(t, c.Auth.AuthenticationVersion, "1.3", "AuthVersion 1.3")
-	//
-	cfg = &Config{AuthenticationVersion: "", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
-	c, err = NewClient(cfg)
-	assert.Nil(t, err, "Make a valid client authversion blank")
-	assert.Equal(t, "1.0", c.Auth.AuthenticationVersion, "AuthVersion blank")
+	assert.NotNil(t, err, "Build a client with both Client and RoundTripper")
 
 	// ServerVersion tests
-	// Test the value of Authentication assigned
 	// Test value of authentication version.
 	//  1.0, 1.3, 4.0 => 1.0
 	cfg = &Config{AuthenticationVersion: "1.0", Name: "testclient", Key: privateKeyPKCS1, SkipSSL: false, Timeout: 1, Client: crt.StandardClient()}
@@ -721,7 +715,7 @@ func TestNewClientProxy(t *testing.T) {
 	assert.Nil(t, err, "Create client")
 	request, err := chefClient.NewRequest("GET", "https://test.com", nil)
 	assert.Nil(t, err, "Create request")
-	trfunc, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
+	trfunc, err := chefClient.Client.Transport.(*http.Transport).Proxy(request)
 	assert.Nil(t, trfunc, "no proxy")
 
 	// custom proxy provided
@@ -735,7 +729,7 @@ func TestNewClientProxy(t *testing.T) {
 	assert.Nil(t, err, "Create client")
 	request, err = chefClient.NewRequest("GET", "https://test.com", nil)
 	assert.Nil(t, err, "Create request")
-	trurl, err := chefClient.client.Transport.(*http.Transport).Proxy(request)
+	trurl, err := chefClient.Client.Transport.(*http.Transport).Proxy(request)
 	assert.Nil(t, err, "Proxy execution")
 	eurl := &url.URL{Scheme: "https", Host: "proxy.com:9000"}
 	assert.Equal(t, *eurl, *trurl, "Proxy set from supplied function")

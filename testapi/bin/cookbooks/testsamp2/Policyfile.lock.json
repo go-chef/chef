@@ -17,11 +17,11 @@
       "scm_info": {
         "scm": "git",
         "remote": null,
-        "revision": "1b06d682dd47313d2bb602d483485283815568e4",
+        "revision": "eb0d4200541f075cf56cdf8f66ca296cd032173e",
         "working_tree_clean": false,
-        "published": false,
+        "published": true,
         "synchronized_remote_branches": [
-
+          "origin/transport"
         ]
       },
       "source_options": {

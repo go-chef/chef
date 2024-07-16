@@ -11,7 +11,7 @@ import (
 // authenticate exercise the chef server api
 func Authenticate() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	// Create a user
 	var usr chef.User

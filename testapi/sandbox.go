@@ -17,7 +17,7 @@ func random_data(size int) (b []byte) {
 
 // sandbox exercise the chef api
 func Sandbox() {
-	client := Client()
+	client := Client(nil)
 
 	// create junk files and sums
 	files := make(map[string][]byte)

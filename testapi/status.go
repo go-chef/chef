@@ -8,7 +8,7 @@ import (
 // status exercise the chef server api
 func Status() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	status, err := client.Status.Get()
 	if err != nil {

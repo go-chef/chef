@@ -10,14 +10,18 @@ describe command('/go/src/github.com/go-chef/chef/testapi/bin/databag') do
   its('stdout') { should match(/Missing data bag. Msg Cannot load data bag nothere/) }
   its('stdout') { should match(/Missing data bag. Text \{"error":\["Cannot load data bag nothere"\]\}/) }
   its('stdout') { should match(/^List initial databags\s*$/) }
-  its('stdout') { should match(%r{^Added databag1 \&\{https://testhost/organizations/test/data/databag1\}}) }
-  its('stdout') { should match(%r{^List databags after adding databag1 databag1 => https://testhost/organizations/test/data/databag1}) }
-  its('stdout') { should match(/^Create databag1::item1 \<nil\>/) }
-  its('stdout') { should match(/^Update databag1::item1 \<nil\>/) }
-  its('stdout') { should match(%r{^List databag1 items item1 => https://testhost/organizations/test/data/databag1/item1}) }
+  its('stdout') { should match(%r{^Added databag1 &\{https://testhost/organizations/test/data/databag1\}}) }
+  its('stdout') do
+    should match(%r{^List databags after adding databag1 databag1 => https://testhost/organizations/test/data/databag1})
+  end
+  its('stdout') { should match(/^Create databag1::item1 <nil>/) }
+  its('stdout') { should match(/^Update databag1::item1 <nil>/) }
+  its('stdout') do
+    should match(%r{^List databag1 items item1 => https://testhost/organizations/test/data/databag1/item1})
+  end
   its('stdout') { should match(/^Get databag1::item1 map\[(?=.*id:item1)(?=.*type:password)(?=.*value:next).*\]/) }
-  its('stdout') { should match(/^Delete databag1::item1 \<nil\>/) }
+  its('stdout') { should match(/^Delete databag1::item1 <nil>/) }
   its('stdout') { should match(/^List databag1 items after delete/) }
-  its('stdout') { should match(/^Delete databag1 \&\{Name:databag1 JsonClass:Chef::DataBag ChefType:data_bag/) }
+  its('stdout') { should match(/^Delete databag1 &\{Name:databag1 JsonClass:Chef::DataBag ChefType:data_bag/) }
   its('stdout') { should match(/^List databags after cleanup\s*$/) }
 end

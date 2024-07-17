@@ -11,7 +11,7 @@ import (
 // container exercise the chef api
 func Container() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	// List initial containers
 	containerList, err := client.Containers.List()

@@ -10,7 +10,7 @@ import (
 // environment exercise the chef api
 func Environment() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	// List initial environments
 	environmentList, err := client.Environments.List()

@@ -9,7 +9,7 @@ import (
 // stats exercise the chef server api
 func Stats() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 	password := os.Args[6]
 
 	stats, err := client.Stats.Get("statsuser", password)

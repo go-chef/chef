@@ -11,7 +11,7 @@ import (
 // organization exercise the chef server api
 func Organization() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	// Organization tests
 	org1 := "org1"

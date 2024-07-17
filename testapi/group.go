@@ -13,7 +13,7 @@ import (
 
 // group exercise the chef server api
 func Group() {
-	client := Client()
+	client := Client(nil)
 
 	// List the current groups
 	groupList, err := client.Groups.List()

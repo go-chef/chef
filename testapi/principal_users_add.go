@@ -9,7 +9,7 @@ import (
 // principle test the chef api
 func PrincipalsAdd() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	// Create a User
 	usr1 := chef.User{UserName: "usr1",

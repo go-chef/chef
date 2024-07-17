@@ -10,8 +10,8 @@ import (
 // node exercise the chef api
 func Node() {
 	// Use the default test org
-	client := Client()
-	fmt.Printf("Client settings %+v\n client auth %+n\n", client, client.Auth)
+	client := Client(nil)
+	fmt.Printf("Client settings %+v\n client auth %+v\n", client, client.Auth)
 	version := "1.0"
 	if len(os.Args) > 6 {
 		version = os.Args[6]

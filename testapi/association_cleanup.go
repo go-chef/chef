@@ -11,7 +11,7 @@ import (
 
 // association_cleanup exercise the chef server api
 func AssociationCleanup() {
-	client := Client()
+	client := Client(nil)
 	deleteUser(client, "usrinvite")
 	deleteUser(client, "usr2invite")
 	deleteUser(client, "usradd")

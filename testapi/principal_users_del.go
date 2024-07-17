@@ -9,7 +9,7 @@ import (
 // principle test the chef api
 func PrincipalsDel() {
 	// Use the default test org
-	client := Client()
+	client := Client(nil)
 
 	_ = deleteUser_p(client, "client1")
 	_ = deleteUser_p(client, "usr1")

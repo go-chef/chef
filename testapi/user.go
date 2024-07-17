@@ -9,7 +9,7 @@ import (
 
 // User exercise the chef server api
 func User() {
-	client := Client()
+	client := Client(nil)
 
 	// Create a new private key when adding the user
 	usr1 := chef.User{UserName: "usr1",

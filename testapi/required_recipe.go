@@ -8,7 +8,7 @@ import (
 // required_recipe exercise the chef server api
 func RequiredRecipe() {
 	// Create a client for access
-	client := Client()
+	client := Client(nil)
 
 	required_recipe, err := client.RequiredRecipe.Get()
 	if err != nil {

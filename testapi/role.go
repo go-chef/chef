@@ -10,7 +10,7 @@ import (
 
 // role exercise the chef server api
 func Role() {
-	client := Client()
+	client := Client(nil)
 
 	// The environment need to exist for the GetEnvironmentRunlist function to work
 	create_en1(client)

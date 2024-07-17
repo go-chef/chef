@@ -50,7 +50,7 @@ type AuthConfig struct {
 type Client struct {
 	Auth       *AuthConfig
 	BaseURL    *url.URL
-	client     *http.Client
+	Client     *http.Client
 	IsWebuiKey bool
 
 	ACLs              *ACLService
@@ -114,6 +114,10 @@ type Config struct {
 
 	// Pointer to an HTTP Client to use instead of the default
 	Client *http.Client
+
+	// A function which wraps an existing RoundTripper.
+	// Cannot be used if Client is set.
+	RoundTripper func(http.RoundTripper) http.RoundTripper
 }
 
 /*
@@ -266,10 +270,36 @@ func NewClient(cfg *Config) (*Client, error) {
 	}
 
 	if cfg.Client != nil {
-		c.client = cfg.Client
+		if cfg.RoundTripper != nil {
+			return nil, errors.New("NewClient: cannot set both Client and RoundTripper")
+		}
+		c.Client = cfg.Client
 	} else {
-		c.client = &http.Client{
-			Transport: tr,
+		tlsConfig := &tls.Config{InsecureSkipVerify: cfg.SkipSSL}
+		if cfg.RootCAs != nil {
+			tlsConfig.RootCAs = cfg.RootCAs
+		}
+		tr := &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSClientConfig:     tlsConfig,
+			TLSHandshakeTimeout: 10 * time.Second,
+		}
+
+		if cfg.Proxy != nil {
+			tr.Proxy = cfg.Proxy
+		}
+
+		var transport http.RoundTripper = tr
+		if cfg.RoundTripper != nil {
+			transport = cfg.RoundTripper(tr)
+		}
+
+		c.Client = &http.Client{
+			Transport: transport,
 			Timeout:   time.Duration(cfg.Timeout) * time.Second,
 		}
 	}
@@ -315,7 +345,7 @@ func NewClientWithOutConfig(baseurl string) (*Client, error) {
 	}
 
 	c := &Client{
-		client: &http.Client{
+		Client: &http.Client{
 			Transport: tr,
 			Timeout:   60 * time.Second,
 		},
@@ -511,7 +541,7 @@ func ChefError(err error) (cerr *ErrorResponse, nerr error) {
 
 // Do is used either internally via our magic request shite or a user may use it
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
-	res, err := c.client.Do(req)
+	res, err := c.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}

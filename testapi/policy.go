@@ -9,7 +9,7 @@ import (
 
 // policy exercise the chef server api
 func Policy() {
-	client := Client()
+	client := Client(nil)
 
 	// List policies
 	policyList, err := client.Policies.List()

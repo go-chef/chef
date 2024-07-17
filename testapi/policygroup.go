@@ -8,7 +8,7 @@ import (
 
 // policy exercise the chef server api
 func PolicyGroup() {
-	client := Client()
+	client := Client(nil)
 
 	// List policy_groups
 	policygroupList, err := client.PolicyGroups.List()

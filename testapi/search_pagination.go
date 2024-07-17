@@ -11,7 +11,7 @@ import (
 // search _pagination exercise the chef api
 func SearchPagination() {
 	// Add nodes
-	client := Client()
+	client := Client(nil)
 	addNodes_sp(client)
 	// Give the nodes time to end up in the search data bases.  An immediate search will show no nodes
 	time.Sleep(10 * time.Second)

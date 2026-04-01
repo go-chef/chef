@@ -120,6 +120,9 @@ func (e *UserService) Get(name string) (user User, err error) {
 func (e *UserService) Update(name string, user User) (userUpdate UserResult, err error) {
 	url := fmt.Sprintf("users/%s", name)
 	body, err := JSONReader(user)
+	if err != nil {
+		return userUpdate, err
+	}
 	err = e.client.magicRequestDecoder("PUT", url, body, &userUpdate)
 	return
 }
@@ -150,6 +153,9 @@ func (e *UserService) ListKeys(name string) (userkeys []KeyItem, err error) {
 func (e *UserService) AddKey(name string, keyadd AccessKey) (key KeyItem, err error) {
 	url := fmt.Sprintf("users/%s/keys", name)
 	body, err := JSONReader(keyadd)
+	if err != nil {
+		return key, err
+	}
 	err = e.client.magicRequestDecoder("POST", url, body, &key)
 	return
 }
@@ -193,6 +199,9 @@ func (e *UserService) GetKey(name string, keyname string) (key AccessKey, err er
 func (e *UserService) UpdateKey(username string, keyname string, keyUp AccessKey) (userkey AccessKey, err error) {
 	url := fmt.Sprintf("users/%s/keys/%s", username, keyname)
 	body, err := JSONReader(keyUp)
+	if err != nil {
+		return userkey, err
+	}
 	err = e.client.magicRequestDecoder("PUT", url, body, &userkey)
 	return
 }
